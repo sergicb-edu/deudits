@@ -36,15 +36,20 @@ Un alumne amb dificultats en l'escriptura manual pot escriure bé amb l'ordinado
 - **RF-02.** Pseudonimització: traducció del correu a `student_id` (p. ex. `A01`) a la taula restringida `Roster`.
 - **RF-03.** Rols determinats per les taules `Config` i `Roster`.
 
-### 4.2 Motor d'exercicis, subnivells i estructura en 5 pantalles
-- **RF-04.** Els nivells, subnivells, missions d'en Bit i dites catalanes es defineixen a `content/levels.json`.
-- **RF-05.** Cada nivell té **Pas 0 (Preparació de mans)** i **5 Pantalles (Subnivells)** que incorporen la barra d'**Espai (`Space`) des del Nivell 1**:
-  - **Pas 0 (Posició de dits):** Mostra i remarca on es col·loquen els dits a la fila base i exigeix prémer físicament les 2 tecles noves + `Espai` abans de començar.
-  - **Pantalla 1 (`P1` — Parelles aïllades):** Treballa **exclusivament les 2 tecles noves** en grups de 2 lletres separats per espai (`ff jj fj jf`, o al Nivell 2 `dd kk dk kd` sense barrejar encara `f` i `j`).
-  - **Pantalla 2 (`P2` — Grups aïllats de 3-4 lletres):** Continua **només amb les 2 tecles noves** allargant les "paraules" a 3 i 4 lletres separades per espai (`fjf jfj fjjf`, `dkd kdk dkkd`).
-  - **Pantalla 3 (`P3` — Aventura d'acció amb tecles noves):** Joc interactiu on cada grup de lletres + `Espai` fa avançar en Bit o supera un obstacle de la tradició/lloc català del nivell.
-  - **Pantalla 4 (`P4` — Aventura combinant tecles apreses):** Combina les 2 tecles noves amb les tecles dels nivells anteriors en grups de 3 a 5 lletres separats per espai.
-  - **Pantalla 5 (`P5` — Mestre del Nivell + Termòmetre de la Dita Catalana):** Consolidació del nivell seguida del repte d'escriure la **dita catalana** del nivell amb tot el teclat (amb suport visual i opció d'escoltar-la en mode dictat) per mesurar l'evolució de velocitat (WPM) i precisió.
+### 4.2 Motor d'exercicis i estructura de cada Nivell en 3 Fases + Banner d'Engegar Motors
+- **RF-04.** Els nivells, subnivells d'entrenament, onades arcade i dites catalanes es defineixen a `content/levels.json`.
+- **RF-05.** Cada nivell s'estructura en **un Banner d'Arrencada de Motors** seguit de **3 Fases ben diferenciades**:
+  - **Banner d'Engegar Motors (a l'inici de cada nivell):** Abans de començar qualsevol nivell, s'obre un banner on l'alumne ha de prémer físicament les **2 tecles protagonistes del nivell + la barra d'Espai** per activar els motors d'en Bit.
+  - **FASE 1 — Pràctica i Entrenament de Lletres (Tira de lletres amb Espai):**
+    - **1A (Parelles aïllades):** Treballa **exclusivament les 2 tecles noves** en grups de 2 lletres separats per espai (`ff jj fj jf`, o al Nivell 2 `dd kk dk kd` sense barrejar encara `f` i `j`).
+    - **1B (Grups de 3-4 lletres aïllades):** Continua **només amb les 2 tecles noves** allargant les "paraules" a 3 i 4 lletres separades per espai (`fjf jfj fjjf`, `dkd kdk dkkd`).
+    - **1C (Barreja amb les anteriors, a partir de L02):** Combina les 2 tecles noves amb les tecles dels nivells anteriors en grups de 3 a 4 lletres separats per espai.
+  - **FASE 2 — Joc Arcade Gamificat en Estètica 8-Bits (Acció en temps real):**
+    - Videojoc en moviment (`<canvas>` Pixel-Art de 8-bits) on la nau o personatge d'**en Bit** vola/actua a l'esquerra de la pantalla i van apareixent **obstacles en moviment** (meteorits al Montsec, blocs castellers a Vilafranca, compassos de sardana a Girona, boles de foc de la Patum a Berga) que avancen cap a ell a velocitat progressiva segons l'onada/nivell.
+    - Cada obstacle porta escrit el seu codi de lletres + `Espai`. Quan l'alumne les prem, la nau dispara un raig làser i **l'obstacle explota en píxels de 8-bits**.
+    - **Les 5 Barretines com a Vides/Escut a l'Arcade:** La nau comença amb **5 Barretines**. Si un obstacle arriba a tocar la nau d'en Bit, perds **1 Barretina**. Si perds les 5 Barretines, la nau explota i cal reintentar l'onada; si destrueixes l'onada conservant ≥ 3 Barretines, superes la Fase 2!
+  - **FASE 3 — Repte de la Dita Catalana (Termòmetre per passar al següent nivell):**
+    - Prova final de velocitat i precisió amb **tot el teclat** escrivint una **dita popular catalana** (amb suport visual i opció de mode dictat per veu) per veure l'evolució entre nivells i desbloquejar el nivell següent.
 - **RF-06.** Tipus d'exercici: (a) parelles aïllades amb espai, (b) grups de 3-4 lletres amb espai, (c) aventura amb combinacions i paraules catalanes, (d) dites populars catalanes (termòmetre de progrés i dictat).
 - **RF-07.** Generació reproduïble amb llavor (`seed`).
 - **RF-08.** Avaluació per pulsació: tecla esperada, tecla escrita, dit esperat, encert i latència `t`.
