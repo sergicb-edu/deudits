@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "1.0.0",
+  "levels": [
+    {
+      "id": "L01",
+      "order": 1,
+      "titleCa": "Nivell 1: Índexs en posició base (F i J)",
+      "descriptionCa": "Troba les marques amb relleu de les tecles F i J i alterna els dits índex de cada mà amb calma.",
+      "newKeys": ["f", "j"],
+      "reviewKeys": [],
+      "exerciseType": "isolated_keys",
+      "targetLengthChars": 40,
+      "defaultAids": {
+        "showKeyboard": true,
+        "showHands": true,
+        "highlightTargetKey": true,
+        "highlightFingerColor": true,
+        "soundEnabled": false
+      },
+      "passCriteria": {
+        "minAccuracy": 0.95,
+        "requiredSessions": 3,
+        "starsThresholds": {
+          "oneStar": 0.80,
+          "twoStars": 0.90,
+          "threeStars": 0.95
+        },
+        "scoreSpeed": false
+      },
+      "unlockBadgeId": "badge_home_index"
+    },
+    {
+      "id": "L02",
+      "order": 2,
+      "titleCa": "Nivell 2: Afegim els dits del mig (D i K)",
+      "descriptionCa": "Combina els dits índex (F, J) i els dits del mig (D, K) sense aixecar els palmells.",
+      "newKeys": ["d", "k"],
+      "reviewKeys": ["f", "j"],
+      "exerciseType": "combinations",
+      "targetLengthChars": 48,
+      "defaultAids": {
+        "showKeyboard": true,
+        "showHands": true,
+        "highlightTargetKey": true,
+        "highlightFingerColor": true,
+        "soundEnabled": false
+      },
+      "passCriteria": {
+        "minAccuracy": 0.95,
+        "requiredSessions": 3,
+        "starsThresholds": {
+          "oneStar": 0.80,
+          "twoStars": 0.90,
+          "threeStars": 0.95
+        },
+        "scoreSpeed": false
+      },
+      "unlockBadgeId": "badge_home_middle"
+    },
+    {
+      "id": "L03",
+      "order": 3,
+      "titleCa": "Nivell 3: Dits anulars (S i L)",
+      "descriptionCa": "Incorpora els dits anulars a la fila base amb combinacions suaus.",
+      "newKeys": ["s", "l"],
+      "reviewKeys": ["f", "j", "d", "k"],
+      "exerciseType": "combinations",
+      "targetLengthChars": 50,
+      "defaultAids": {
+        "showKeyboard": true,
+        "showHands": true,
+        "highlightTargetKey": true,
+        "highlightFingerColor": true,
+        "soundEnabled": false
+      },
+      "passCriteria": {
+        "minAccuracy": 0.95,
+        "requiredSessions": 3,
+        "starsThresholds": {
+          "oneStar": 0.80,
+          "twoStars": 0.90,
+          "threeStars": 0.95
+        },
+        "scoreSpeed": false
+      },
+      "unlockBadgeId": "badge_home_ring"
+    },
+    {
+      "id": "L04",
+      "order": 4,
+      "titleCa": "Nivell 4: Menovells i fila base completa (A i Ç)",
+      "descriptionCa": "Completa la fila base amb el menovell esquerre (A) i el menovell dret desplaçant-se a la Ç.",
+      "newKeys": ["a", "ç"],
+      "reviewKeys": ["f", "j", "d", "k", "s", "l"],
+      "exerciseType": "combinations",
+      "targetLengthChars": 52,
+      "defaultAids": {
+        "showKeyboard": true,
+        "showHands": true,
+        "highlightTargetKey": true,
+        "highlightFingerColor": true,
+        "soundEnabled": false
+      },
+      "passCriteria": {
+        "minAccuracy": 0.95,
+        "requiredSessions": 3,
+        "starsThresholds": {
+          "oneStar": 0.80,
+          "twoStars": 0.90,
+          "threeStars": 0.95
+        },
+        "scoreSpeed": false
+      },
+      "unlockBadgeId": "badge_home_full"
+    }
+  ]
+}

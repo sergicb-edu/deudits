@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0.0",
+  "layoutName": "ISO-ES-Catala",
+  "fingers": {
+    "L-pinky": {
+      "id": "L-pinky",
+      "hand": "left",
+      "labelCa": "Menovell esquerre",
+      "colorHex": "#E07A5F",
+      "patternId": "dots"
+    },
+    "L-ring": {
+      "id": "L-ring",
+      "hand": "left",
+      "labelCa": "Anular esquerre",
+      "colorHex": "#F2CC8F",
+      "patternId": "diagonal-left"
+    },
+    "L-middle": {
+      "id": "L-middle",
+      "hand": "left",
+      "labelCa": "Cor esquerre",
+      "colorHex": "#81B29A",
+      "patternId": "horizontal"
+    },
+    "L-index": {
+      "id": "L-index",
+      "hand": "left",
+      "labelCa": "Índex esquerre",
+      "colorHex": "#4EA8DE",
+      "patternId": "solid-left"
+    },
+    "thumb": {
+      "id": "thumb",
+      "hand": "both",
+      "labelCa": "Polzes (Espai)",
+      "colorHex": "#9B89B3",
+      "patternId": "cross"
+    },
+    "R-index": {
+      "id": "R-index",
+      "hand": "right",
+      "labelCa": "Índex dret",
+      "colorHex": "#2B7BBA",
+      "patternId": "solid-right"
+    },
+    "R-middle": {
+      "id": "R-middle",
+      "hand": "right",
+      "labelCa": "Cor dret",
+      "colorHex": "#529471",
+      "patternId": "vertical"
+    },
+    "R-ring": {
+      "id": "R-ring",
+      "hand": "right",
+      "labelCa": "Anular dret",
+      "colorHex": "#E5A93C",
+      "patternId": "diagonal-right"
+    },
+    "R-pinky": {
+      "id": "R-pinky",
+      "hand": "right",
+      "labelCa": "Menovell dret",
+      "colorHex": "#C85A32",
+      "patternId": "grid"
+    }
+  },
+  "keys": {
+    "KeyQ": { "code": "KeyQ", "label": "Q", "charNormal": "q", "charShift": "Q", "finger": "L-pinky", "row": "top" },
+    "KeyW": { "code": "KeyW", "label": "W", "charNormal": "w", "charShift": "W", "finger": "L-ring", "row": "top" },
+    "KeyE": { "code": "KeyE", "label": "E", "charNormal": "e", "charShift": "E", "finger": "L-middle", "row": "top" },
+    "KeyR": { "code": "KeyR", "label": "R", "charNormal": "r", "charShift": "R", "finger": "L-index", "row": "top" },
+    "KeyT": { "code": "KeyT", "label": "T", "charNormal": "t", "charShift": "T", "finger": "L-index", "row": "top" },
+    "KeyY": { "code": "KeyY", "label": "Y", "charNormal": "y", "charShift": "Y", "finger": "R-index", "row": "top" },
+    "KeyU": { "code": "KeyU", "label": "U", "charNormal": "u", "charShift": "U", "finger": "R-index", "row": "top" },
+    "KeyI": { "code": "KeyI", "label": "I", "charNormal": "i", "charShift": "I", "finger": "R-middle", "row": "top" },
+    "KeyO": { "code": "KeyO", "label": "O", "charNormal": "o", "charShift": "O", "finger": "R-ring", "row": "top" },
+    "KeyP": { "code": "KeyP", "label": "P", "charNormal": "p", "charShift": "P", "finger": "R-pinky", "row": "top" },
+
+    "KeyA": { "code": "KeyA", "label": "A", "charNormal": "a", "charShift": "A", "finger": "L-pinky", "row": "home", "isHomeKey": true },
+    "KeyS": { "code": "KeyS", "label": "S", "charNormal": "s", "charShift": "S", "finger": "L-ring", "row": "home", "isHomeKey": true },
+    "KeyD": { "code": "KeyD", "label": "D", "charNormal": "d", "charShift": "D", "finger": "L-middle", "row": "home", "isHomeKey": true },
+    "KeyF": { "code": "KeyF", "label": "F", "charNormal": "f", "charShift": "F", "finger": "L-index", "row": "home", "isHomeKey": true },
+    "KeyG": { "code": "KeyG", "label": "G", "charNormal": "g", "charShift": "G", "finger": "L-index", "row": "home" },
+    "KeyH": { "code": "KeyH", "label": "H", "charNormal": "h", "charShift": "H", "finger": "R-index", "row": "home" },
+    "KeyJ": { "code": "KeyJ", "label": "J", "charNormal": "j", "charShift": "J", "finger": "R-index", "row": "home", "isHomeKey": true },
+    "KeyK": { "code": "KeyK", "label": "K", "charNormal": "k", "charShift": "K", "finger": "R-middle", "row": "home", "isHomeKey": true },
+    "KeyL": { "code": "KeyL", "label": "L", "charNormal": "l", "charShift": "L", "finger": "R-ring", "row": "home", "isHomeKey": true },
+    "Semicolon": { "code": "Semicolon", "label": "Ñ", "charNormal": "ñ", "charShift": "Ñ", "finger": "R-pinky", "row": "home", "isHomeKey": true },
+    "Backslash": { "code": "Backslash", "label": "Ç", "charNormal": "ç", "charShift": "Ç", "finger": "R-pinky", "row": "home" },
+
+    "KeyZ": { "code": "KeyZ", "label": "Z", "charNormal": "z", "charShift": "Z", "finger": "L-pinky", "row": "bottom" },
+    "KeyX": { "code": "KeyX", "label": "X", "charNormal": "x", "charShift": "X", "finger": "L-ring", "row": "bottom" },
+    "KeyC": { "code": "KeyC", "label": "C", "charNormal": "c", "charShift": "C", "finger": "L-middle", "row": "bottom" },
+    "KeyV": { "code": "KeyV", "label": "V", "charNormal": "v", "charShift": "V", "finger": "L-index", "row": "bottom" },
+    "KeyB": { "code": "KeyB", "label": "B", "charNormal": "b", "charShift": "B", "finger": "L-index", "row": "bottom" },
+    "KeyN": { "code": "KeyN", "label": "N", "charNormal": "n", "charShift": "N", "finger": "R-index", "row": "bottom" },
+    "KeyM": { "code": "KeyM", "label": "M", "charNormal": "m", "charShift": "M", "finger": "R-index", "row": "bottom" },
+    "Comma": { "code": "Comma", "label": ",", "charNormal": ",", "charShift": ";", "finger": "R-middle", "row": "bottom" },
+    "Period": { "code": "Period", "label": ".", "charNormal": ".", "charShift": ":", "finger": "R-ring", "row": "bottom" },
+    "Slash": { "code": "Slash", "label": "-", "charNormal": "-", "charShift": "_", "finger": "R-pinky", "row": "bottom" },
+
+    "Space": { "code": "Space", "label": "Espai", "charNormal": " ", "finger": "thumb", "row": "space" }
+  }
+}

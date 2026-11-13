@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0.0",
+  "words": {
+    "homeRow": ["sal", "las", "dal", "cal", "fla", "all", "fa", "la", "al", "ja", "ca", "ça"],
+    "basic": ["sol", "cel", "mar", "foc", "gat", "gos", "pa", "vi", "mà", "peu", "ull", "nas", "llop", "flor"]
+  },
+  "sentences": [
+    "la sal fa bo el plat",
+    "el sol surt pel mar",
+    "la flor fa bona olor"
+  ]
+}

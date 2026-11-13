@@ -1,0 +1,22 @@
+{
+  "appTitle": "Mecano — Aprenc a escriure amb les dues mans",
+  "student": {
+    "welcome": "Hola! Col·loca els dits índex a les tecles F i J.",
+    "accuracy": "Precisió",
+    "stars": "Estrelles",
+    "sessionCompleted": "Molt bona feina! Has completat l'exercici.",
+    "keepTrying": "Bon esforç! Anem pas a pas, sense pressa.",
+    "syncPending": "Desant el teu progrés..."
+  },
+  "tutor": {
+    "dashboardTitle": "Panell del docent — Evidències i configuració",
+    "previewStudentView": "Previsualitzar vista d'alumne (mode prova)",
+    "exportCsv": "Exportar informe CSV",
+    "exportPdf": "Exportar informe PDF",
+    "quotaWarning": "Avís: S'està arribant al límit diari de desaments d'aquesta instància."
+  },
+  "unauthorized": {
+    "title": "Accés no autoritzat",
+    "message": "Aquesta aplicació només està disponible per als comptes autoritzats del centre educatiu."
+  }
+}
