@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "levels": [
     {
       "id": "L01",
       "order": 1,
-      "titleCa": "Nivell 1: Índexs en posició base (F i J)",
-      "descriptionCa": "Troba les marques amb relleu de les tecles F i J i alterna els dits índex de cada mà amb calma.",
+      "titleCa": "Nivell 1: L'Aterratge d'en Bit al Montsec (F, J + Espai)",
+      "descriptionCa": "En Bit arriba de l'espai! Col·loca els índexs a F i J i els polzes a la barra d'Espai per guiar la seva nau fins al Montsec.",
       "newKeys": ["f", "j"],
       "reviewKeys": [],
       "exerciseType": "isolated_keys",
@@ -15,25 +15,97 @@
         "showHands": true,
         "highlightTargetKey": true,
         "highlightFingerColor": true,
-        "soundEnabled": false
+        "soundEnabled": true
       },
       "passCriteria": {
-        "minAccuracy": 0.95,
+        "minAccuracy": 0.88,
+        "minBarretinesToUnlockNext": 3,
         "requiredSessions": 3,
         "starsThresholds": {
           "oneStar": 0.80,
           "twoStars": 0.90,
           "threeStars": 0.95
         },
+        "barretinesThresholds": {
+          "one": 0.70,
+          "two": 0.80,
+          "three": 0.88,
+          "four": 0.94,
+          "five": 0.98
+        },
         "scoreSpeed": false
       },
-      "unlockBadgeId": "badge_home_index"
+      "unlockBadgeId": "badge_home_index",
+      "theme": {
+        "locationCa": "Observatori del Montsec (la Noguera)",
+        "traditionCa": "Arribada espacial a Catalunya",
+        "missionStoryCa": "La nau d'en Bit travessa un núvol de petits meteorits abans d'aterrar al Montsec. Cada combinació seguida d'Espai dispara un raig netejador!",
+        "obstacleNameCa": "Meteorit",
+        "actionVerbCa": "Desintegrar meteorit",
+        "themeKey": "montsec_space",
+        "proverbCa": "qui dia passa any empeny",
+        "proverbMeaningCa": "Anant pas a pas i amb constància cada dia, avancem molt més del que sembla.",
+        "bitAccessoryId": "acc_montsec_helmet",
+        "bitAccessoryNameCa": "Visor Estel·lar del Montsec"
+      },
+      "sublevels": [
+        {
+          "id": "L01.1",
+          "screenNumber": 1,
+          "titleCa": "Pantalla 1: Parelles d'índexs + Espai",
+          "subtitleCa": "Practiquem ff, jj, fj i jf separats per la barra d'Espai.",
+          "stepType": "isolated_pairs",
+          "wordLengthRange": [2, 2],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L01.2",
+          "screenNumber": 2,
+          "titleCa": "Pantalla 2: Paraules de 3 i 4 lletres",
+          "subtitleCa": "Allarguem el ritme amb fjf, jfj, fjjf i jffj + Espai.",
+          "stepType": "isolated_groups",
+          "wordLengthRange": [3, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L01.3",
+          "screenNumber": 3,
+          "titleCa": "Pantalla 3: Pluja de meteorits al Montsec",
+          "subtitleCa": "Escriu el codi de cada meteorit i prem Espai per desintegrar-lo!",
+          "stepType": "adventure_new",
+          "wordLengthRange": [2, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L01.4",
+          "screenNumber": 4,
+          "titleCa": "Pantalla 4: Aterratge de precisió",
+          "subtitleCa": "Combinacions de 3 a 5 lletres per posar la nau a la pista del Montsec.",
+          "stepType": "adventure_mixed",
+          "wordLengthRange": [3, 5],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L01.5",
+          "screenNumber": 5,
+          "titleCa": "Pantalla 5: Mestre del Montsec + Dita Catalana",
+          "subtitleCa": "Últim impuls i prova de la primera Dita Catalana!",
+          "stepType": "master_proverb",
+          "wordLengthRange": [3, 5],
+          "wordsCount": 8,
+          "includeReviewKeys": false
+        }
+      ]
     },
     {
       "id": "L02",
       "order": 2,
-      "titleCa": "Nivell 2: Afegim els dits del mig (D i K)",
-      "descriptionCa": "Combina els dits índex (F, J) i els dits del mig (D, K) sense aixecar els palmells.",
+      "titleCa": "Nivell 2: Diada Castellera a Vilafranca (D, K + Espai)",
+      "descriptionCa": "En Bit descobreix els Castells! Primer entrenem només els dits del mig (D i K) i després fem pinya amb F i J.",
       "newKeys": ["d", "k"],
       "reviewKeys": ["f", "j"],
       "exerciseType": "combinations",
@@ -43,25 +115,97 @@
         "showHands": true,
         "highlightTargetKey": true,
         "highlightFingerColor": true,
-        "soundEnabled": false
+        "soundEnabled": true
       },
       "passCriteria": {
-        "minAccuracy": 0.95,
+        "minAccuracy": 0.88,
+        "minBarretinesToUnlockNext": 3,
         "requiredSessions": 3,
         "starsThresholds": {
           "oneStar": 0.80,
           "twoStars": 0.90,
           "threeStars": 0.95
         },
+        "barretinesThresholds": {
+          "one": 0.70,
+          "two": 0.80,
+          "three": 0.88,
+          "four": 0.94,
+          "five": 0.98
+        },
         "scoreSpeed": false
       },
-      "unlockBadgeId": "badge_home_middle"
+      "unlockBadgeId": "badge_home_middle",
+      "theme": {
+        "locationCa": "Plaça de la Vila (Vilafranca del Penedès)",
+        "traditionCa": "Els Castells (Patrimoni de la Humanitat)",
+        "missionStoryCa": "En Bit s'afegeix a la colla castellera! Cada bloc de lletres + Espai fa pujar un pis més del castell fins que l'enxaneta fa l'aleta.",
+        "obstacleNameCa": "Pis del castell",
+        "actionVerbCa": "Aixecar pis del castell",
+        "themeKey": "vilafranca_castells",
+        "proverbCa": "la unio fa la forca",
+        "proverbMeaningCa": "Com en un castell, quan tots els dits col·laboren junts fem coses molt grans.",
+        "bitAccessoryId": "acc_casteller_faixa",
+        "bitAccessoryNameCa": "Faixa Castellera d'en Bit"
+      },
+      "sublevels": [
+        {
+          "id": "L02.1",
+          "screenNumber": 1,
+          "titleCa": "Pantalla 1: Només D i K en parelles",
+          "subtitleCa": "Aïllem els dits del mig: dd, kk, dk i kd + Espai (sense F ni J).",
+          "stepType": "isolated_pairs",
+          "wordLengthRange": [2, 2],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L02.2",
+          "screenNumber": 2,
+          "titleCa": "Pantalla 2: Només D i K en grups de 3 i 4",
+          "subtitleCa": "Afiançament dels dits del mig: dkd, kdk, dkkd + Espai.",
+          "stepType": "isolated_groups",
+          "wordLengthRange": [3, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L02.3",
+          "screenNumber": 3,
+          "titleCa": "Pantalla 3: Fem pinya amb D i K",
+          "subtitleCa": "Aixeca els primers pisos del castell utilitzant els dits del mig!",
+          "stepType": "adventure_new",
+          "wordLengthRange": [2, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L02.4",
+          "screenNumber": 4,
+          "titleCa": "Pantalla 4: El tronc del castell (D, K + F, J)",
+          "subtitleCa": "Ara sí! Combinem els dits del mig (D, K) amb els índexs (F, J).",
+          "stepType": "adventure_mixed",
+          "wordLengthRange": [3, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": true
+        },
+        {
+          "id": "L02.5",
+          "screenNumber": 5,
+          "titleCa": "Pantalla 5: L'Aleta de l'Enxaneta + Dita Catalana",
+          "subtitleCa": "Coronem el castell i escrivim la dita castellera!",
+          "stepType": "master_proverb",
+          "wordLengthRange": [3, 5],
+          "wordsCount": 8,
+          "includeReviewKeys": true
+        }
+      ]
     },
     {
       "id": "L03",
       "order": 3,
-      "titleCa": "Nivell 3: Dits anulars (S i L)",
-      "descriptionCa": "Incorpora els dits anulars a la fila base amb combinacions suaus.",
+      "titleCa": "Nivell 3: La Sardana a Girona (S, L + Espai)",
+      "descriptionCa": "En Bit aprèn a comptar passos curts i llargs a les escales de la Catedral de Girona amb els dits anulars (S i L).",
       "newKeys": ["s", "l"],
       "reviewKeys": ["f", "j", "d", "k"],
       "exerciseType": "combinations",
@@ -71,25 +215,97 @@
         "showHands": true,
         "highlightTargetKey": true,
         "highlightFingerColor": true,
-        "soundEnabled": false
+        "soundEnabled": true
       },
       "passCriteria": {
-        "minAccuracy": 0.95,
+        "minAccuracy": 0.88,
+        "minBarretinesToUnlockNext": 3,
         "requiredSessions": 3,
         "starsThresholds": {
           "oneStar": 0.80,
           "twoStars": 0.90,
           "threeStars": 0.95
         },
+        "barretinesThresholds": {
+          "one": 0.70,
+          "two": 0.80,
+          "three": 0.88,
+          "four": 0.94,
+          "five": 0.98
+        },
         "scoreSpeed": false
       },
-      "unlockBadgeId": "badge_home_ring"
+      "unlockBadgeId": "badge_home_ring",
+      "theme": {
+        "locationCa": "Plaça de la Catedral (Girona)",
+        "traditionCa": "Ballar la Sardana en rotllana",
+        "missionStoryCa": "Sona la cobla! Amb cada bloc de lletres i un toc d'Espai, en Bit i la rotllana fan un compàs perfecte.",
+        "obstacleNameCa": "Compàs de sardana",
+        "actionVerbCa": "Ballar compàs",
+        "themeKey": "girona_sardana",
+        "proverbCa": "a poc a poc s arriba lluny",
+        "proverbMeaningCa": "El bon ritme constant val més que córrer i ensopegar.",
+        "bitAccessoryId": "acc_sardana_espardenyes",
+        "bitAccessoryNameCa": "Espardenyes de Vetes d'en Bit"
+      },
+      "sublevels": [
+        {
+          "id": "L03.1",
+          "screenNumber": 1,
+          "titleCa": "Pantalla 1: Només S i L en parelles",
+          "subtitleCa": "Passos curts només amb els anulars: ss, ll, sl i ls + Espai.",
+          "stepType": "isolated_pairs",
+          "wordLengthRange": [2, 2],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L03.2",
+          "screenNumber": 2,
+          "titleCa": "Pantalla 2: Només S i L en grups de 3 i 4",
+          "subtitleCa": "Passos llargs només amb S i L: sls, lsl, slls + Espai.",
+          "stepType": "isolated_groups",
+          "wordLengthRange": [3, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L03.3",
+          "screenNumber": 3,
+          "titleCa": "Pantalla 3: La rotllana de S i L",
+          "subtitleCa": "Fes girar la rotllana amb els dits anulars!",
+          "stepType": "adventure_new",
+          "wordLengthRange": [2, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L03.4",
+          "screenNumber": 4,
+          "titleCa": "Pantalla 4: Cobla completa (S, L + F, J, D, K)",
+          "subtitleCa": "Combinem els 6 dits apresos fent compassos de 3 i 4 lletres.",
+          "stepType": "adventure_mixed",
+          "wordLengthRange": [3, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": true
+        },
+        {
+          "id": "L03.5",
+          "screenNumber": 5,
+          "titleCa": "Pantalla 5: Salt final de Sardana + Dita Catalana",
+          "subtitleCa": "Tanquem la sardana i posem a prova el Termòmetre de la Dita!",
+          "stepType": "master_proverb",
+          "wordLengthRange": [3, 5],
+          "wordsCount": 8,
+          "includeReviewKeys": true
+        }
+      ]
     },
     {
       "id": "L04",
       "order": 4,
-      "titleCa": "Nivell 4: Menovells i fila base completa (A i Ç)",
-      "descriptionCa": "Completa la fila base amb el menovell esquerre (A) i el menovell dret desplaçant-se a la Ç.",
+      "titleCa": "Nivell 4: La Patum de Berga (A, Ç + Espai)",
+      "descriptionCa": "Completem la fila base amb els dits menovells (A i Ç) mentre en Bit salta entre les guspires de la Patum de Berga!",
       "newKeys": ["a", "ç"],
       "reviewKeys": ["f", "j", "d", "k", "s", "l"],
       "exerciseType": "combinations",
@@ -99,19 +315,91 @@
         "showHands": true,
         "highlightTargetKey": true,
         "highlightFingerColor": true,
-        "soundEnabled": false
+        "soundEnabled": true
       },
       "passCriteria": {
-        "minAccuracy": 0.95,
+        "minAccuracy": 0.88,
+        "minBarretinesToUnlockNext": 3,
         "requiredSessions": 3,
         "starsThresholds": {
           "oneStar": 0.80,
           "twoStars": 0.90,
           "threeStars": 0.95
         },
+        "barretinesThresholds": {
+          "one": 0.70,
+          "two": 0.80,
+          "three": 0.88,
+          "four": 0.94,
+          "five": 0.98
+        },
         "scoreSpeed": false
       },
-      "unlockBadgeId": "badge_home_full"
+      "unlockBadgeId": "badge_home_full",
+      "theme": {
+        "locationCa": "Plaça de Sant Pere (Berga)",
+        "traditionCa": "La Patum de Berga (L'Àliga, la Guita i els Plens)",
+        "missionStoryCa": "Sona el tabal de la Patum! Amb cada paraula i la barra d'Espai, en Bit fa ballar la Guita i encén una guspira festiva.",
+        "obstacleNameCa": "Guspira de la Patum",
+        "actionVerbCa": "Fer ballar la Patum",
+        "themeKey": "berga_patum",
+        "proverbCa": "de mica en mica s omple la pica",
+        "proverbMeaningCa": "Lletra a lletra ja domines tota la fila central del teclat!",
+        "bitAccessoryId": "acc_patum_barretina",
+        "bitAccessoryNameCa": "Barretina d'Honor de la Patum"
+      },
+      "sublevels": [
+        {
+          "id": "L04.1",
+          "screenNumber": 1,
+          "titleCa": "Pantalla 1: Només A i Ç en parelles",
+          "subtitleCa": "Entrenem els dits menovells sols: aa, çç, aç i ça + Espai.",
+          "stepType": "isolated_pairs",
+          "wordLengthRange": [2, 2],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L04.2",
+          "screenNumber": 2,
+          "titleCa": "Pantalla 2: Només A i Ç en grups de 3 i 4",
+          "subtitleCa": "Moviment precís del menovell dret cap a la Ç: aça, çaç, açça + Espai.",
+          "stepType": "isolated_groups",
+          "wordLengthRange": [3, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L04.3",
+          "screenNumber": 3,
+          "titleCa": "Pantalla 3: El Tabal dels Menovells",
+          "subtitleCa": "Fes sonar el ritme de Berga amb A i Ç!",
+          "stepType": "adventure_new",
+          "wordLengthRange": [2, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": false
+        },
+        {
+          "id": "L04.4",
+          "screenNumber": 4,
+          "titleCa": "Pantalla 4: Paraules reals de la fila base!",
+          "subtitleCa": "Ara ja podem escriure paraules catalanes senceres: sal, calç, laç, faç, dall, all!",
+          "stepType": "adventure_mixed",
+          "wordLengthRange": [2, 4],
+          "wordsCount": 10,
+          "includeReviewKeys": true
+        },
+        {
+          "id": "L04.5",
+          "screenNumber": 5,
+          "titleCa": "Pantalla 5: Salt de Plens + Dita Catalana",
+          "subtitleCa": "Gran final de la fila base i quart repte del Termòmetre!",
+          "stepType": "master_proverb",
+          "wordLengthRange": [3, 5],
+          "wordsCount": 8,
+          "includeReviewKeys": true
+        }
+      ]
     }
   ]
 }

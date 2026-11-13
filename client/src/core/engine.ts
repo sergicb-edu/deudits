@@ -1,9 +1,16 @@
 /**
- * M2 — Motor d'exercicis i avaluació amb llavor (RF-04..RF-09, RF-13, RF-18, RF-19).
- * Lògica pura sense cap dependència del DOM.
+ * M2 — Motor d'exercicis, subnivells amb Espai i avaluació amb llavor (Versió 0.3).
+ * Suporta:
+ * - P1 (isolated_pairs): parelles de les 2 tecles noves separades per Espai (ff jj fj jf)
+ * - P2 (isolated_groups): grups de 3-4 de les 2 tecles noves separats per Espai (fjf jfj fjjf)
+ * - P3 (adventure_new): obstacles amb les tecles noves separats per Espai
+ * - P4 (adventure_mixed): obstacles combinant tecles noves i anteriors separats per Espai
+ * - P5 (master_proverb): consolidació i Dita Catalana
  */
 
 import type {
+  BarretinesCount,
+  BarretinesThresholds,
   DeviceType,
   ExerciseMode,
   FingerId,
@@ -13,12 +20,10 @@ import type {
   KeyStatRecord,
   LevelConfig,
   SessionSummary,
+  SublevelConfig,
 } from '@contracts/domain';
 import { resolveFingerForChar } from './keyboard';
 
-/**
- * Generador pseudoaleatori determinista Mulberry32 basat en una llavor entera (RF-07).
- */
 export function createSeededRng(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
@@ -30,13 +35,79 @@ export function createSeededRng(seed: number): () => number {
 }
 
 /**
- * Genera la seqüència d'exercici reproduïble a partir del LevelConfig i d'una llavor (RF-06, RF-07).
+ * Genera la seqüència d'un subnivell (amb paraules separades per Espai) a partir d'una llavor.
  */
-export function createSeededSequence(level: LevelConfig, seed: number): string {
+export function createSublevelSequence(
+  level: LevelConfig,
+  sublevel: SublevelConfig,
+  seed: number
+): string {
+  const rng = createSeededRng(seed);
+  const newKeys = level.newKeys.length > 0 ? level.newKeys : ['f', 'j'];
+  const reviewKeys = sublevel.includeReviewKeys ? (level.reviewKeys ?? []) : [];
+
+  // Pantalla 1: Parelles sistemàtiques de les 2 tecles noves (ex: ff jj fj jf)
+  if (sublevel.stepType === 'isolated_pairs' && newKeys.length >= 2) {
+    const k1 = newKeys[0]!;
+    const k2 = newKeys[1]!;
+    const canonicalPairs = [`${k1}${k1}`, `${k2}${k2}`, `${k1}${k2}`, `${k2}${k1}`];
+    const words: string[] = [];
+    for (let i = 0; i < sublevel.wordsCount; i++) {
+      if (i < canonicalPairs.length) {
+        words.push(canonicalPairs[i]!);
+      } else {
+        const idx = Math.floor(rng() * canonicalPairs.length);
+        words.push(canonicalPairs[idx]!);
+      }
+    }
+    return words.join(' ');
+  }
+
+  const [minLen, maxLen] = sublevel.wordLengthRange;
+  const words: string[] = [];
+
+  for (let w = 0; w < sublevel.wordsCount; w++) {
+    const wordLen = minLen + Math.floor(rng() * (maxLen - minLen + 1));
+    const chars: string[] = [];
+    let prev = '';
+    let sameRun = 0;
+
+    for (let c = 0; c < wordLen; c++) {
+      const useNew = reviewKeys.length === 0 || rng() < 0.65;
+      const pool = useNew ? newKeys : reviewKeys;
+      let chosen = pool[Math.floor(rng() * pool.length)]!;
+
+      if (pool.length > 1 && chosen === prev && sameRun >= 2) {
+        const alt = pool.filter((k) => k !== prev);
+        chosen = alt[Math.floor(rng() * alt.length)]!;
+      }
+      sameRun = chosen === prev ? sameRun + 1 : 1;
+      prev = chosen;
+      chars.push(chosen);
+    }
+
+    words.push(chars.join(''));
+  }
+
+  return words.join(' ');
+}
+
+/**
+ * Genera una seqüència reproduïble per al nivell (si s'invoca sense sublevel explícit,
+ * genera blocs separats per espai o manté compatibilitat amb tests existents).
+ */
+export function createSeededSequence(
+  level: LevelConfig,
+  seed: number,
+  sublevel?: SublevelConfig
+): string {
+  if (sublevel) {
+    return createSublevelSequence(level, sublevel, seed);
+  }
+
   const rng = createSeededRng(seed);
   const targetLen = Math.max(1, level.targetLengthChars);
 
-  // Si el nivell és de paraules o frases i té llista pròpia
   if (
     (level.exerciseType === 'real_words' || level.exerciseType === 'short_sentences') &&
     level.allowedWords &&
@@ -53,31 +124,19 @@ export function createSeededSequence(level: LevelConfig, seed: number): string {
     return words.join(' ').slice(0, targetLen).trimEnd();
   }
 
-  // Pool de tecles amb més pes per a les tecles noves (70% noves, 30% repàs)
   const newKeys = level.newKeys.length > 0 ? level.newKeys : ['f', 'j'];
   const reviewKeys = level.reviewKeys ?? [];
-
   const sequence: string[] = [];
   let prevChar = '';
   let sameCharRun = 0;
 
   for (let i = 0; i < targetLen; i++) {
-    // En combinacions amb espai o longitud > 6, podem inserir espais si l'espai és a les tecles apreses
-    const poolHasSpace = newKeys.includes(' ') || reviewKeys.includes(' ');
-    if (poolHasSpace && i > 0 && i < targetLen - 1 && i % 5 === 4 && sequence[i - 1] !== ' ') {
-      sequence.push(' ');
-      prevChar = ' ';
-      sameCharRun = 0;
-      continue;
-    }
-
     const useNewPool = reviewKeys.length === 0 || rng() < 0.7;
     const pool = (useNewPool ? newKeys : reviewKeys).filter((k) => k !== ' ');
     const effectivePool = pool.length > 0 ? pool : newKeys;
 
     let chosen = effectivePool[Math.floor(rng() * effectivePool.length)]!;
 
-    // Evitem més de 2 repeticions seguides de la mateixa tecla per afavorir l'alternança de dits/mans
     if (effectivePool.length > 1 && chosen === prevChar && sameCharRun >= 2) {
       const alternatives = effectivePool.filter((c) => c !== prevChar);
       chosen = alternatives[Math.floor(rng() * alternatives.length)]!;
@@ -96,9 +155,6 @@ export function createSeededSequence(level: LevelConfig, seed: number): string {
   return sequence.join('');
 }
 
-/**
- * Calcula el nombre d'estrelles segons la precisió (RF-13).
- */
 export function computeStars(
   accuracy: number,
   thresholds: LevelConfig['passCriteria']['starsThresholds']
@@ -109,21 +165,50 @@ export function computeStars(
   return 0;
 }
 
+const DEFAULT_BARRETINES_THRESHOLDS: BarretinesThresholds = {
+  one: 0.70,
+  two: 0.80,
+  three: 0.88,
+  four: 0.94,
+  five: 0.98,
+};
+
 /**
- * Sessió d'exercici activa que gestiona el cursor, avalua cada pulsació sense bloquejar (RF-09)
- * i calcula el resum i estadístiques per tecla i dit (RF-18, RF-19).
+ * Calcula de 0 a 5 Barretines segons la precisió (RF-13, Versió 0.3).
+ * Amb >= 88% s'obtenen 3 Barretines (el mínim per desbloquejar la següent pantalla).
  */
+export function computeBarretines(
+  accuracy: number,
+  thresholds: BarretinesThresholds = DEFAULT_BARRETINES_THRESHOLDS,
+  completed = true
+): BarretinesCount {
+  if (!completed) return 0;
+  if (accuracy >= thresholds.five) return 5;
+  if (accuracy >= thresholds.four) return 4;
+  if (accuracy >= thresholds.three) return 3;
+  if (accuracy >= thresholds.two) return 2;
+  return 1;
+}
+
 export class ExerciseSession {
   private readonly level: LevelConfig;
+  private readonly sublevel?: SublevelConfig;
   private readonly fingersConfig: FingersConfig;
   private readonly sequence: string;
   private cursor = 0;
   private readonly evaluations: KeyEvaluation[] = [];
 
-  constructor(level: LevelConfig, fingersConfig: FingersConfig, seed: number) {
+  constructor(
+    level: LevelConfig,
+    fingersConfig: FingersConfig,
+    seed: number,
+    options?: { sublevel?: SublevelConfig; customText?: string }
+  ) {
     this.level = level;
+    this.sublevel = options?.sublevel;
     this.fingersConfig = fingersConfig;
-    this.sequence = createSeededSequence(level, seed);
+    this.sequence =
+      options?.customText ?? createSeededSequence(level, seed, options?.sublevel);
   }
 
   getSequence(): string {
@@ -149,9 +234,6 @@ export class ExerciseSession {
     return this.cursor >= this.sequence.length;
   }
 
-  /**
-   * Avalua una pulsació (RF-08) i avança sempre al caràcter següent sense bloquejar l'alumne (RF-09).
-   */
   evaluate(event: KeyEventPayload): KeyEvaluation {
     if (this.isCompleted()) {
       throw new Error("L'exercici ja ha finalitzat");
@@ -178,9 +260,6 @@ export class ExerciseSession {
     return evaluation;
   }
 
-  /**
-   * Construeix el resum final de la sessió (RF-18, RF-19, Ap. 8).
-   */
   summary(meta: {
     sessionId: string;
     startedAtIso: string;
@@ -188,6 +267,7 @@ export class ExerciseSession {
     mode?: ExerciseMode;
     deviceType?: DeviceType;
     appVersion?: string;
+    sublevelId?: string;
   }): SessionSummary {
     const charsTotal = this.evaluations.length;
     const errorsTotal = this.evaluations.filter((e) => !e.correct).length;
@@ -198,8 +278,12 @@ export class ExerciseSession {
     const wpm = Number((charsTotal / 5 / durationMin).toFixed(1));
     const completed = this.isCompleted();
     const stars = completed ? computeStars(accuracy, this.level.passCriteria.starsThresholds) : 0;
+    const barretines = computeBarretines(
+      accuracy,
+      this.level.passCriteria.barretinesThresholds,
+      completed
+    );
 
-    // Agregació de mètriques per tecla i dit (RF-19)
     const statsByKey = new Map<
       string,
       { finger: FingerId; presses: number; errors: number; totalLatency: number }
@@ -229,6 +313,7 @@ export class ExerciseSession {
     return {
       session_id: meta.sessionId,
       level_id: this.level.id,
+      sublevel_id: meta.sublevelId ?? this.sublevel?.id,
       started_at: meta.startedAtIso,
       duration_s: Math.max(1, Math.round(meta.durationSeconds)),
       mode: meta.mode ?? 'practice',
@@ -237,9 +322,10 @@ export class ExerciseSession {
       accuracy,
       wpm,
       stars,
+      barretines,
       completed,
       device_type: meta.deviceType ?? 'chromebook',
-      app_version: meta.appVersion ?? '0.1.0',
+      app_version: meta.appVersion ?? '0.3.0',
       key_stats: keyStats,
     };
   }

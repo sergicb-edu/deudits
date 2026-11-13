@@ -1,0 +1,109 @@
+# Especificacions tècniques — App de mecanografia gamificada («En Bit descobreix Catalunya»)
+
+*Nom provisional del projecte: **Mecano**. Versió 0.3 — especificació actualitzada amb el fil conductor cultural d'en Bit, sistema d'avaluació amb les **5 Barretines**, estructura de **5 pantalles per nivell amb barra d'espai des de l'inici** i **Termòmetre de la Dita Catalana**.*
+
+## 1. Context, objectius i fil conductor
+
+Un alumne amb dificultats en l'escriptura manual pot escriure bé amb l'ordinador, però necessita aprendre **mecanografia**: escriure amb tots els dits de les dues mans de manera coordinada, incloent l'ús dels polzes per a la barra d'espai des del primer dia. L'aplicació ha de ser:
+
+- **Didàctica i progressiva**: cada nivell comença amb una **pantalla interactiva de posició de les mans**, treballa primer **només les 2 tecles noves separades per espais** (en parelles i després en grups de 3-4 lletres), i només quan ja s'han practicat per separat les combina amb les lletres dels nivells anteriors.
+- **Gamificada i amb identitat catalana**:
+  - **Fil conductor («En Bit descobreix Catalunya»)**: El protagonista és **en Bit**, un petit robot explorador espacial (neutre, sense gènere) que aterra a Catalunya (al Montsec) i viatja per comarques, llocs emblemàtics i tradicions catalanes (fer un castell, ballar una sardana, saltar a la Patum, pilotar una avioneta de rescat als Pirineus, bussejar a les Illes Medes...).
+  - **Les 5 Barretines**: en lloc d'estrelles genèriques, cada pantalla atorga d'**1 a 5 Barretines** segons la precisió. Calen almenys **3 Barretines** per desbloquejar la pantalla o nivell següent, però l'alumne sempre pot tornar enrere per aconseguir les **5 Barretines** i desbloquejar complements catalans per a en Bit (casc espacial del Montsec, faixa castellera, espardenyes, barretina, llanterna...).
+  - **El Termòmetre de la Dita Catalana**: al final de cada nivell, l'alumne completa una **dita popular catalana** (adaptada sense signes complexos ni accents fins als nivells corresponents) utilitzant tot el teclat. Aquesta prova serveix de termòmetre personal per veure com millora la seva fluïdesa (paraules per minut i precisió) entre nivell i nivell, i inclou l'opció d'escoltar-la per veu (**mode dictat**).
+- **Avaluable**: el docent recull evidències d'ús i de progrés d'un o diversos alumnes.
+- **Multidispositiu i respectuosa amb la privacitat**: Chromebook de l'escola i dispositius de casa amb el compte de Google educatiu del centre; dades pseudonimitzades dins de Google Workspace del centre, sense tercers.
+
+## 2. Abast
+
+**Inclou (v1):** aplicació web (Apps Script + Svelte/TypeScript) amb 5 pantalles per nivell, pantalla prèvia de col·locació de dits, mans virtuals i teclat català en pantalla, escenari gamificat d'en Bit amb obstacles que es superen en completar cada bloc + `Espai`, sistema de 5 Barretines, Termòmetre de la Dita Catalana (amb opció de dictat per síntesi de veu), registre de mètriques, cua resilient amb persistència en cascada (`IndexedDB` → `localStorage` → `RAM`), backend a Google Apps Script i Google Sheets, i panell d'evidències per al tutor.
+
+**No inclou (v1):** rànquings entre alumnes, xat o funcions socials, text lliure desat, aplicacions natives, PWA instal·lable, arrencada sense connexió, backend de tercers, suport per a teclats no QWERTY.
+
+## 3. Usuaris i rols
+
+| Rol | Descripció | Permisos |
+| --- | --- | --- |
+| **Alumne** | Usa l'app amb el seu compte educatiu. | Llegeix i escriu només les seves dades; només veu la interfície d'alumne. |
+| **Tutor** (propietari de la instància) | Docent responsable d'un grup; desplega la instància amb el seu compte del centre. | Gestiona alumnes, nivells i configuració; llegeix totes les dades de la seva instància; exporta informes. |
+| **Docent de suport** (opcional) | Especialista o cotutor que acompanya l'alumne. | Llegeix les dades dels alumnes de la instància; no gestiona ni desplega. |
+| **Administrador** | Responsable tècnic (qui manté el codi). | Crea instàncies per a nous tutors, manté el codi i supervisa permisos i retenció. |
+
+## 4. Requisits funcionals
+
+### 4.1 Accés i identitat
+- **RF-01.** Accés amb el compte de Google del domini del centre.
+- **RF-02.** Pseudonimització: traducció del correu a `student_id` (p. ex. `A01`) a la taula restringida `Roster`.
+- **RF-03.** Rols determinats per les taules `Config` i `Roster`.
+
+### 4.2 Motor d'exercicis, subnivells i estructura en 5 pantalles
+- **RF-04.** Els nivells, subnivells, missions d'en Bit i dites catalanes es defineixen a `content/levels.json`.
+- **RF-05.** Cada nivell té **Pas 0 (Preparació de mans)** i **5 Pantalles (Subnivells)** que incorporen la barra d'**Espai (`Space`) des del Nivell 1**:
+  - **Pas 0 (Posició de dits):** Mostra i remarca on es col·loquen els dits a la fila base i exigeix prémer físicament les 2 tecles noves + `Espai` abans de començar.
+  - **Pantalla 1 (`P1` — Parelles aïllades):** Treballa **exclusivament les 2 tecles noves** en grups de 2 lletres separats per espai (`ff jj fj jf`, o al Nivell 2 `dd kk dk kd` sense barrejar encara `f` i `j`).
+  - **Pantalla 2 (`P2` — Grups aïllats de 3-4 lletres):** Continua **només amb les 2 tecles noves** allargant les "paraules" a 3 i 4 lletres separades per espai (`fjf jfj fjjf`, `dkd kdk dkkd`).
+  - **Pantalla 3 (`P3` — Aventura d'acció amb tecles noves):** Joc interactiu on cada grup de lletres + `Espai` fa avançar en Bit o supera un obstacle de la tradició/lloc català del nivell.
+  - **Pantalla 4 (`P4` — Aventura combinant tecles apreses):** Combina les 2 tecles noves amb les tecles dels nivells anteriors en grups de 3 a 5 lletres separats per espai.
+  - **Pantalla 5 (`P5` — Mestre del Nivell + Termòmetre de la Dita Catalana):** Consolidació del nivell seguida del repte d'escriure la **dita catalana** del nivell amb tot el teclat (amb suport visual i opció d'escoltar-la en mode dictat) per mesurar l'evolució de velocitat (WPM) i precisió.
+- **RF-06.** Tipus d'exercici: (a) parelles aïllades amb espai, (b) grups de 3-4 lletres amb espai, (c) aventura amb combinacions i paraules catalanes, (d) dites populars catalanes (termòmetre de progrés i dictat).
+- **RF-07.** Generació reproduïble amb llavor (`seed`).
+- **RF-08.** Avaluació per pulsació: tecla esperada, tecla escrita, dit esperat, encert i latència `t`.
+- **RF-09.** Una errada **no bloqueja** l'avanç: dona feedback suau i continua.
+
+### 4.3 Mans virtuals i ajudes
+- **RF-10.** Teclat català i mans virtuals en pantalla que ressalten la tecla i el dit que toca (incloent els polzes per a l'espai).
+- **RF-11.** Mapa tecla→dit configurable (`fingers.json`) amb color i etiqueta/patró per dit.
+- **RF-12.** Feedback visual i efectes de so sintètics opcionals (Web Audio API, sense fitxers externs ni parpelleigs bruscos).
+
+### 4.4 Progressió i gamificació (Les 5 Barretines i en Bit)
+- **RF-13.** Cada pantalla atorga de **1 a 5 Barretines** segons la precisió:
+  - 1 Barretina (< 80%), 2 Barretines (80-87%), **3 Barretines (88-93%, mínim per avançar)**, 4 Barretines (94-97%), **5 Barretines (≥ 98%, perfecció)**.
+- **RF-14.** Un subnivell desbloqueja el següent en obtenir **≥ 3 Barretines**. Un nivell es considera completat en superar les seves 5 pantalles amb ≥ 3 Barretines cadascuna. L'alumne sempre pot repetir qualsevol pantalla per assolir les **5 Barretines**.
+- **RF-15.** Superar nivells i aconseguir Barretines desbloqueja **complements catalans per a en Bit** (casc del Montsec, faixa castellera, espardenyes, barretina, llanterna dels Pirineus...) i dites al seu quadern de viatge. Sense rànquings entre alumnes.
+- **RF-16.** Pantalles curtes (1-2 min cadascuna) perquè es puguin repetir moltes vegades amb agilitat.
+- **RF-17.** El docent pot fixar manualment el nivell d'un alumne.
+
+### 4.5 Registre d'evidències i resiliència
+- **RF-18.** Al final de cada pantalla s'envia un resum de sessió (`SessionSummary`), indicant el nivell, subnivell (`sublevel_id`), barretines obtingudes i si és una prova de dita catalana (`mode: 'proverb'`).
+- **RF-19.** Mètriques per tecla i dit (`key_stats`).
+- **RF-20.** Cua d'enviament amb persistència en cascada (`IndexedDB` → `localStorage` → `Memòria RAM`) i reintent exponencial amb jitter, sense duplicats (`session_id`).
+
+### 4.6 Panell del docent i 4.7 Interfícies i instàncies
+- **RF-21..RF-30.** Vista per alumne (incloent l'evolució al Termòmetre de les Dites Catalanes i el mapa de calor d'errors), vista de grup, exportació CSV/PDF, mode previsualització (`?vista=alumne`), comprovació `requireRole_()` i límits per instància (`MAX_ACTIVE_STUDENTS`, `MAX_SAVES_PER_DAY`).
+
+## 5. Disseny pedagògic, currículum i aventures d'en Bit per Catalunya
+
+| Nivell | Tecles noves (sempre + `Espai`) | Aventura d'en Bit a Catalunya (Pas 2) | Acció visual en completar paraula + `Espai` | Dita catalana del Termòmetre (Pantalla 5) |
+| --- | --- | --- | --- | --- |
+| **L01** | **f, j** + `Espai` | **1. Aterratge a l'Observatori del Montsec** | La nau d'en Bit desintegra un **meteorit** amb el seu raig abans d'aterrar al Montsec. | *"qui dia passa any empeny"* |
+| **L02** | **d, k** + `Espai` | **2. Diada Castellera a Vilafranca** | En Bit ajuda a col·locar un **pis del castell** fins que l'enxaneta fa l'aleta. | *"la unio fa la forca"* |
+| **L03** | **s, l** + `Espai` | **3. La Sardana a Girona** | La rotllana fa un **compàs de sardana** al ritme de la cobla. | *"a poc a poc s arriba lluny"* |
+| **L04** | **a, ç** + `Espai` | **4. La Patum de Berga** | En Bit salta les **guspires de foc** i fa ballar la Guita i l'Àliga. | *"de mica en mica s omple la pica"* |
+| **L05** | **g, h** + `Espai` | **5. Avioneta de Rescat als Pirineus** | L'avioneta d'en Bit esquiva **avets i núvols** fins al refugi d'Aigüestortes. | *"al maig cada dia un raig"* |
+| **L06** | **e, i** (fila sup.) | **6. Submarí a les Illes Medes** | El submarí obre **petxines i retira xarxes** al fons marí de l'Estartit. | *"abril plujos maig ventos"* |
+| **L07** | **r, u, t, y** | **7. El Cremallera de la Vall de Núria** | Construeix un **tram de via i pont** cap al santuari. | *"qui matina fa farina"* |
+| **L08** | **w, o, q, p** | **8. La Festa del Tió i la Calçotada** | En Bit fa **cagar el Tió** a cops de bastó rítmics. | *"per nadal cada ovella al seu corral"* |
+| **L09-L11** | Fila inferior (`z..m`, `,`, `.`) | **9-11. Sant Jordi a Montblanc, Delta de l'Ebre i Pedraforca** | Llança **roses i llibres al Drac**, guia els **flamencs** i escala el **Pedraforca**. | *"al pot petit hi ha la bona confitura"* |
+| **L12-L14** | `Shift`, accents i `l·l` | **12-14. El Taller de l'IEC** | Textos i dites amb majúscules, accents oberts/tancats i ela geminada (`l·l`). | Dites completes amb accents i puntuació. |
+
+## 6. Pla de treball i fases d'implementació actualitzat
+
+### Fase 0 — Fonaments (Completada)
+- **T0.1..T0.8:** Estructura de repositori Git, contractes TypeScript (`/contracts`), adaptador API amb Mock Local + `getBootstrapData()`, mapa de dits català (`fingers.json`), i briefings modulars (`M1..M9`).
+
+### Fase 1 — Experiència de joc d'Alumne, 5 Pantalles per Nivell, 5 Barretines i Dita Catalana (Completada per a L01-L04)
+- **T1.1 (M1):** Captura i normalització de teclat català (`f`, `j`, `d`, `k`, `s`, `l`, `a`, `ç`, `Espai` i tot el teclat per a les dites).
+- **T1.2 (M2):** Motor d'exercicis per subnivells (`P1` parelles noves + espai, `P2` grups 3-4 tecles noves + espai, `P3` aventura noves, `P4` aventura barrejada amb anteriors, `P5` consolidació + Dita Catalana).
+- **T1.3 (M3):** Pantalla interactiva **Pas 0 (Posició de mans)**, escenari gamificat d'**en Bit per Catalunya** amb obstacles animats, teclat català visual i mans guia.
+- **T1.4 (M4):** Sistema de **5 Barretines** (mínim 3 per avançar, rejugable fins a 5), col·lecció de complements catalans d'en Bit i **Termòmetre de la Dita Catalana** (amb comparativa de WPM/precisió i mode dictat per veu).
+- **T1.5 (M5):** Cua de persistència en cascada (`localStorage` → `RAM`) i desat de progrés per subnivell i dites.
+- **T1.6 (M3/M9):** Barra d'accessibilitat (mida de lletra, alt contrast, lletra espaiada, efectes de so Web Audio API activables/desactivables).
+
+### Fase 2 — Backend Google Apps Script, Google Sheets i Panell del Tutor
+- **T2.1..T2.8:** Enrutament de vistes (`doGet`), `requireRole_`, escriptura idempotent amb `LockService` als fulls `Sessions`, `KeyStats` i `Progress`, vista del tutor amb evolució de Barretines, gràfica del Termòmetre de Dites Catalanes i mapa de calor d'errors.
+
+### Fase 3 — Currículum complet L05-L14 i mode Dictat avançat
+- **T3.1..T3.6:** Completar les missions d'en Bit per als nivells L05 a L14 (Pirineus, Illes Medes, Núria, Tió, Sant Jordi, Majúscules i Accents/Ela geminada) i ajustos personalitzables pel docent.
+
+### Fase 4 i Fase 5 — Pilot a l'escola, Informes PDF/CSV i Versió 1.0
+- **T4.1..T5.4:** Prova real amb l'alumne al Chromebook i a casa, ajust de llindars, exportació d'informes i tancament de la v1.0.

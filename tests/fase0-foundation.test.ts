@@ -9,8 +9,8 @@ import {
 import { LocalMockApiClient } from '../client/src/storage/apiClient';
 import type { SessionSummary } from '../contracts/domain';
 
-describe('Fase 0 — Contractes i Contingut Inicial (T0.3, T0.6)', () => {
-  it('valida levels.json i comprova que L01 treballa f i j amb precisió >= 95% en 3 sessions', () => {
+describe('Fase 0 — Contractes i Contingut Inicial (Versió 0.3)', () => {
+  it('valida levels.json i comprova que cada nivell té 5 pantalles (sublevels), dita catalana i 3 barretines mínimes', () => {
     const result = validateLevelsFile(levelsJson);
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
@@ -18,18 +18,19 @@ describe('Fase 0 — Contractes i Contingut Inicial (T0.3, T0.6)', () => {
     const l01 = levelsJson.levels.find((l) => l.id === 'L01');
     expect(l01).toBeDefined();
     expect(l01?.newKeys).toEqual(['f', 'j']);
-    expect(l01?.passCriteria.minAccuracy).toBe(0.95);
-    expect(l01?.passCriteria.requiredSessions).toBe(3);
-    expect(l01?.passCriteria.scoreSpeed).toBe(false);
+    expect(l01?.sublevels?.length).toBe(5);
+    expect(l01?.passCriteria.minBarretinesToUnlockNext).toBe(3);
+    expect(l01?.theme?.proverbCa).toBe('qui dia passa any empeny');
   });
 
-  it('valida fingers.json per al teclat català (F -> L-index, J -> R-index, Ç -> R-pinky)', () => {
+  it('valida fingers.json per al teclat català (F -> L-index, J -> R-index, Ç -> R-pinky, Space -> thumb)', () => {
     const result = validateFingersConfig(fingersJson);
     expect(result.valid).toBe(true);
     expect(fingersJson.keys.KeyF.finger).toBe('L-index');
     expect(fingersJson.keys.KeyJ.finger).toBe('R-index');
     expect(fingersJson.keys.Backslash.charNormal).toBe('ç');
     expect(fingersJson.keys.Backslash.finger).toBe('R-pinky');
+    expect(fingersJson.keys.Space.finger).toBe('thumb');
   });
 });
 
@@ -37,20 +38,23 @@ describe('Fase 0 — Adaptador API Mock Local, Idempotència i Rols (T0.5)', () 
   const makeSampleSession = (id: string, accuracy = 0.96): SessionSummary => ({
     session_id: id,
     level_id: 'L01',
+    sublevel_id: 'L01.1',
     started_at: '2026-11-13T09:30:00Z',
-    duration_s: 180,
+    duration_s: 120,
     mode: 'practice',
-    chars_total: 40,
-    errors_total: Math.round(40 * (1 - accuracy)),
+    chars_total: 30,
+    errors_total: Math.round(30 * (1 - accuracy)),
     accuracy,
     wpm: 12,
     stars: accuracy >= 0.95 ? 3 : 2,
+    barretines: accuracy >= 0.98 ? 5 : accuracy >= 0.94 ? 4 : 3,
     completed: true,
     device_type: 'chromebook',
-    app_version: '0.1.0',
+    app_version: '0.3.0',
     key_stats: [
-      { key_code: 'KeyF', finger: 'L-index', presses: 20, errors: 1, avg_latency_ms: 650 },
-      { key_code: 'KeyJ', finger: 'R-index', presses: 20, errors: 1, avg_latency_ms: 620 },
+      { key_code: 'KeyF', finger: 'L-index', presses: 10, errors: 0, avg_latency_ms: 650 },
+      { key_code: 'KeyJ', finger: 'R-index', presses: 10, errors: 1, avg_latency_ms: 620 },
+      { key_code: 'Space', finger: 'thumb', presses: 10, errors: 0, avg_latency_ms: 500 },
     ],
   });
 
@@ -69,7 +73,7 @@ describe('Fase 0 — Adaptador API Mock Local, Idempotència i Rols (T0.5)', () 
     expect(duplicate.data?.updated_progress.sessions_count).toBe(1);
   });
 
-  it('desbloqueja L02 després de 3 sessions amb precisió >= 95% (RF-14)', async () => {
+  it('desbloqueja L02 després de 3 sessions qualificades (RF-14)', async () => {
     const api = new LocalMockApiClient('student');
 
     await api.saveSession(makeSampleSession('uuid-session-0001', 0.96));

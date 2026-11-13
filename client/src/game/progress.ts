@@ -1,13 +1,15 @@
 /**
- * M4 — Regles de gamificació, progrés, insígnies i missatges positius (RF-13..RF-16, Ap. 10).
- * Lògica pura sense dependència del DOM.
+ * M4 — Regles de gamificació amb les 5 Barretines, complements d'en Bit per Catalunya
+ * i progrés per subnivells (RF-13..RF-16, Versió 0.3).
  */
 
 import type {
+  BarretinesCount,
   LevelConfig,
   LevelProgressRecord,
   SessionSummary,
 } from '@contracts/domain';
+import { computeBarretines } from '@client/core/engine';
 
 export interface BadgeDefinition {
   id: string;
@@ -19,41 +21,46 @@ export interface BadgeDefinition {
 export const BADGE_CATALOG: Record<string, BadgeDefinition> = {
   badge_home_index: {
     id: 'badge_home_index',
-    titleCa: 'Índexs a lloc!',
-    descriptionCa: 'Has dominat les tecles guia F i J amb totes dues mans.',
-    iconSymbol: '🧭',
+    titleCa: 'Visor Estel·lar del Montsec',
+    descriptionCa: "Has ajudat en Bit a aterrar al Montsec amb els dits índex (F i J)!",
+    iconSymbol: '🔭',
   },
   badge_home_middle: {
     id: 'badge_home_middle',
-    titleCa: 'Equilibri al mig',
-    descriptionCa: 'Coordines els dits índex i cor amb precisió.',
-    iconSymbol: '🌱',
+    titleCa: 'Faixa Castellera de Vilafranca',
+    descriptionCa: "Has fet pinya i aixecat el castell amb els dits del mig (D i K)!",
+    iconSymbol: '🏰',
   },
   badge_home_ring: {
     id: 'badge_home_ring',
-    titleCa: 'Mans completes',
-    descriptionCa: 'Ja domines sis tecles de la fila base.',
-    iconSymbol: '⭐',
+    titleCa: 'Espardenyes de la Sardana de Girona',
+    descriptionCa: 'Has ballat la sardana al compàs amb els dits anulars (S i L)!',
+    iconSymbol: '🎶',
+  },
+  badge_home_full: {
+    id: 'badge_home_full',
+    titleCa: "Barretina d'Honor de la Patum de Berga",
+    descriptionCa: 'Ja domines tota la fila base amb els menovells (A i Ç)!',
+    iconSymbol: '🔥',
   },
   badge_constancy_3: {
     id: 'badge_constancy_3',
-    titleCa: 'Constància en marxa',
-    descriptionCa: 'Has completat 3 exercicis seguint el teu ritme.',
-    iconSymbol: '🚀',
+    titleCa: 'Motxilla Carregada d’en Bit',
+    descriptionCa: 'Has completat 3 pantalles seguint el teu propi ritme.',
+    iconSymbol: '🤖',
   },
 };
 
 export interface ProgressApplicationResult {
   updatedLevelProgress: LevelProgressRecord;
+  barretinesEarned: BarretinesCount;
+  sublevelUnlockedNext: boolean;
   levelJustCompleted: boolean;
   newlyUnlockedLevelId?: string;
   newlyUnlockedBadges: BadgeDefinition[];
   encouragementMessageCa: string;
 }
 
-/**
- * Aplica el resultat d'una sessió (SessionSummary) a l'estat de progrés d'un alumne (M4).
- */
 export function applySessionToProgress(
   session: SessionSummary,
   currentLevelConfig: LevelConfig,
@@ -69,16 +76,52 @@ export function applySessionToProgress(
     status: 'unlocked',
     best_accuracy: 0,
     best_stars: 0,
+    best_barretines: 0,
+    sublevels_barretines: {},
     qualifying_sessions_count: 0,
     sessions_count: 0,
   };
 
+  const barretinesEarned =
+    session.barretines ??
+    computeBarretines(
+      session.accuracy,
+      currentLevelConfig.passCriteria.barretinesThresholds,
+      session.completed
+    );
+
+  const minBarretinesNeeded = currentLevelConfig.passCriteria.minBarretinesToUnlockNext ?? 3;
+  const sublevelUnlockedNext = session.completed && barretinesEarned >= minBarretinesNeeded;
+
+  const sublevelsMap: Record<string, BarretinesCount> = {
+    ...(prev.sublevels_barretines ?? {}),
+  };
+  if (session.sublevel_id) {
+    const prevSub = sublevelsMap[session.sublevel_id] ?? 0;
+    sublevelsMap[session.sublevel_id] = Math.max(prevSub, barretinesEarned) as BarretinesCount;
+  }
+
   const qualifies =
-    session.completed && session.accuracy >= currentLevelConfig.passCriteria.minAccuracy;
+    session.completed &&
+    (session.accuracy >= currentLevelConfig.passCriteria.minAccuracy ||
+      barretinesEarned >= minBarretinesNeeded);
+
   const newQualifyingCount = prev.qualifying_sessions_count + (qualifies ? 1 : 0);
   const wasCompleted = prev.status === 'completed';
+
+  // Es completa el nivell si supera les Sessions requerides o totes les 5 pantalles amb >= 3 Barretines
+  const allFiveSublevelsPassed =
+    currentLevelConfig.sublevels &&
+    currentLevelConfig.sublevels.length > 0 &&
+    currentLevelConfig.sublevels.every(
+      (sub) => (sublevelsMap[sub.id] ?? 0) >= minBarretinesNeeded
+    );
+
   const isNowCompleted =
-    wasCompleted || newQualifyingCount >= currentLevelConfig.passCriteria.requiredSessions;
+    wasCompleted ||
+    Boolean(allFiveSublevelsPassed) ||
+    newQualifyingCount >= currentLevelConfig.passCriteria.requiredSessions;
+
   const levelJustCompleted = !wasCompleted && isNowCompleted;
 
   const updatedLevelProgress: LevelProgressRecord = {
@@ -87,6 +130,8 @@ export function applySessionToProgress(
     status: isNowCompleted ? 'completed' : 'in_progress',
     best_accuracy: Math.max(prev.best_accuracy, session.accuracy),
     best_stars: Math.max(prev.best_stars, session.stars) as 0 | 1 | 2 | 3,
+    best_barretines: Math.max(prev.best_barretines ?? 0, barretinesEarned) as BarretinesCount,
+    sublevels_barretines: sublevelsMap,
     qualifying_sessions_count: newQualifyingCount,
     sessions_count: prev.sessions_count + 1,
     first_completed_at:
@@ -127,35 +172,27 @@ export function applySessionToProgress(
 
   return {
     updatedLevelProgress,
+    barretinesEarned,
+    sublevelUnlockedNext,
     levelJustCompleted,
     newlyUnlockedLevelId,
     newlyUnlockedBadges,
-    encouragementMessageCa: buildPositiveMessage(
-      session.accuracy,
-      levelJustCompleted,
-      newQualifyingCount,
-      currentLevelConfig.passCriteria.requiredSessions
-    ),
+    encouragementMessageCa: buildBarretinesMessage(barretinesEarned, levelJustCompleted),
   };
 }
 
-function buildPositiveMessage(
-  accuracy: number,
-  levelJustCompleted: boolean,
-  qualifyingCount: number,
-  requiredSessions: number
+function buildBarretinesMessage(
+  barretines: BarretinesCount,
+  levelJustCompleted: boolean
 ): string {
   if (levelJustCompleted) {
-    return 'Fantàstic! Has completat aquest nivell amb molta precisió i ja tens el següent disponible!';
+    return `Brutal! Has guanyat ${barretines} Barretines, has completat la missió d'en Bit i has desbloquejat la següent parada de Catalunya!`;
   }
-  if (accuracy >= 0.95) {
-    const remaining = Math.max(0, requiredSessions - qualifyingCount);
-    return remaining > 0
-      ? `Excel·lent precisió (${Math.round(accuracy * 100)}%)! Et falten ${remaining} sessions com aquesta per superar el nivell.`
-      : `Excel·lent precisió (${Math.round(accuracy * 100)}%)! Continua així!`;
+  if (barretines === 5) {
+    return '5 Barretines! Perfecció absoluta! En Bit té els circuits al 100% i ja pots passar a la pantalla següent!';
   }
-  if (accuracy >= 0.85) {
-    return `Molt bon treball (${Math.round(accuracy * 100)}%)! Anant a poc a poc aconseguiràs encara més precisió.`;
+  if (barretines >= 3) {
+    return `Molt bé! Has aconseguit ${barretines} Barretines i ja tens desbloquejada la pantalla següent (o pots repetir per buscar les 5 Barretines!).`;
   }
-  return 'Bon esforç! Recorda mirar la pantalla i deixar que els dits trobin el seu lloc sense pressa.';
+  return `Has aconseguit ${barretines} Barretina. Necessites 3 Barretines (88% de precisió) per avançar. Anem sense pressa, tu pots!`;
 }
