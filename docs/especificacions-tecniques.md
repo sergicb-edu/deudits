@@ -76,15 +76,27 @@ Un alumne amb dificultats en l'escriptura manual pot escriure bé amb l'ordinado
 ### 4.6 Panell del docent i 4.7 Interfícies i instàncies
 - **RF-21..RF-30.** Vista per alumne (incloent l'evolució al Termòmetre de les Dites Catalanes i el mapa de calor d'errors), vista de grup, exportació CSV/PDF, mode previsualització (`?vista=alumne`), comprovació `requireRole_()` i límits per instància (`MAX_ACTIVE_STUDENTS`, `MAX_SAVES_PER_DAY`).
 
-## 5. Disseny pedagògic, currículum i aventures d'en Bit per Catalunya
+## 5. Disseny pedagògic, navegació per pantalles i 4 jocs 8-bits diferenciats
 
-| Nivell | Tecles noves (sempre + `Espai`) | Aventura d'en Bit a Catalunya (Pas 2) | Acció visual en completar paraula + `Espai` | Dita catalana del Termòmetre (Pantalla 5) |
-| --- | --- | --- | --- | --- |
-| **L01** | **f, j** + `Espai` | **1. Aterratge a l'Observatori del Montsec** | La nau d'en Bit desintegra un **meteorit** amb el seu raig abans d'aterrar al Montsec. | *"qui dia passa any empeny"* |
-| **L02** | **d, k** + `Espai` | **2. Diada Castellera a Vilafranca** | En Bit ajuda a col·locar un **pis del castell** fins que l'enxaneta fa l'aleta. | *"la unio fa la forca"* |
-| **L03** | **s, l** + `Espai` | **3. La Sardana a Girona** | La rotllana fa un **compàs de sardana** al ritme de la cobla. | *"a poc a poc s arriba lluny"* |
-| **L04** | **a, ç** + `Espai` | **4. La Patum de Berga** | En Bit salta les **guspires de foc** i fa ballar la Guita i l'Àliga. | *"de mica en mica s omple la pica"* |
-| **L05** | **g, h** + `Espai` | **5. Avioneta de Rescat als Pirineus** | L'avioneta d'en Bit esquiva **avets i núvols** fins al refugi d'Aigüestortes. | *"al maig cada dia un raig"* |
+**Navegació neta per a pantalles de Chromebook (1024×600):**
+1. **Capçalera minimalista:** Títol, botó `⬅️ Enrere` i botó d'icona **`⚙️` (Configuració)** a la dreta que desplega les ajudes (sons, mans guia, mida de lletra, alt contrast, lletra espaiada i desbloqueig de prova).
+2. **Pantalla Principal (Mapa de Nivells):** Mostra les targetes dels nivells amb la seva il·lustració 8-bits. D'entrada **només el Nivell 1 està obert** i la resta tenen un candau 🔒 fins que se supera la Fase 3 del nivell anterior.
+3. **Pantalla de les 3 Fases:** En clicar un nivell obert, es mostren únicament les 3 targetes de les fases d'aquell nivell (Fase 1 Pràctica, Fase 2 Joc 8-Bits, Fase 3 Dita Catalana).
+4. **Pantalla d'Engegada de Motors:** En clicar qualsevol fase, s'obre la comprovació de tecles del nivell + `Espai` i tot seguit s'entra a la pantalla de joc neta (on només es veu l'activitat actual + el teclat/mans de suport a sota).
+
+**Progressió i penalització dins dels jocs (Fase 2):**
+- Dins de cada joc, les combinacions de lletres **es van fent cada cop més llargues** (comencen de 2 lletres, passen a 3, 4 i 5 lletres).
+- **Barra d'Energia i 5 Barretines:** Equivocar-se de tecla resta un **25% d'Energia** i apropa el perill; si l'Energia arriba a 0% (o si el temps/obstacle s'esgota), es perd **1 Barretina**.
+
+**Jocs 8-Bits específics i dites 100% correctes ortogràficament (sense faltes):**
+
+| Nivell | Tecles noves (sempre + `Espai`) | Joc 8-Bits de la Fase 2 (Mecànica pròpia) | Dita catalana normativa (Fase 3, zero faltes d'ortografia) |
+| --- | --- | --- | --- |
+| **L01** | **f, j** + `Espai` | **1. Nau Espacial i Meteorits al Montsec:** La nau d'en Bit dispara làsers als meteorits que s'acosten. | *"qui dia passa any empeny"* |
+| **L02** | **d, k** + `Espai` | **2. Construcció d'un Castell a Vilafranca:** Els castellers caminen cap a la pinya i van pujant pisos reals del castell (Baixos, Segons, Terços, Dosos, Acotxador i Enxaneta). | *"cada ovella al seu corral"* |
+| **L03** | **s, l** + `Espai` | **3. Ballar la Sardana a Girona:** Rotllana de 8 dansaires agafats de les mans que giren en cercle fent passos curts i llargs al compàs de la cobla. | *"al maig cada dia un raig"* |
+| **L04** | **a, ç** + `Espai` | **4. La Patum de Berga:** La Guita Grossa i la comparsa ballen per la plaça mentre es consumeix la metxa dels fuets amb paraules que inclouen la `ç`. | *"al juny la falç al puny"* |
+| **L05** | **g, h** + `Espai` | **5. Avioneta de Rescat als Pirineus:** L'avioneta d'en Bit esquiva avets i núvols fins al refugi d'Aigüestortes. | *"abril plujos maig ventos"* *(amb accents al nivell d'accents)* |
 | **L06** | **e, i** (fila sup.) | **6. Submarí a les Illes Medes** | El submarí obre **petxines i retira xarxes** al fons marí de l'Estartit. | *"abril plujos maig ventos"* |
 | **L07** | **r, u, t, y** | **7. El Cremallera de la Vall de Núria** | Construeix un **tram de via i pont** cap al santuari. | *"qui matina fa farina"* |
 | **L08** | **w, o, q, p** | **8. La Festa del Tió i la Calçotada** | En Bit fa **cagar el Tió** a cops de bastó rítmics. | *"per nadal cada ovella al seu corral"* |

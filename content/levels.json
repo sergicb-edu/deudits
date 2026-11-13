@@ -143,8 +143,8 @@
         "obstacleNameCa": "Pis del castell",
         "actionVerbCa": "Aixecar pis del castell",
         "themeKey": "vilafranca_castells",
-        "proverbCa": "la unio fa la forca",
-        "proverbMeaningCa": "Com en un castell, quan tots els dits col·laboren junts fem coses molt grans.",
+        "proverbCa": "cada ovella al seu corral",
+        "proverbMeaningCa": "Cada dit té el seu lloc a la fila base del teclat!",
         "bitAccessoryId": "acc_casteller_faixa",
         "bitAccessoryNameCa": "Faixa Castellera d'en Bit"
       },
@@ -243,8 +243,8 @@
         "obstacleNameCa": "Compàs de sardana",
         "actionVerbCa": "Ballar compàs",
         "themeKey": "girona_sardana",
-        "proverbCa": "a poc a poc s arriba lluny",
-        "proverbMeaningCa": "El bon ritme constant val més que córrer i ensopegar.",
+        "proverbCa": "al maig cada dia un raig",
+        "proverbMeaningCa": "Amb una mica de pràctica diària els dits agafen soltesa.",
         "bitAccessoryId": "acc_sardana_espardenyes",
         "bitAccessoryNameCa": "Espardenyes de Vetes d'en Bit"
       },
@@ -343,8 +343,8 @@
         "obstacleNameCa": "Guspira de la Patum",
         "actionVerbCa": "Fer ballar la Patum",
         "themeKey": "berga_patum",
-        "proverbCa": "de mica en mica s omple la pica",
-        "proverbMeaningCa": "Lletra a lletra ja domines tota la fila central del teclat!",
+        "proverbCa": "al juny la falç al puny",
+        "proverbMeaningCa": "Dita tradicional de la sega amb la nostra lletra Ç!",
         "bitAccessoryId": "acc_patum_barretina",
         "bitAccessoryNameCa": "Barretina d'Honor de la Patum"
       },
