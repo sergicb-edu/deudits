@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mecano — En Bit descobreix Catalunya</title>
+  <style>
+    :root {
+      --font-scale: 1;
+      --bg-main: #f1f5f9;
+      --text-main: #0f172a;
+      --card-bg: #ffffff;
+      --border-col: #cbd5e1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: calc(14px * var(--font-scale));
+      background: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 0.5rem 0.9rem;
+      overflow-x: hidden;
+    }
+    body.high-contrast {
+      --bg-main: #000000;
+      --text-main: #ffffff;
+      --card-bg: #111827;
+      --border-col: #ffffff;
+    }
+    body.dyslexia-font {
+      letter-spacing: 0.08em;
+      word-spacing: 0.18em;
+    }
+    .shell { max-width: 920px; margin: 0 auto; }
+
+    /* Capçalera compacta */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border: 2px solid var(--border-col);
+      border-radius: 0.85rem;
+      padding: 0.45rem 0.85rem;
+      margin-bottom: 0.55rem;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 0.65rem; }
+    .topbar-title { margin: 0; font-size: 1.15rem; font-weight: 800; }
+    .topbar-sub { font-size: 0.8rem; opacity: 0.8; margin-left: 0.4rem; }
+    .topbar-right { display: flex; align-items: center; gap: 0.5rem; position: relative; }
+
+    button {
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 0.38rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 2px solid #334155;
+      background: #ffffff;
+      color: #0f172a;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { background: #f1f5f9; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.primary { background: #1d4ed8; color: #ffffff; border-color: #1e3a8a; }
+    button.icon-btn { font-size: 1.1rem; padding: 0.3rem 0.6rem; line-height: 1; }
+
+    /* Menú desplegable de Configuració (⚙️) */
+    .settings-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 280px;
+      background: var(--card-bg);
+      color: var(--text-main);
+      border: 2px solid #334155;
+      border-radius: 0.85rem;
+      padding: 0.75rem;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .settings-popover.open { display: flex; }
+    .settings-popover button {
+      width: 100%;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .view-screen { display: none; }
+    .view-screen.active { display: block; }
+
+    /* PANTALLA 1: MAPA DE NIVELLS */
+    .levels-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.85rem;
+      margin-top: 0.4rem;
+    }
+    .level-card {
+      background: var(--card-bg);
+      border: 3px solid var(--border-col);
+      border-radius: 1rem;
+      padding: 0.9rem;
+      display: flex;
+      gap: 0.9rem;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+      position: relative;
+    }
+    .level-card:hover:not(.locked) {
+      transform: translateY(-2px);
+      border-color: #1d4ed8;
+    }
+    .level-card.locked {
+      opacity: 0.68;
+      cursor: not-allowed;
+      background: #e2e8f0;
+      color: #475569;
+    }
+    .level-thumb {
+      width: 96px;
+      height: 84px;
+      border-radius: 0.65rem;
+      border: 2px solid #334155;
+      background: #0f172a;
+      flex-shrink: 0;
+      image-rendering: pixelated;
+    }
+    .lock-badge {
+      position: absolute;
+      top: 0.65rem;
+      right: 0.75rem;
+      font-size: 1.35rem;
+    }
+
+    /* PANTALLA 2: LES 3 FASES DEL NIVELL */
+    .phases-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .phase-card {
+      background: var(--card-bg);
+      border: 3px solid var(--border-col);
+      border-radius: 1rem;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.65rem;
+      text-align: center;
+    }
+    .phase-card.locked {
+      opacity: 0.6;
+      background: #e2e8f0;
+      color: #475569;
+    }
+    .substeps-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .substep-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0.45rem 0.7rem;
+    }
+
+    /* PANTALLA 3: ENGEGAR MOTORS */
+    .ignition-screen {
+      max-width: 640px;
+      margin: 1.5rem auto;
+      background: #0f172a;
+      color: #ffffff;
+      border: 4px solid #f59e0b;
+      border-radius: 1.2rem;
+      padding: 1.4rem;
+      text-align: center;
+    }
+    .ignition-keys {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1.1rem 0;
+      flex-wrap: wrap;
+    }
+    .ignition-key {
+      padding: 0.8rem 1.3rem;
+      border-radius: 0.85rem;
+      border: 3px solid #64748b;
+      background: #1e293b;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .ignition-key.lit {
+      background: #16a34a;
+      border-color: #86efac;
+      transform: scale(1.06);
+    }
+
+    /* PANTALLA 4: JOC ACTIU */
+    .play-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border-col);
+      border-radius: 0.9rem;
+      padding: 0.65rem 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+    .prompt-tape {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      padding: 0.55rem 0.75rem;
+      background: #f8fafc;
+      color: #0f172a;
+      border: 2px solid #cbd5e1;
+      border-radius: 0.65rem;
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 1.42em;
+      margin: 0.4rem 0;
+    }
+    .prompt-char {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.55rem;
+      height: 2rem;
+      border-radius: 0.3rem;
+      padding: 0 0.18rem;
+      border: 2px solid transparent;
+    }
+    .prompt-char.space-char {
+      min-width: 2.1rem;
+      font-size: 0.78em;
+      color: #475569;
+      background: #e2e8f0;
+    }
+    .char-current { background: #fef08a !important; color: #0f172a !important; border-color: #0f172a; font-weight: 800; }
+    .char-ok { background: #dcfce7 !important; color: #166534 !important; }
+    .char-err { background: #fee2e2 !important; color: #991b1b !important; text-decoration: underline wavy; }
+
+    .arcade-box {
+      background: #090d16;
+      border: 3px solid #334155;
+      border-radius: 0.9rem;
+      padding: 0.55rem;
+      color: #ffffff;
+    }
+    .arcade-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.2rem 0.5rem 0.45rem;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.9rem;
+    }
+    .energy-meter { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .energy-bar-bg {
+      width: 90px;
+      height: 12px;
+      background: #334155;
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid #94a3b8;
+    }
+    .energy-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #eab308, #22c55e);
+      transition: width 0.15s ease;
+    }
+    .arcade-canvas {
+      width: 100%;
+      height: 250px;
+      display: block;
+      background: #050811;
+      border: 2px solid #475569;
+      border-radius: 0.55rem;
+      image-rendering: pixelated;
+    }
+    .arcade-prompt-strip {
+      margin-top: 0.45rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.35rem 0.7rem;
+      background: #1e293b;
+      border-radius: 0.5rem;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.9rem;
+    }
+
+    /* Dock inferior compacte */
+    .support-dock {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 0.55rem;
+      align-items: center;
+      margin-top: 0.45rem;
+    }
+    .support-dock.no-hands { grid-template-columns: 1fr; }
+    .keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+      padding: 0.55rem;
+      background: var(--card-bg);
+      border: 2px solid var(--border-col);
+      border-radius: 0.85rem;
+      user-select: none;
+    }
+    .kb-row { display: flex; justify-content: center; gap: 0.26rem; }
+    .kb-key {
+      position: relative;
+      width: 2.65rem;
+      height: 2.45rem;
+      border-radius: 0.45rem;
+      border: 2px solid #475569;
+      background: var(--key-bg, #f1f5f9);
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .kb-space { width: 13.5rem; }
+    .kb-target {
+      border-width: 3px;
+      border-color: #0f172a;
+      box-shadow: 0 0 0 3px #fde047;
+    }
+    .kb-home-dot { font-size: 0.6rem; line-height: 1; }
+    .kb-finger-tag { position: absolute; bottom: 1px; right: 3px; font-size: 0.52rem; opacity: 0.8; }
+    .hands-mini-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border-col);
+      border-radius: 0.85rem;
+      padding: 0.45rem;
+      text-align: center;
+    }
+    .hands-mini-caption { font-size: 0.76rem; font-weight: 700; margin-bottom: 0.2rem; }
+
+    .result-card {
+      max-width: 580px;
+      margin: 1rem auto;
+      background: var(--card-bg);
+      border: 3px solid #2563eb;
+      border-radius: 1rem;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .barretines-row { display: flex; justify-content: center; gap: 0.55rem; margin: 0.65rem 0; }
+    .thermometer-box {
+      margin-top: 0.75rem;
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    .thermo-bar-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.35rem 0; font-size: 0.85rem; }
+    .thermo-bar-fill {
+      height: 1.15rem;
+      background: linear-gradient(90deg, #2563eb, #16a34a);
+      border-radius: 999px;
+      color: #ffffff;
+      font-size: 0.75rem;
+      padding: 0 0.55rem;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- CAPÇALERA COMPACTA -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button type="button" id="btn-back" style="display:none;">⬅️ Enrere</button>
+        <canvas id="logo-canvas" width="32" height="32" style="image-rendering:pixelated;"></canvas>
+        <div>
+          <span class="topbar-title">Mecano 8-Bit</span>
+          <span class="topbar-sub" id="header-breadcrumb">Mapa de Catalunya</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <span id="header-barretines" style="font-weight:800;font-size:0.9rem;"></span>
+        <button type="button" id="btn-settings-toggle" class="icon-btn" title="Configuració i ajudes">⚙️</button>
+
+        <div class="settings-popover" id="settings-popover" role="dialog" aria-label="Configuració">
+          <strong style="font-size:0.85rem;opacity:0.75;">CONFIGURACIÓ I AJUDES</strong>
+          <button type="button" id="cfg-sound"><span>🔊 Efectes de so</span><strong id="val-sound">Sí</strong></button>
+          <button type="button" id="cfg-hands"><span>🖐️ Mans guia</span><strong id="val-hands">Visibles</strong></button>
+          <button type="button" id="cfg-font"><span>🔠 Mida de lletra</span><strong id="val-font">100%</strong></button>
+          <button type="button" id="cfg-contrast"><span>🌓 Alt contrast</span><strong id="val-contrast">No</strong></button>
+          <button type="button" id="cfg-dyslexia"><span>📏 Lletra espaiada</span><strong id="val-dyslexia">No</strong></button>
+          <hr style="width:100%;border:0;border-top:1px solid #cbd5e1;margin:0.2rem 0;" />
+          <button type="button" id="cfg-unlock"><span>🔓 Desbloquejar tot (Proves)</span><strong id="val-unlock">No</strong></button>
+          <a href="./admin.html" style="display:flex;justify-content:space-between;align-items:center;padding:0.42rem 0.65rem;border-radius:8px;background:#dbeafe;color:#1e40af;text-decoration:none;font-weight:800;font-size:0.84rem;margin-top:0.2rem;">
+            <span>📊 Panell del Docent</span><span>↗️</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- PANTALLA 1: MAPA PRINCIPAL DE NIVELLS -->
+    <main class="view-screen active" id="screen-home">
+      <h2 style="margin:0.2rem 0 0.5rem;font-size:1.15rem;">
+        Tria la missió d'en Bit a Catalunya:
+      </h2>
+      <div class="levels-grid" id="levels-grid"></div>
+    </main>
+
+    <!-- PANTALLA 2: LES 3 FASES DEL NIVELL -->
+    <section class="view-screen" id="screen-phases">
+      <h2 id="phases-level-title" style="margin:0.2rem 0 0.2rem;font-size:1.15rem;"></h2>
+      <p id="phases-level-desc" style="margin:0 0 0.6rem;font-size:0.88rem;opacity:0.85;"></p>
+      <div class="phases-cards" id="phases-cards"></div>
+    </section>
+
+    <!-- PANTALLA 3: ENGEGAR MOTORS -->
+    <section class="view-screen" id="screen-ignition">
+      <div class="ignition-screen">
+        <h2 id="ignition-title" style="margin:0 0 0.4rem;">🚀 Engega els motors d'en Bit!</h2>
+        <p id="ignition-desc" style="margin:0;font-size:0.95rem;opacity:0.92;"></p>
+        <div class="ignition-keys" id="ignition-keys"></div>
+        <p style="font-size:0.85rem;opacity:0.8;margin-bottom:0.85rem;">
+          Prem físicament aquestes tecles al teu teclat per començar!
+        </p>
+        <button type="button" id="btn-skip-ignition">Entrar directament</button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 4: JOC ACTIU -->
+    <section class="view-screen" id="screen-play">
+      <!-- Subvista A: Tira de lletres (Fase 1 i Fase 3) -->
+      <div class="play-card" id="tape-container">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem;">
+          <div>
+            <strong id="tape-title">Fase 1</strong> —
+            <span id="tape-subtitle" style="font-size:0.88rem;opacity:0.85;"></span>
+          </div>
+          <div style="display:flex;gap:0.4rem;">
+            <button type="button" id="btn-speak-proverb" style="display:none;">🔊 Escoltar dita</button>
+            <button type="button" id="btn-restart-tape">🔄 Reiniciar</button>
+          </div>
+        </div>
+
+        <div class="prompt-tape" id="prompt-tape"></div>
+
+        <div style="display:flex;justify-content:space-between;font-size:0.82rem;opacity:0.9;">
+          <span id="tape-progress">Pulsació: 0 / 0</span>
+          <span id="tape-accuracy">Precisió: 100%</span>
+          <span>Objectiu: <strong>≥ 3 Barretines (88%)</strong></span>
+        </div>
+      </div>
+
+      <!-- Subvista B: Videojoc Arcade 8-Bits (Fase 2: 4 mecàniques úniques!) -->
+      <div class="arcade-box" id="arcade-container" style="display:none;">
+        <div class="arcade-hud">
+          <strong id="arcade-title" style="color:#fde047;">🕹️ JOC</strong>
+          <span id="arcade-act-badge" style="background:#312e81;padding:2px 8px;border-radius:99px;font-size:0.8rem;">Acte 1/3</span>
+          <span id="arcade-progress">0 / 9</span>
+          <div class="energy-meter" title="Cada tecla errònia resta 25% d'energia!">
+            <span>⚡ Energia:</span>
+            <div class="energy-bar-bg">
+              <div class="energy-bar-fill" id="arcade-energy-fill" style="width:100%;"></div>
+            </div>
+          </div>
+          <div id="arcade-lives" style="display:flex;align-items:center;gap:3px;"></div>
+        </div>
+
+        <canvas id="arcade-canvas" class="arcade-canvas" width="880" height="250"></canvas>
+
+        <div class="arcade-prompt-strip">
+          <span>🎯 Escriu ara: <strong id="arcade-active-word" style="color:#fde047;font-size:1.15rem;">---</strong></span>
+          <span id="arcade-hint-text" style="font-size:0.8rem;color:#cbd5e1;"></span>
+          <button type="button" id="btn-restart-arcade">🔄 Reiniciar joc</button>
+        </div>
+      </div>
+
+      <!-- Dock inferior compacte -->
+      <div class="support-dock" id="support-dock">
+        <div class="keyboard" id="virtual-keyboard"></div>
+        <div class="hands-mini-card" id="hands-panel">
+          <div class="hands-mini-caption" id="hands-caption">Dit recomanat</div>
+          <div id="hands-svg-box"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 5: RESULTAT -->
+    <section class="view-screen" id="screen-result">
+      <div class="result-card">
+        <h2 id="res-title" style="margin:0 0 0.4rem;">Fase completada!</h2>
+        <div class="barretines-row" id="res-barretines"></div>
+        <p id="res-msg" style="font-weight:700;margin:0.5rem 0;"></p>
+        <div id="res-metrics" style="display:flex;justify-content:center;gap:1.1rem;flex-wrap:wrap;margin:0.6rem 0;font-size:0.9rem;"></div>
+        <div id="res-thermometer"></div>
+        <div style="display:flex;justify-content:center;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
+          <button type="button" id="btn-res-phases">📋 Tornar a les 3 Fases</button>
+          <button type="button" id="btn-res-repeat">🔄 Repetir (Buscar 5 Barretines)</button>
+          <button type="button" id="btn-res-next" class="primary">➡️ Següent repte</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const FINGERS = {
+      "L-pinky":  { labelCa: "Menovell esq. (E5)", colorHex: "#E07A5F", short: "E5" },
+      "L-ring":   { labelCa: "Anular esq. (E4)",   colorHex: "#F2CC8F", short: "E4" },
+      "L-middle": { labelCa: "Cor esq. (E3)",      colorHex: "#81B29A", short: "E3" },
+      "L-index":  { labelCa: "Índex esq. (E2)",    colorHex: "#4EA8DE", short: "E2" },
+      "thumb":    { labelCa: "Polzes (Espai)",     colorHex: "#9B89B3", short: "P"  },
+      "R-index":  { labelCa: "Índex dret (D2)",    colorHex: "#2B7BBA", short: "D2" },
+      "R-middle": { labelCa: "Cor dret (D3)",      colorHex: "#529471", short: "D3" },
+      "R-ring":   { labelCa: "Anular dret (D4)",   colorHex: "#E5A93C", short: "D4" },
+      "R-pinky":  { labelCa: "Menovell dret (D5)", colorHex: "#C85A32", short: "D5" }
+    };
+
+    const KEYS = {
+      KeyQ: { code: "KeyQ", label: "Q", charNormal: "q", finger: "L-pinky" },
+      KeyW: { code: "KeyW", label: "W", charNormal: "w", finger: "L-ring" },
+      KeyE: { code: "KeyE", label: "E", charNormal: "e", finger: "L-middle" },
+      KeyR: { code: "KeyR", label: "R", charNormal: "r", finger: "L-index" },
+      KeyT: { code: "KeyT", label: "T", charNormal: "t", finger: "L-index" },
+      KeyY: { code: "KeyY", label: "Y", charNormal: "y", finger: "R-index" },
+      KeyU: { code: "KeyU", label: "U", charNormal: "u", finger: "R-index" },
+      KeyI: { code: "KeyI", label: "I", charNormal: "i", finger: "R-middle" },
+      KeyO: { code: "KeyO", label: "O", charNormal: "o", finger: "R-ring" },
+      KeyP: { code: "KeyP", label: "P", charNormal: "p", finger: "R-pinky" },
+      KeyA: { code: "KeyA", label: "A", charNormal: "a", finger: "L-pinky", isHomeKey: true },
+      KeyS: { code: "KeyS", label: "S", charNormal: "s", finger: "L-ring", isHomeKey: true },
+      KeyD: { code: "KeyD", label: "D", charNormal: "d", finger: "L-middle", isHomeKey: true },
+      KeyF: { code: "KeyF", label: "F", charNormal: "f", finger: "L-index", isHomeKey: true },
+      KeyG: { code: "KeyG", label: "G", charNormal: "g", finger: "L-index" },
+      KeyH: { code: "KeyH", label: "H", charNormal: "h", finger: "R-index" },
+      KeyJ: { code: "KeyJ", label: "J", charNormal: "j", finger: "R-index", isHomeKey: true },
+      KeyK: { code: "KeyK", label: "K", charNormal: "k", finger: "R-middle", isHomeKey: true },
+      KeyL: { code: "KeyL", label: "L", charNormal: "l", finger: "R-ring", isHomeKey: true },
+      Semicolon: { code: "Semicolon", label: "Ñ", charNormal: "ñ", finger: "R-pinky", isHomeKey: true },
+      Backslash: { code: "Backslash", label: "Ç", charNormal: "ç", finger: "R-pinky" },
+      KeyZ: { code: "KeyZ", label: "Z", charNormal: "z", finger: "L-pinky" },
+      KeyX: { code: "KeyX", label: "X", charNormal: "x", finger: "L-ring" },
+      KeyC: { code: "KeyC", label: "C", charNormal: "c", finger: "L-middle" },
+      KeyV: { code: "KeyV", label: "V", charNormal: "v", finger: "L-index" },
+      KeyB: { code: "KeyB", label: "B", charNormal: "b", finger: "L-index" },
+      KeyN: { code: "KeyN", label: "N", charNormal: "n", finger: "R-index" },
+      KeyM: { code: "KeyM", label: "M", charNormal: "m", finger: "R-index" },
+      Comma: { code: "Comma", label: ",", charNormal: ",", finger: "R-middle" },
+      Period: { code: "Period", label: ".", charNormal: ".", finger: "R-ring" },
+      Slash: { code: "Slash", label: "-", charNormal: "-", finger: "R-pinky" },
+      Space: { code: "Space", label: "Espai", charNormal: " ", finger: "thumb" }
+    };
+
+    const ROWS = [
+      ["KeyQ","KeyW","KeyE","KeyR","KeyT","KeyY","KeyU","KeyI","KeyO","KeyP"],
+      ["KeyA","KeyS","KeyD","KeyF","KeyG","KeyH","KeyJ","KeyK","KeyL","Semicolon","Backslash"],
+      ["KeyZ","KeyX","KeyC","KeyV","KeyB","KeyN","KeyM","Comma","Period","Slash"],
+      ["Space"]
+    ];
+
+    // Cada nivell té 2 subnivells a la Fase 1 (1A, 1B) i 2 subnivells de Joc a la Fase 2 (J1, J2) + Fase 3 (Dita)
+    const LEVELS = [
+      {
+        id: "L01",
+        order: 1,
+        titleCa: "Nivell 1: L'Aterratge al Montsec",
+        keysLabel: "Tecles F, J + Espai",
+        descCa: "En Bit arriba de l'espai! Practica amb els índexs (F i J) i destrueix els meteorits i el Meteorit Gegant!",
+        newKeys: ["f", "j"],
+        leftKeys: ["f"],
+        rightKeys: ["j"],
+        reviewKeys: [],
+        gameMode: "meteors",
+        gameTitle: "🚀 Montsec: Pluja de Meteorits",
+        gameDesc: "J1: Meteorits amb F i J. J2: Eixam en diversos carrils + Meteorit Gegant!",
+        proverbCa: "qui dia passa any empeny",
+        proverbMeaningCa: "Anant pas a pas i amb constància cada dia, avancem molt més del que sembla.",
+        drills: [
+          { id: "L01.D1", label: "1A: Parelles (ff jj fj jf)", stepType: "isolated_pairs", wordsCount: 8, mix: false },
+          { id: "L01.D2", label: "1B: Paraules de 3 a 5 lletres", stepType: "growing", wordsCount: 9, mix: false }
+        ],
+        arcades: [
+          { id: "L01.G1", label: "J1: Meteorits d'Índexs (F i J)", subMode: "single", totalTargets: 7 },
+          { id: "L01.G2", label: "J2: Eixam + Meteorit Gegant!", subMode: "dual_boss", totalTargets: 9 }
+        ]
+      },
+      {
+        id: "L02",
+        order: 2,
+        titleCa: "Nivell 2: Castells a Vilafranca",
+        keysLabel: "Tecles D, K + Espai",
+        descCa: "Fes pujar els castellers! A J1 puja amb D i K (si t'equivoques, el casteller cau!). A J2 puja un casteller per cada costat coordinant les dues mans alhora!",
+        newKeys: ["d", "k"],
+        leftKeys: ["d", "f"],
+        rightKeys: ["k", "j"],
+        reviewKeys: ["f", "j"],
+        gameMode: "castells",
+        gameTitle: "🏰 Vilafranca: Pugem el Castell!",
+        gameDesc: "J1: Puja amb D i K (vigila no caure!). J2: Puja 1 casteller per cada costat amb les 2 mans alhora!",
+        proverbCa: "cada ovella al seu corral",
+        proverbMeaningCa: "Cada dit té el seu lloc a la fila base del teclat!",
+        drills: [
+          { id: "L02.D1", label: "1A: Només D i K (dd kk dk kd)", stepType: "isolated_pairs", wordsCount: 8, mix: false },
+          { id: "L02.D2", label: "1B: Barreja D, K + F, J", stepType: "growing", wordsCount: 9, mix: true }
+        ],
+        arcades: [
+          { id: "L02.G1", label: "J1: Puja el Casteller (D i K)", subMode: "single_climber", totalTargets: 7 },
+          { id: "L02.G2", label: "J2: 2 Castellers alhora (Mà Esq. + Dreta)", subMode: "dual_climbers", totalTargets: 8 }
+        ]
+      },
+      {
+        id: "L03",
+        order: 3,
+        titleCa: "Nivell 3: La Sardana a Girona",
+        keysLabel: "Tecles S, L + Espai",
+        descCa: "Segueix el compàs musical de la cobla a Girona amb melodia 8-bits i fes saltar la rotllana!",
+        newKeys: ["s", "l"],
+        leftKeys: ["s", "d", "f"],
+        rightKeys: ["l", "k", "j"],
+        reviewKeys: ["f", "j", "d", "k"],
+        gameMode: "sardana",
+        gameTitle: "🎶 Girona: Compàs de la Sardana",
+        gameDesc: "J1: Notes curtes (S i L). J2: Salts llargs amb els 6 dits al ritme de la cobla!",
+        proverbCa: "al maig cada dia un raig",
+        proverbMeaningCa: "Amb una mica de pràctica diària els dits agafen soltesa.",
+        drills: [
+          { id: "L03.D1", label: "1A: Només S i L (ss ll sl ls)", stepType: "isolated_pairs", wordsCount: 8, mix: false },
+          { id: "L03.D2", label: "1B: Barreja dels 6 dits", stepType: "growing", wordsCount: 9, mix: true }
+        ],
+        arcades: [
+          { id: "L03.G1", label: "J1: Passos Curts (Només S i L)", subMode: "isolated", totalTargets: 7 },
+          { id: "L03.G2", label: "J2: Rotllana dels 6 Dits + Cobla", subMode: "mixed", totalTargets: 9 }
+        ]
+      },
+      {
+        id: "L04",
+        order: 4,
+        titleCa: "Nivell 4: La Patum de Berga",
+        keysLabel: "Tecles A, Ç + Espai",
+        descCa: "En Bit i la Guita són al mig de la plaça amb la música de la Patum en 8-bits i apaguen els fuets dels 4 cantons!",
+        newKeys: ["a", "ç"],
+        leftKeys: ["a", "s", "d", "f"],
+        rightKeys: ["ç", "l", "k", "j"],
+        reviewKeys: ["f", "j", "d", "k", "s", "l"],
+        gameMode: "patum",
+        gameTitle: "🐉 Berga: La Patum als 4 Cantons",
+        gameDesc: "J1: Espurnes amb A i Ç. J2: Paraules catalanes reals als 4 cantons amb música de la Patum!",
+        proverbCa: "al juny la falç al puny",
+        proverbMeaningCa: "Dita tradicional de la sega amb la nostra lletra Ç!",
+        realWords: ["sal", "laç", "faç", "cal", "all", "dall", "sala", "falç", "cala", "casal"],
+        drills: [
+          { id: "L04.D1", label: "1A: Només A i Ç (aa çç aç ça)", stepType: "isolated_pairs", wordsCount: 8, mix: false },
+          { id: "L04.D2", label: "1B: Paraules reals Fila Base", stepType: "growing", wordsCount: 9, mix: true }
+        ],
+        arcades: [
+          { id: "L04.G1", label: "J1: Fuets d'A i Ç", subMode: "isolated", totalTargets: 7 },
+          { id: "L04.G2", label: "J2: 4 Cantons + Paraules Catalanes", subMode: "real_words", totalTargets: 9 }
+        ]
+      }
+    ];
+
+    const SPRITES = {
+      spaceship: {
+        palette: { B: "#38bdf8", W: "#f8fafc", D: "#0284c7", Y: "#fde047", R: "#ef4444", G: "#4ade80" },
+        grid: [
+          "....BBBB....",
+          "...BWWWWB...",
+          "..BWGGGGWB..",
+          ".BBBBBBBBBB.",
+          "BDDDDDDDDDDB",
+          "BBBBYYYYBBBB",
+          "B..BBBBBB..B",
+          "...B....B...",
+          "..RRR..RRR..",
+          "...Y....Y..."
+        ]
+      },
+      meteor: {
+        palette: { M: "#a8a29e", D: "#57534e", L: "#d6d3d1", O: "#f97316" },
+        grid: [
+          "..MMMMMM..",
+          ".MLLMDDMM.",
+          "MLLMMMMDDM",
+          "MMMMDDMMMM",
+          "MDDDMMMMOM",
+          "MMMMMMOOMM",
+          ".MMMMDDMM.",
+          "..DDDDDD.."
+        ]
+      },
+      casteller: {
+        palette: { R: "#dc2626", W: "#ffffff", B: "#0f172a", S: "#fcd34d" },
+        grid: [
+          "...BBBB...",
+          "..BSSSSB..",
+          "...SSSS...",
+          "RRRRRRRRRR",
+          ".RRRRRRRR.",
+          ".BBBBBBBB.",
+          ".WWWWWWWW.",
+          "..WW..WW..",
+          "..BB..BB.."
+        ]
+      },
+      dancer: {
+        palette: { R: "#dc2626", B: "#0f172a", S: "#fcd34d", G: "#38bdf8", W: "#ffffff" },
+        grid: [
+          "...RRRR...",
+          "..BBBBBB..",
+          "..BSSSSB..",
+          "GG.GGGG.GG",
+          ".GGGGGGGG.",
+          "..WWWWWW..",
+          "..WW..WW..",
+          "..BB..BB.."
+        ]
+      },
+      guita: {
+        palette: { G: "#16a34a", D: "#14532d", R: "#ef4444", Y: "#fde047", B: "#0f172a" },
+        grid: [
+          "......GGGGYR",
+          ".....GGBGGYY",
+          ".....GGGG...",
+          ".....GGG....",
+          "....GGG.....",
+          ".GGGGGG.....",
+          "GGGGGGGG....",
+          "DDDDDDDD....",
+          ".GG..GG....."
+        ]
+      },
+      barretina: {
+        palette: { R: "#dc2626", D: "#991b1b", B: "#0f172a" },
+        grid: [
+          "....RRRRR.",
+          "..RRRRRRDR",
+          ".RRRRRRDDR",
+          "RRRRRRD...",
+          "RRRRRRR...",
+          "BBBBBBBB.."
+        ]
+      }
+    };
+
+    function drawSprite(ctx, sp, x, y, scale = 4) {
+      for (let r = 0; r < sp.grid.length; r++) {
+        const row = sp.grid[r];
+        for (let c = 0; c < row.length; c++) {
+          const ch = row[c];
+          if (ch !== "." && sp.palette[ch]) {
+            ctx.fillStyle = sp.palette[ch];
+            ctx.fillRect(Math.floor(x + c * scale), Math.floor(y + r * scale), scale, scale);
+          }
+        }
+      }
+    }
+
+    function renderBarretinaSvg(filled = true, scale = 3) {
+      const sp = SPRITES.barretina;
+      const w = 10 * scale, h = 6 * scale;
+      let rects = "";
+      for (let r = 0; r < sp.grid.length; r++) {
+        for (let c = 0; c < sp.grid[r].length; c++) {
+          const ch = sp.grid[r][c];
+          if (ch !== ".") {
+            const col = filled ? sp.palette[ch] : (ch === "B" ? "#475569" : "#cbd5e1");
+            rects += `<rect x="${c * scale}" y="${r * scale}" width="${scale}" height="${scale}" fill="${col}"/>`;
+          }
+        }
+      }
+      return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="image-rendering:pixelated;vertical-align:middle;">${rects}</svg>`;
+    }
+
+    function drawLevelThumbnail(canvas, gameMode) {
+      const ctx = canvas.getContext("2d");
+      if (gameMode === "meteors") {
+        ctx.fillStyle = "#090d16";
+        ctx.fillRect(0, 0, 96, 84);
+        drawSprite(ctx, SPRITES.spaceship, 8, 22, 3);
+        drawSprite(ctx, SPRITES.meteor, 54, 14, 2.5);
+        drawSprite(ctx, SPRITES.meteor, 62, 46, 3);
+      } else if (gameMode === "castells") {
+        ctx.fillStyle = "#1e3a8a";
+        ctx.fillRect(0, 0, 96, 84);
+        drawSprite(ctx, SPRITES.casteller, 33, 44, 3);
+        drawSprite(ctx, SPRITES.casteller, 33, 14, 3);
+      } else if (gameMode === "sardana") {
+        ctx.fillStyle = "#064e3b";
+        ctx.fillRect(0, 0, 96, 84);
+        drawSprite(ctx, SPRITES.dancer, 14, 26, 3);
+        drawSprite(ctx, SPRITES.dancer, 50, 26, 3);
+      } else {
+        ctx.fillStyle = "#450a0a";
+        ctx.fillRect(0, 0, 96, 84);
+        drawSprite(ctx, SPRITES.guita, 22, 22, 4);
+      }
+    }
+
+    const saved = JSON.parse(localStorage.getItem("mecano_v4_distinct") || "{}");
+
+    const state = {
+      screen: "home",
+      levelId: "L01",
+      phaseType: "drill", // "drill" | "arcade" | "proverb"
+      stepId: "L01.D1",
+
+      soundEnabled: true,
+      showHands: true,
+      fontScale: 1,
+      highContrast: false,
+      dyslexia: false,
+      freeUnlock: false,
+
+      ignitionPressed: {},
+
+      // Fase 1 i 3 (Tira de lletres)
+      sequence: "",
+      cursor: 0,
+      evaluations: [],
+      startedAtMs: 0,
+
+      // Fase 2 (4 Mecàniques de Joc úniques amb 3 Actes integrats!)
+      arcadeRunning: false,
+      arcadeLives: 5,
+      arcadeEnergy: 100,
+      arcadeCompleted: 0,
+      arcadeTotal: 9,      // 3 a l'Acte 1 (2 lletres), 3 a l'Acte 2 (3-4 lletres), 3 a l'Acte 3 (Boss/4-5 lletres)
+      arcadeEntities: [],  // Meteorits simultanis / Notes de ritme / Fuets dels 4 cantons / Equilibri del castell
+      arcadeTilt: 0,       // Inclinació del castell (-100 esquerra .. +100 dreta)
+      arcadeTiltDir: 1,
+      arcadeJumpTimer: 0,
+      arcadeAngle: 0,
+      arcadeParticles: [],
+      arcadeShake: 0,
+      arcadeTotalPresses: 0,
+      arcadeErrors: 0,
+
+      stepBarretines: saved.stepBarretines || {},
+      proverbHistory: saved.proverbHistory || [],
+      fallingClimbers: [],
+      leftClimberStep: 0,
+      rightClimberStep: 0,
+      melodyCursor: 0,
+      arcadeKeyErrors: {}
+    };
+
+    // Melodies 8-bits autèntiques (freqüències en Hz) per a la Patum i la Sardana!
+    const MELODY_PATUM_TIRABOL = [
+      392.00, 440.00, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00,
+      392.00, 493.88, 587.33, 659.25, 587.33, 523.25, 493.88, 392.00
+    ];
+    const MELODY_SARDANA_COBLA = [
+      523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 659.25, 523.25,
+      587.33, 659.25, 783.99, 880.00, 783.99, 659.25, 587.33, 523.25
+    ];
+
+    function saveProgress() {
+      try {
+        localStorage.setItem("mecano_v4_distinct", JSON.stringify({
+          stepBarretines: state.stepBarretines,
+          proverbHistory: state.proverbHistory
+        }));
+      } catch {}
+    }
+
+    function recordTelemetrySession({ phaseType, stepId, stepLabel, wpmNet, accuracyPct, errors, totalPresses, barretines, keyStats }) {
+      try {
+        const raw = JSON.parse(localStorage.getItem("mecano_telemetry_v1") || "{\"sessions\":[],\"keyStats\":{}}");
+        const sessionObj = {
+          sessionId: "S-" + Date.now(),
+          timestampIso: new Date().toISOString(),
+          levelId: state.levelId,
+          phaseType,
+          stepId,
+          stepLabel,
+          wpmNet: Number(wpmNet || 0),
+          accuracyPct: Number(accuracyPct || 100),
+          errors: Number(errors || 0),
+          totalPresses: Number(totalPresses || 0),
+          barretines: Number(barretines || 0),
+          durationSec: Math.max(1, Math.round((performance.now() - state.startedAtMs) / 1000))
+        };
+        raw.sessions.unshift(sessionObj);
+        if (raw.sessions.length > 250) raw.sessions.length = 250;
+
+        if (keyStats) {
+          for (const [k, st] of Object.entries(keyStats)) {
+            if (!raw.keyStats[k]) raw.keyStats[k] = { hits: 0, errors: 0 };
+            raw.keyStats[k].hits += (st.hits || 0);
+            raw.keyStats[k].errors += (st.errors || 0);
+          }
+        }
+        localStorage.setItem("mecano_telemetry_v1", JSON.stringify(raw));
+
+        if (window.google && window.google.script && window.google.script.run) {
+          window.google.script.run.apiSaveSession(sessionObj);
+        }
+      } catch {}
+    }
+
+    // Sons 8-bits
+    let audioCtx = null;
+    function sfxTone(freq, ms = 60, type = "square", vol = 0.05) {
+      if (!state.soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        g.gain.setValueAtTime(vol, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + ms / 1000);
+        o.connect(g);
+        g.connect(audioCtx.destination);
+        o.start();
+        o.stop(audioCtx.currentTime + ms / 1000);
+      } catch {}
+    }
+    function playGameNote(gameMode) {
+      state.melodyCursor++;
+      if (gameMode === "patum") {
+        const f = MELODY_PATUM_TIRABOL[state.melodyCursor % MELODY_PATUM_TIRABOL.length];
+        sfxTone(f, 95, "square", 0.065);
+      } else if (gameMode === "sardana") {
+        const f = MELODY_SARDANA_COBLA[state.melodyCursor % MELODY_SARDANA_COBLA.length];
+        sfxTone(f, 95, "triangle", 0.075);
+      } else {
+        sfxTone(480 + (state.melodyCursor % 5) * 55, 50, "square", 0.05);
+      }
+    }
+    function sfxActionSuccess() {
+      sfxTone(523.25, 65, "square", 0.06);
+      setTimeout(() => sfxTone(659.25, 85, "square", 0.06), 50);
+      setTimeout(() => sfxTone(783.99, 105, "square", 0.06), 100);
+    }
+    function sfxErrorHit() { sfxTone(145, 130, "sawtooth", 0.085); }
+    function sfxFanfare() {
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
+        setTimeout(() => sfxTone(f, 120, "square", 0.07), i * 90)
+      );
+    }
+
+    function isLevelUnlocked(lvl) {
+      if (state.freeUnlock) return true;
+      if (lvl.order === 1) return true;
+      const prevLvl = LEVELS.find(l => l.order === lvl.order - 1);
+      return (state.stepBarretines[`${prevLvl.id}.PROVERB`] || 0) >= 3;
+    }
+
+    function getOrderedSteps(lvl) {
+      return [
+        ...lvl.drills.map(d => ({ id: d.id, label: d.label, phaseType: "drill" })),
+        ...lvl.arcades.map(a => ({ id: a.id, label: a.label, phaseType: "arcade" })),
+        { id: `${lvl.id}.PROVERB`, label: "Repte Dita Catalana", phaseType: "proverb" }
+      ];
+    }
+
+    function isStepUnlocked(lvl, stepId) {
+      if (state.freeUnlock) return true;
+      if (!isLevelUnlocked(lvl)) return false;
+      const steps = getOrderedSteps(lvl);
+      const idx = steps.findIndex(s => s.id === stepId);
+      if (idx <= 0) return true;
+      return (state.stepBarretines[steps[idx - 1].id] || 0) >= 3;
+    }
+
+    function createRng(seed) {
+      let s = seed >>> 0;
+      return () => {
+        s = (s + 0x6d2b79f5) >>> 0;
+        let t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    // Genera paraules segons l'acte i si estem al subnivell J1 o J2 (p.ex. coordinant mà esquerra + mà dreta als Castells J2!)
+    function generateWordByAct(lvl, stepIndex, totalSteps, subMode = "single") {
+      const rng = createRng(Date.now() + stepIndex * 173);
+      const act = stepIndex < 3 ? 1 : stepIndex < 6 ? 2 : 3;
+      const len = act === 1 ? 2 : act === 2 ? (stepIndex % 2 === 0 ? 3 : 4) : (stepIndex === totalSteps - 1 ? 5 : 4);
+
+      if (subMode === "real_words" && lvl.realWords) {
+        return lvl.realWords[stepIndex % lvl.realWords.length];
+      }
+
+      // Al Joc 2 dels Castells (dual_climbers), alternem una tecla de la MÀ ESQUERRA (D/F) i una de la MÀ DRETA (K/J) perquè pugin 2 castellers alhora un per cada costat!
+      if (subMode === "dual_climbers") {
+        let w = "";
+        for (let i = 0; i < len; i++) {
+          const pool = i % 2 === 0 ? lvl.leftKeys : lvl.rightKeys;
+          w += pool[(stepIndex + i) % pool.length];
+        }
+        return w;
+      }
+
+      const onlyNew = (subMode === "single" || subMode === "single_climber" || subMode === "isolated") && act <= 2;
+      const pool = onlyNew ? lvl.newKeys : [...lvl.newKeys, ...lvl.reviewKeys];
+
+      let w = "", prev = "", run = 0;
+      for (let i = 0; i < len; i++) {
+        let ch = pool[Math.floor(rng() * pool.length)];
+        if (pool.length > 1 && ch === prev && run >= 2) {
+          const alt = pool.filter(x => x !== prev);
+          ch = alt[Math.floor(rng() * alt.length)];
+        }
+        run = (ch === prev) ? run + 1 : 1;
+        prev = ch;
+        w += ch;
+      }
+      return w;
+    }
+
+    function generateDrillText(lvl, drill, seed) {
+      const rng = createRng(seed);
+      if (drill.stepType === "isolated_pairs") {
+        const k1 = lvl.newKeys[0], k2 = lvl.newKeys[1];
+        const pairs = [`${k1}${k1}`, `${k2}${k2}`, `${k1}${k2}`, `${k2}${k1}`];
+        const out = [];
+        for (let i = 0; i < drill.wordsCount; i++) {
+          out.push(i < pairs.length ? pairs[i] : pairs[Math.floor(rng() * pairs.length)]);
+        }
+        return out.join(" ");
+      }
+      const out = [];
+      for (let i = 0; i < drill.wordsCount; i++) {
+        out.push(generateWordByAct(lvl, i, drill.wordsCount));
+      }
+      return out.join(" ");
+    }
+
+    function resolveChar(ch) {
+      for (const k of Object.values(KEYS)) {
+        if (k.charNormal === ch) return k;
+      }
+      return KEYS.Space;
+    }
+
+    function computeBarretines(acc) {
+      if (acc >= 0.98) return 5;
+      if (acc >= 0.94) return 4;
+      if (acc >= 0.88) return 3;
+      if (acc >= 0.80) return 2;
+      return 1;
+    }
+
+    // =========================================================================
+    // NAVEGACIÓ PER PANTALLES
+    // =========================================================================
+    function showScreen(screenName) {
+      state.screen = screenName;
+      ["home", "phases", "ignition", "play", "result"].forEach(s => {
+        document.getElementById(`screen-${s}`).classList.toggle("active", s === screenName);
+      });
+
+      document.getElementById("btn-back").style.display = screenName === "home" ? "none" : "inline-block";
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      document.getElementById("header-breadcrumb").textContent = screenName === "home" ? "Mapa de Catalunya" : lvl.titleCa;
+
+      const totalB = Object.values(state.stepBarretines).reduce((a, b) => a + b, 0);
+      document.getElementById("header-barretines").innerHTML = `${totalB} ${renderBarretinaSvg(true, 2)}`;
+
+      if (screenName === "home") {
+        state.arcadeRunning = false;
+        renderHomeLevels();
+      } else if (screenName === "phases") {
+        state.arcadeRunning = false;
+        renderLevelPhases();
+      }
+    }
+
+    function renderHomeLevels() {
+      const grid = document.getElementById("levels-grid");
+      grid.innerHTML = "";
+      for (const lvl of LEVELS) {
+        const unlocked = isLevelUnlocked(lvl);
+        const steps = getOrderedSteps(lvl);
+        const earned = steps.reduce((a, s) => a + (state.stepBarretines[s.id] || 0), 0);
+        const maxB = steps.length * 5;
+
+        const card = document.createElement("div");
+        card.className = `level-card ${unlocked ? "" : "locked"}`;
+        card.innerHTML = `
+          <canvas class="level-thumb" width="96" height="84"></canvas>
+          <div>
+            <div style="font-weight:800;font-size:1.05rem;">${lvl.titleCa}</div>
+            <div style="font-size:0.82rem;font-weight:700;color:#1d4ed8;margin:0.15rem 0;">${lvl.keysLabel}</div>
+            <div style="font-size:0.8rem;opacity:0.85;">${lvl.descCa}</div>
+            <div style="margin-top:0.35rem;font-size:0.8rem;font-weight:800;">
+              ${renderBarretinaSvg(earned > 0, 2)} ${earned} / ${maxB} Barretines
+            </div>
+          </div>
+          <div class="lock-badge">${unlocked ? "▶️" : "🔒"}</div>
+        `;
+        drawLevelThumbnail(card.querySelector("canvas"), lvl.gameMode);
+        if (unlocked) {
+          card.onclick = () => {
+            state.levelId = lvl.id;
+            showScreen("phases");
+          };
+        }
+        grid.appendChild(card);
+      }
+    }
+
+    function renderLevelPhases() {
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      document.getElementById("phases-level-title").textContent = `${lvl.titleCa} (${lvl.keysLabel})`;
+      document.getElementById("phases-level-desc").textContent = lvl.descCa;
+
+      const container = document.getElementById("phases-cards");
+      container.innerHTML = "";
+
+      // FASE 1
+      const f1 = document.createElement("div");
+      f1.className = "phase-card";
+      f1.innerHTML = `
+        <div>
+          <div style="font-size:1.6rem;">⌨️</div>
+          <h3 style="margin:0.3rem 0;">Fase 1: Pràctica de Lletres</h3>
+          <p style="font-size:0.82rem;opacity:0.8;margin:0 0 0.5rem;">Entrena primer les 2 tecles noves i després paraules més llargues.</p>
+        </div>
+        <div class="substeps-list" id="f1-steps"></div>
+      `;
+      const f1List = f1.querySelector("#f1-steps");
+      lvl.drills.forEach(d => {
+        const unl = isStepUnlocked(lvl, d.id);
+        const b = state.stepBarretines[d.id] || 0;
+        const btn = document.createElement("button");
+        btn.className = "substep-btn";
+        btn.disabled = !unl;
+        btn.innerHTML = `<span>${unl ? "▶️" : "🔒"} ${d.label}</span><span>${b}/5 ${renderBarretinaSvg(b >= 3, 2)}</span>`;
+        btn.onclick = () => promptIgnitionBeforeStep(lvl.id, "drill", d.id);
+        f1List.appendChild(btn);
+      });
+      container.appendChild(f1);
+
+      // FASE 2 (2 subnivells de Joc J1 i J2!)
+      const f2Unlocked = isStepUnlocked(lvl, lvl.arcades[0].id);
+      const f2 = document.createElement("div");
+      f2.className = `phase-card ${f2Unlocked ? "" : "locked"}`;
+      f2.innerHTML = `
+        <div>
+          <div style="font-size:1.6rem;">🕹️</div>
+          <h3 style="margin:0.3rem 0;">Fase 2: ${lvl.gameTitle}</h3>
+          <p style="font-size:0.82rem;opacity:0.85;margin:0 0 0.5rem;">${lvl.gameDesc}</p>
+        </div>
+        <div class="substeps-list" id="f2-steps"></div>
+      `;
+      const f2List = f2.querySelector("#f2-steps");
+      lvl.arcades.forEach(arc => {
+        const unl = isStepUnlocked(lvl, arc.id);
+        const b = state.stepBarretines[arc.id] || 0;
+        const btn = document.createElement("button");
+        btn.className = "substep-btn";
+        btn.disabled = !unl;
+        btn.innerHTML = `<span>${unl ? "🕹️" : "🔒"} ${arc.label}</span><span>${b}/5 ${renderBarretinaSvg(b >= 3, 2)}</span>`;
+        btn.onclick = () => promptIgnitionBeforeStep(lvl.id, "arcade", arc.id);
+        f2List.appendChild(btn);
+      });
+      container.appendChild(f2);
+
+      // FASE 3 (Repte Dita Catalana)
+      const provId = `${lvl.id}.PROVERB`;
+      const f3Unlocked = isStepUnlocked(lvl, provId);
+      const provB = state.stepBarretines[provId] || 0;
+      const f3 = document.createElement("div");
+      f3.className = `phase-card ${f3Unlocked ? "" : "locked"}`;
+      f3.innerHTML = `
+        <div>
+          <div style="font-size:1.6rem;">📜</div>
+          <h3 style="margin:0.3rem 0;">Fase 3: Repte Dita Catalana</h3>
+          <p style="font-size:0.82rem;opacity:0.85;margin:0 0 0.5rem;">
+            Escriu <strong>«${lvl.proverbCa}»</strong> amb tot el teclat per desbloquejar el següent nivell!
+          </p>
+        </div>
+        <div class="substeps-list">
+          <button type="button" class="substep-btn" id="btn-start-proverb" ${f3Unlocked ? "" : "disabled"}>
+            <span>${f3Unlocked ? "📜" : "🔒"} Començar Dita</span>
+            <span>${provB}/5 ${renderBarretinaSvg(provB >= 3, 2)}</span>
+          </button>
+        </div>
+      `;
+      f3.querySelector("#btn-start-proverb").onclick = () => promptIgnitionBeforeStep(lvl.id, "proverb", provId);
+      container.appendChild(f3);
+    }
+
+    function promptIgnitionBeforeStep(levelId, phaseType, stepId) {
+      state.levelId = levelId;
+      state.phaseType = phaseType;
+      state.stepId = stepId;
+      state.ignitionPressed = {};
+      const lvl = LEVELS.find(l => l.id === levelId) || LEVELS[0];
+
+      const k1 = lvl.newKeys[0].toUpperCase();
+      const k2 = lvl.newKeys[1].toUpperCase();
+      const f1 = FINGERS[resolveChar(lvl.newKeys[0]).finger].labelCa;
+      const f2 = FINGERS[resolveChar(lvl.newKeys[1]).finger].labelCa;
+
+      document.getElementById("ignition-title").textContent = `🚀 Engega els motors (${lvl.titleCa})!`;
+      document.getElementById("ignition-desc").innerHTML =
+        `Col·loca els dits a la fila base (A S D F — J K L Ñ).<br>` +
+        `Prem <strong>${k1}</strong> (${f1}), <strong>${k2}</strong> (${f2}) i <strong>ESPAI</strong> (Polzes):`;
+
+      renderIgnitionBoxes(lvl);
+      showScreen("ignition");
+    }
+
+    function renderIgnitionBoxes(lvl) {
+      const items = [
+        { k: lvl.newKeys[0], label: `Tecla ${lvl.newKeys[0].toUpperCase()}` },
+        { k: lvl.newKeys[1], label: `Tecla ${lvl.newKeys[1].toUpperCase()}` },
+        { k: " ", label: "Barra d'ESPAI" }
+      ];
+      document.getElementById("ignition-keys").innerHTML = items.map(it => {
+        const lit = Boolean(state.ignitionPressed[it.k]);
+        return `<div class="ignition-key ${lit ? "lit" : ""}">${lit ? "✅ " : "⚡ "}${it.label}</div>`;
+      }).join("");
+    }
+
+    function launchActiveStep() {
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      showScreen("play");
+
+      if (state.phaseType === "arcade") {
+        document.getElementById("tape-container").style.display = "none";
+        document.getElementById("arcade-container").style.display = "block";
+        initArcadeSession(lvl);
+      } else {
+        document.getElementById("tape-container").style.display = "block";
+        document.getElementById("arcade-container").style.display = "none";
+        state.arcadeRunning = false;
+
+        if (state.phaseType === "drill") {
+          const drill = lvl.drills.find(d => d.id === state.stepId) || lvl.drills[0];
+          document.getElementById("tape-title").textContent = drill.label;
+          document.getElementById("tape-subtitle").textContent = "Paraules separades per Espai";
+          document.getElementById("btn-speak-proverb").style.display = "none";
+          state.sequence = generateDrillText(lvl, drill, Date.now() & 0xfffffff);
+        } else {
+          document.getElementById("tape-title").textContent = `📜 Dita Catalana: «${lvl.proverbCa}»`;
+          document.getElementById("tape-subtitle").textContent = lvl.proverbMeaningCa;
+          document.getElementById("btn-speak-proverb").style.display = "inline-block";
+          state.sequence = lvl.proverbCa;
+        }
+        state.cursor = 0;
+        state.evaluations = [];
+        state.startedAtMs = performance.now();
+        renderTapeView();
+      }
+    }
+
+    // =========================================================================
+    // LES 4 MECÀNIQUES DE JOC REALMENT DIFERENTS (Amb 2 Subnivells J1 i J2!)
+    // =========================================================================
+    let animFrameId = null;
+
+    function getActiveArcadeDef(lvl) {
+      return lvl.arcades.find(a => a.id === state.stepId) || lvl.arcades[0];
+    }
+
+    function initArcadeSession(lvl) {
+      const arcDef = getActiveArcadeDef(lvl);
+      state.arcadeRunning = true;
+      state.arcadeLives = 5;
+      state.arcadeEnergy = 100;
+      state.arcadeCompleted = 0;
+      state.arcadeTotal = arcDef.totalTargets || 8;
+      state.arcadeEntities = [];
+      state.arcadeParticles = [];
+      state.fallingClimbers = [];
+      state.leftClimberStep = 0;
+      state.rightClimberStep = 0;
+      state.arcadeShake = 0;
+      state.arcadeTilt = 0;
+      state.arcadeJumpTimer = 0;
+      state.arcadeAngle = 0;
+      state.arcadeTotalPresses = 0;
+      state.arcadeErrors = 0;
+      state.arcadeKeyErrors = {};
+      state.startedAtMs = performance.now();
+
+      spawnEntitiesForCurrentMode(lvl);
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      arcadeTick();
+    }
+
+    function getCurrentActNumber() {
+      return state.arcadeCompleted < 3 ? 1 : state.arcadeCompleted < 6 ? 2 : 3;
+    }
+
+    function spawnEntitiesForCurrentMode(lvl) {
+      const arcDef = getActiveArcadeDef(lvl);
+      const act = getCurrentActNumber();
+
+      if (lvl.gameMode === "meteors") {
+        const isBoss = arcDef.subMode === "dual_boss" && state.arcadeCompleted === state.arcadeTotal - 1;
+        const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
+        state.arcadeEntities.push({
+          id: Date.now() + Math.random(),
+          word: w1,
+          typedIndex: 0,
+          x: 800,
+          y: isBoss ? 95 : (45 + (state.arcadeCompleted % 3) * 65),
+          speed: isBoss ? 0.35 : (0.42 + act * 0.11),
+          isBoss,
+          scale: isBoss ? 6.5 : 4
+        });
+        if (arcDef.subMode === "dual_boss" && act >= 2 && !isBoss && state.arcadeEntities.length < 2) {
+          const w2 = generateWordByAct(lvl, state.arcadeCompleted + 1, state.arcadeTotal, arcDef.subMode) + " ";
+          state.arcadeEntities.push({
+            id: Date.now() + Math.random() + 1,
+            word: w2,
+            typedIndex: 0,
+            x: 860,
+            y: 45 + ((state.arcadeCompleted + 1) % 3) * 65,
+            speed: 0.36 + act * 0.1,
+            isBoss: false,
+            scale: 3.8
+          });
+        }
+      } else if (lvl.gameMode === "castells") {
+        // MECÀNICA 2 (CASTELLS):
+        // J1 (single_climber): Puja un casteller amb D i K (si t'equivoques cau!).
+        // J2 (dual_climbers): Puja UN CASTELLER PER CADA COSTAT alhora (Esquerra amb D/F + Dreta amb K/J) coordinant les dues mans!
+        const w = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
+        state.leftClimberStep = 0;
+        state.rightClimberStep = 0;
+        state.arcadeEntities = [{
+          id: Date.now(),
+          word: w,
+          typedIndex: 0,
+          subMode: arcDef.subMode,
+          progress: 0
+        }];
+      } else if (lvl.gameMode === "sardana") {
+        const w = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
+        state.arcadeEntities = [{
+          id: Date.now(),
+          word: w,
+          typedIndex: 0,
+          y: 15,
+          speed: 0.36 + act * 0.1,
+          isLongStep: arcDef.subMode === "mixed"
+        }];
+      } else {
+        const directions = ["N", "E", "S", "O"];
+        const dir = directions[state.arcadeCompleted % 4];
+        const w = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
+        state.arcadeEntities = [{
+          id: Date.now(),
+          word: w,
+          typedIndex: 0,
+          dir,
+          dist: 1.0,
+          speed: 0.0014 + act * 0.00032
+        }];
+      }
+
+      updateArcadeHud(lvl);
+    }
+
+    function getPrimaryEntity() {
+      if (state.arcadeEntities.length === 0) return null;
+      return state.arcadeEntities[0];
+    }
+
+    function updateArcadeHud(lvl) {
+      const arcDef = getActiveArcadeDef(lvl);
+      const act = getCurrentActNumber();
+      document.getElementById("arcade-title").textContent = `${lvl.gameTitle} — ${arcDef.label}`;
+      document.getElementById("arcade-act-badge").textContent = `Fase ${act}/3`;
+      document.getElementById("arcade-progress").innerHTML = `<strong>${state.arcadeCompleted} / ${state.arcadeTotal}</strong>`;
+      document.getElementById("arcade-energy-fill").style.width = `${Math.max(0, state.arcadeEnergy)}%`;
+      document.getElementById("arcade-lives").innerHTML =
+        [1, 2, 3, 4, 5].map(n => renderBarretinaSvg(n <= state.arcadeLives, 2.6)).join("");
+
+      const ent = getPrimaryEntity();
+      const wordEl = document.getElementById("arcade-active-word");
+      const hintEl = document.getElementById("arcade-hint-text");
+
+      if (ent) {
+        const done = ent.word.slice(0, ent.typedIndex).replace(" ", "␣");
+        const todo = ent.word.slice(ent.typedIndex).replace(" ", "␣");
+        wordEl.innerHTML = `<span style="color:#4ade80;">${done}</span><span style="color:#fde047;text-decoration:underline;">${todo}</span>`;
+        renderSupportKeyboardAndHands(ent.word[ent.typedIndex]);
+
+        if (lvl.gameMode === "castells") {
+          hintEl.textContent = ent.subMode === "dual_climbers"
+            ? "👐 J2: Puja 1 casteller per cada costat! Mà Esq. (D,F) fa pujar l'esquerre i Mà Dreta (K,J) el dret! Si falles, cau!"
+            : "🧗 J1: Fes pujar el casteller amb D i K! Vigila: si t'equivoques de tecla, el casteller rellisca i cau!";
+        } else if (lvl.gameMode === "sardana") {
+          hintEl.textContent = "🎵 Segueix la melodia de la cobla i completa les notes dins del Cercle Daurat!";
+        } else if (lvl.gameMode === "patum") {
+          hintEl.textContent = `🔥 Sona la música de la Patum! Apaga el fuet del cantó ${ent.dir}!`;
+        } else {
+          hintEl.textContent = ent.isBoss ? "☄️ METEORIT REI GEGANT! Destrueix-lo!" : "🚀 Dispara als meteorits amb ESPAI!";
+        }
+      } else {
+        wordEl.textContent = "---";
+      }
+    }
+
+    function triggerFallingClimber(side = "left") {
+      const startX = side === "left" ? 335 : 495;
+      state.fallingClimbers.push({
+        x: startX,
+        y: 115,
+        vx: side === "left" ? -1.8 : 1.8,
+        vy: -2.5,
+        side,
+        life: 48
+      });
+    }
+
+    function penalizeMistakeOrTimeout(energyLoss, loseFullBarretina = false) {
+      state.arcadeShake = 14;
+      sfxErrorHit();
+      spawnParticles(440, 125, "#ef4444");
+
+      if (loseFullBarretina) {
+        state.arcadeLives = Math.max(0, state.arcadeLives - 1);
+        state.arcadeEnergy = 100;
+      } else {
+        state.arcadeEnergy -= energyLoss;
+        if (state.arcadeEnergy <= 0) {
+          state.arcadeLives = Math.max(0, state.arcadeLives - 1);
+          state.arcadeEnergy = 100;
+        }
+      }
+
+      if (state.arcadeLives <= 0) {
+        state.arcadeRunning = false;
+        setTimeout(() => endArcadeGame(false), 450);
+      }
+    }
+
+    function spawnParticles(x, y, color = "#fde047") {
+      for (let i = 0; i < 18; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const sp = 1.5 + Math.random() * 4;
+        state.arcadeParticles.push({
+          x, y,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp,
+          size: 4 + Math.floor(Math.random() * 4),
+          color: i % 2 === 0 ? color : "#f97316",
+          life: 24
+        });
+      }
+    }
+
+    function arcadeTick() {
+      if (state.screen !== "play" || state.phaseType !== "arcade") return;
+      const canvas = document.getElementById("arcade-canvas");
+      const ctx = canvas.getContext("2d");
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      const shakeX = state.arcadeShake > 0 ? (Math.random() - 0.5) * 8 : 0;
+      if (state.arcadeShake > 0) state.arcadeShake--;
+      if (state.arcadeJumpTimer > 0) state.arcadeJumpTimer--;
+
+      if (lvl.gameMode === "meteors") {
+        tickAndDrawMeteors(ctx, canvas, lvl, shakeX);
+      } else if (lvl.gameMode === "castells") {
+        tickAndDrawCastells(ctx, canvas, lvl, shakeX);
+      } else if (lvl.gameMode === "sardana") {
+        tickAndDrawSardana(ctx, canvas, lvl, shakeX);
+      } else {
+        tickAndDrawPatum(ctx, canvas, lvl, shakeX);
+      }
+
+      // Partícules
+      const remP = [];
+      for (const p of state.arcadeParticles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
+        if (p.life > 0) remP.push(p);
+      }
+      state.arcadeParticles = remP;
+
+      animFrameId = requestAnimationFrame(arcadeTick);
+    }
+
+    // 1) MECÀNICA 1: MONTSEC (Meteorits simultanis + Meteorit Gegant que es divideix!)
+    function tickAndDrawMeteors(ctx, canvas, lvl, shakeX) {
+      ctx.fillStyle = "#060913";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#1e293b";
+      ctx.beginPath();
+      ctx.moveTo(0, 250);
+      ctx.lineTo(200, 205);
+      ctx.lineTo(440, 232);
+      ctx.lineTo(680, 195);
+      ctx.lineTo(880, 228);
+      ctx.lineTo(880, 250);
+      ctx.fill();
+
+      const ent = getPrimaryEntity();
+      const shipY = ent ? ent.y : 110;
+      drawSprite(ctx, SPRITES.spaceship, 38 + shakeX, shipY, 4);
+
+      if (state.arcadeRunning) {
+        for (const m of state.arcadeEntities) {
+          m.x -= m.speed;
+          if (m.x <= 95) {
+            penalizeMistakeOrTimeout(100, true);
+            m.x = 790;
+            m.typedIndex = 0;
+            updateArcadeHud(lvl);
+            break;
+          }
+        }
+      }
+
+      state.arcadeEntities.forEach((m, idx) => {
+        drawSprite(ctx, SPRITES.meteor, m.x, m.y, m.scale);
+        drawWordBox(ctx, m.word, m.typedIndex, m.x - 10, m.y - 26, idx === 0);
+      });
+    }
+
+    // 2) MECÀNICA 2: CASTELLS A VILAFRANCA
+    // A J1 puja un casteller (si falles, cau!). A J2 pugen 2 castellers alhora: un pel costat ESQUERRE (Mà Esq: D, F) i un pel costat DRET (Mà Dreta: K, J)!
+    function tickAndDrawCastells(ctx, canvas, lvl, shakeX) {
+      ctx.fillStyle = "#172554";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(0, 222, canvas.width, 28);
+
+      const ent = getPrimaryEntity();
+      const isDual = ent && ent.subMode === "dual_climbers";
+      const baseX = 425 + shakeX;
+
+      // Dibuixa la Pinya a la base
+      drawSprite(ctx, SPRITES.casteller, baseX - 55, 186, 3.2);
+      drawSprite(ctx, SPRITES.casteller, baseX + 35, 186, 3.2);
+      drawSprite(ctx, SPRITES.casteller, baseX - 10, 186, 3.2);
+
+      // Pisos ja consolidats del tronc (2 colles / pilars paral·lels a J2!)
+      const builtFloors = Math.min(4, Math.floor(state.arcadeCompleted / 2) + 1);
+      for (let f = 1; f <= builtFloors; f++) {
+        const yPos = 186 - f * 28;
+        if (isDual) {
+          drawSprite(ctx, SPRITES.casteller, baseX - 32, yPos, 2.9);
+          drawSprite(ctx, SPRITES.casteller, baseX + 14, yPos, 2.9);
+        } else {
+          drawSprite(ctx, SPRITES.casteller, baseX - 10, yPos, 3);
+        }
+      }
+
+      // Dibuixa els castellers que estan PUJANT ara mateix pels costats!
+      if (ent) {
+        if (isDual) {
+          // Casteller ESQUERRE (puja quan prems D o F)
+          const leftY = 180 - state.leftClimberStep * 28;
+          ctx.fillStyle = "#38bdf8";
+          ctx.font = "bold 12px sans-serif";
+          ctx.fillText("⬅️ Mà Esq. (D, F)", 185, 30);
+          drawSprite(ctx, SPRITES.casteller, baseX - 75, leftY, 3);
+
+          // Casteller DRET (puja quan prems K o J)
+          const rightY = 180 - state.rightClimberStep * 28;
+          ctx.fillStyle = "#fde047";
+          ctx.fillText("Mà Dreta (K, J) ➡️", 575, 30);
+          drawSprite(ctx, SPRITES.casteller, baseX + 55, rightY, 3);
+
+          drawWordBox(ctx, ent.word, ent.typedIndex, 375, 22, true);
+        } else {
+          // J1: 1 Casteller pujant pel costat esquerre cap al cim
+          const climbY = 180 - ent.typedIndex * 24;
+          drawSprite(ctx, SPRITES.casteller, baseX - 68, climbY, 3.1);
+          drawWordBox(ctx, ent.word, ent.typedIndex, 210, 95, true);
+        }
+      }
+
+      // Animació dels castellers que CAUEN quan t'equivoques de tecla!
+      const remFall = [];
+      for (const fc of state.fallingClimbers) {
+        fc.x += fc.vx;
+        fc.y += fc.vy;
+        fc.vy += 0.28; // Gravetat!
+        fc.life--;
+        drawSprite(ctx, SPRITES.casteller, fc.x, fc.y, 3);
+        ctx.fillStyle = "#ef4444";
+        ctx.font = "bold 13px sans-serif";
+        ctx.fillText("💥 Uiii! Cau!", fc.x - 10, fc.y - 8);
+        if (fc.life > 0 && fc.y < 230) remFall.push(fc);
+      }
+      state.fallingClimbers = remFall;
+    }
+
+    // 3) MECÀNICA 3: SARDANA A GIRONA (Pista de Ritme Musical + Melodia Cobla 8-bits!)
+    function tickAndDrawSardana(ctx, canvas, lvl, shakeX) {
+      ctx.fillStyle = "#064e3b";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const jumpOffset = state.arcadeJumpTimer > 0 ? -14 : 0;
+      const dancersX = [75, 145, 215, 635, 705, 775];
+      dancersX.forEach((dx, i) => {
+        const waveY = Math.sin(state.arcadeAngle + i) * 6 + jumpOffset;
+        drawSprite(ctx, SPRITES.dancer, dx + shakeX, 130 + waveY, 3.6);
+      });
+
+      ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
+      ctx.fillRect(340, 0, 200, canvas.height);
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(340, 0, 200, canvas.height);
+
+      ctx.fillStyle = "rgba(250, 204, 21, 0.22)";
+      ctx.fillRect(344, 175, 192, 42);
+      ctx.strokeStyle = "#fde047";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(344, 175, 192, 42);
+      ctx.fillStyle = "#fde047";
+      ctx.font = "bold 11px sans-serif";
+      ctx.fillText("ZONA DE COMPÀS", 392, 234);
+
+      const ent = getPrimaryEntity();
+      if (state.arcadeRunning && ent) {
+        ent.y += ent.speed;
+        if (ent.y >= 218) {
+          penalizeMistakeOrTimeout(100, true);
+          ent.y = 15;
+          ent.typedIndex = 0;
+          updateArcadeHud(lvl);
+        }
+      }
+
+      if (ent) {
+        drawWordBox(ctx, ent.word, ent.typedIndex, 385, ent.y, true);
+      }
+    }
+
+    // 4) MECÀNICA 4: LA PATUM DE BERGA (4 Cantons + Música del Tirabol de la Patum en 8-bits!)
+    function tickAndDrawPatum(ctx, canvas, lvl, shakeX) {
+      ctx.fillStyle = "#2a0a0a";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const cx = 440 + shakeX, cy = 125;
+      ctx.strokeStyle = "rgba(249, 115, 22, 0.4)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 105, 0, Math.PI * 2);
+      ctx.stroke();
+
+      drawSprite(ctx, SPRITES.guita, cx - 22, cy - 18, 4.2);
+
+      const ent = getPrimaryEntity();
+      if (state.arcadeRunning && ent) {
+        ent.dist -= ent.speed;
+        if (ent.dist <= 0.15) {
+          penalizeMistakeOrTimeout(100, true);
+          ent.dist = 1.0;
+          ent.typedIndex = 0;
+          updateArcadeHud(lvl);
+        }
+      }
+
+      if (ent) {
+        const coords = {
+          N: { x: cx - 38, y: cy - 100 * ent.dist - 12 },
+          S: { x: cx - 38, y: cy + 85 * ent.dist },
+          E: { x: cx + 260 * ent.dist, y: cy - 12 },
+          O: { x: cx - 330 * ent.dist, y: cy - 12 }
+        };
+        const pos = coords[ent.dir] || coords.E;
+
+        ctx.strokeStyle = "#f97316";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(pos.x + 35, pos.y + 12);
+        ctx.stroke();
+
+        drawWordBox(ctx, ent.word, ent.typedIndex, pos.x, pos.y, true);
+      }
+    }
+
+    function drawWordBox(ctx, word, typedIndex, x, y, isPrimary = true) {
+      const disp = word.replace(" ", "␣");
+      const w = Math.max(62, disp.length * 16 + 18);
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(x, y, w, 26);
+      ctx.strokeStyle = isPrimary ? "#fde047" : "#64748b";
+      ctx.lineWidth = isPrimary ? 2.5 : 1.5;
+      ctx.strokeRect(x, y, w, 26);
+
+      ctx.font = "bold 16px Consolas, monospace";
+      let tx = x + 9;
+      for (let i = 0; i < disp.length; i++) {
+        ctx.fillStyle = i < typedIndex ? "#4ade80" : (i === typedIndex && isPrimary ? "#fde047" : "#ffffff");
+        ctx.fillText(disp[i], tx, y + 18);
+        tx += 15;
+      }
+    }
+
+    function handleArcadeTyping(typedChar) {
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      const ent = getPrimaryEntity();
+      if (!state.arcadeRunning || !ent) return;
+
+      state.arcadeTotalPresses++;
+      const expected = ent.word[ent.typedIndex].toLowerCase();
+      if (!state.arcadeKeyErrors[expected]) state.arcadeKeyErrors[expected] = { hits: 0, errors: 0 };
+
+      if (typedChar === expected) {
+        state.arcadeKeyErrors[expected].hits++;
+        ent.typedIndex++;
+        playGameNote(lvl.gameMode);
+
+        // Als Castells J2, si prems una tecla de la mà esquerra (d, f) puja el casteller esquerre; si prems mà dreta (k, j) puja el dret!
+        if (lvl.gameMode === "castells") {
+          if (lvl.leftKeys.includes(typedChar)) state.leftClimberStep++;
+          if (lvl.rightKeys.includes(typedChar)) state.rightClimberStep++;
+        }
+
+        if (ent.typedIndex >= ent.word.length) {
+          sfxActionSuccess();
+          spawnParticles(440, 120, "#4ade80");
+          state.arcadeAngle += 0.8;
+          state.arcadeJumpTimer = 18;
+          state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
+
+          if (lvl.gameMode === "meteors" && ent.isBoss && !ent.hasSplit) {
+            ent.hasSplit = true;
+            ent.isBoss = false;
+            ent.scale = 3.8;
+            ent.word = `${lvl.newKeys[0]}${lvl.newKeys[1]}${lvl.newKeys[0]} `;
+            ent.typedIndex = 0;
+            ent.x = Math.min(720, ent.x + 140);
+            updateArcadeHud(lvl);
+            return;
+          }
+
+          state.arcadeEntities.shift();
+          state.arcadeCompleted++;
+
+          if (state.arcadeCompleted >= state.arcadeTotal) {
+            state.arcadeRunning = false;
+            setTimeout(() => endArcadeGame(true), 400);
+          } else if (state.arcadeEntities.length === 0) {
+            spawnEntitiesForCurrentMode(lvl);
+          } else {
+            updateArcadeHud(lvl);
+          }
+        } else {
+          updateArcadeHud(lvl);
+        }
+      } else {
+        // Error de tecla: si estem als Castells, el casteller que estava pujant CAU!
+        state.arcadeErrors++;
+        state.arcadeKeyErrors[expected].errors++;
+
+        if (lvl.gameMode === "castells") {
+          const isRightExpected = lvl.rightKeys.includes(expected);
+          triggerFallingClimber(isRightExpected ? "right" : "left");
+          if (ent.subMode === "dual_climbers") {
+            if (isRightExpected) state.rightClimberStep = Math.max(0, state.rightClimberStep - 1);
+            else state.leftClimberStep = Math.max(0, state.leftClimberStep - 1);
+          } else {
+            ent.typedIndex = Math.max(0, ent.typedIndex - 1);
+          }
+        }
+        if (lvl.gameMode === "meteors") ent.x -= 28;
+        if (lvl.gameMode === "sardana") ent.y += 18;
+        if (lvl.gameMode === "patum") ent.dist -= 0.1;
+
+        penalizeMistakeOrTimeout(25, false);
+        updateArcadeHud(lvl);
+      }
+    }
+
+    function endArcadeGame(survived) {
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      const arcDef = getActiveArcadeDef(lvl);
+      const earnedB = survived ? state.arcadeLives : 0;
+      if (survived) {
+        sfxFanfare();
+        const prev = state.stepBarretines[state.stepId] || 0;
+        state.stepBarretines[state.stepId] = Math.max(prev, earnedB);
+        saveProgress();
+      }
+      const acc = state.arcadeTotalPresses > 0
+        ? Math.round(((state.arcadeTotalPresses - state.arcadeErrors) / state.arcadeTotalPresses) * 100)
+        : 100;
+      const durS = Math.max(1, Math.round((performance.now() - state.startedAtMs) / 1000));
+      const wpm = Number(((state.arcadeTotalPresses / 5) / (durS / 60)).toFixed(1));
+
+      recordTelemetrySession({
+        phaseType: "arcade",
+        stepId: state.stepId,
+        stepLabel: arcDef.label,
+        wpmNet: wpm,
+        accuracyPct: acc,
+        errors: state.arcadeErrors,
+        totalPresses: state.arcadeTotalPresses,
+        barretines: earnedB,
+        keyStats: state.arcadeKeyErrors
+      });
+
+      showResultScreen({
+        title: survived
+          ? `🎉 Joc superat! Has guanyat ${earnedB} / 5 Barretines!`
+          : `💥 Has perdut les 5 Barretines!`,
+        barretines: earnedB,
+        msg: survived
+          ? (earnedB >= 3 ? "Molt bona feina! Ja tens desbloquejat el següent pas!" : "Necessites conservar almenys 3 Barretines per avançar!")
+          : "Recorda escriure sense pressa: cada tecla errònia resta un 25% d'energia!",
+        metricsHtml: `
+          <span>Superats: <strong>${state.arcadeCompleted} / ${state.arcadeTotal}</strong></span>
+          <span>Precisió: <strong>${acc}%</strong></span>
+          <span>Barretines: <strong>${earnedB} / 5</strong></span>
+        `,
+        showThermometer: false
+      });
+    }
+
+    // =========================================================================
+    // TIRA DE LLETRES (FASE 1 i FASE 3) I TECLAT DE SUPORT
+    // =========================================================================
+    function renderTapeView() {
+      const tape = document.getElementById("prompt-tape");
+      tape.innerHTML = "";
+      state.sequence.split("").forEach((ch, idx) => {
+        const span = document.createElement("span");
+        const ev = state.evaluations[idx];
+        const cls = idx < state.cursor
+          ? (ev.correct ? "char-ok" : "char-err")
+          : (idx === state.cursor ? "char-current" : "char-pending");
+        span.className = `prompt-char ${ch === " " ? "space-char" : ""} ${cls}`;
+        span.textContent = ch === " " ? "␣" : ch;
+        tape.appendChild(span);
+      });
+
+      const tot = state.evaluations.length;
+      const errs = state.evaluations.filter(e => !e.correct).length;
+      const acc = tot > 0 ? Math.round(((tot - errs) / tot) * 100) : 100;
+      document.getElementById("tape-progress").innerHTML = `Pulsació: <strong>${state.cursor} / ${state.sequence.length}</strong>`;
+      document.getElementById("tape-accuracy").innerHTML = `Precisió: <strong>${acc}%</strong>`;
+
+      const expectedChar = state.cursor < state.sequence.length ? state.sequence[state.cursor] : null;
+      renderSupportKeyboardAndHands(expectedChar);
+    }
+
+    function renderSupportKeyboardAndHands(expectedChar) {
+      const targetKey = expectedChar ? resolveChar(expectedChar.toLowerCase()) : null;
+      const kb = document.getElementById("virtual-keyboard");
+      kb.innerHTML = "";
+
+      for (const row of ROWS) {
+        const rDiv = document.createElement("div");
+        rDiv.className = "kb-row";
+        for (const code of row) {
+          const k = KEYS[code];
+          const fMeta = FINGERS[k.finger];
+          const kDiv = document.createElement("div");
+          const isTarget = targetKey && targetKey.code === code;
+          kDiv.className = `kb-key ${code === "Space" ? "kb-space" : ""} ${isTarget ? "kb-target" : ""}`;
+          kDiv.style.setProperty("--key-bg", isTarget ? fMeta.colorHex : fMeta.colorHex + "40");
+          kDiv.innerHTML = `<span>${k.label}</span>${k.isHomeKey ? `<span class="kb-home-dot">${code==="KeyF"||code==="KeyJ"?"▬":"•"}</span>` : ""}<span class="kb-finger-tag">${fMeta.short}</span>`;
+          rDiv.appendChild(kDiv);
+        }
+        kb.appendChild(rDiv);
+      }
+
+      const dock = document.getElementById("support-dock");
+      const handsPanel = document.getElementById("hands-panel");
+      handsPanel.style.display = state.showHands ? "block" : "none";
+      dock.className = `support-dock ${state.showHands ? "" : "no-hands"}`;
+
+      const activeFinger = targetKey ? targetKey.finger : null;
+      document.getElementById("hands-caption").innerHTML = activeFinger
+        ? FINGERS[activeFinger].labelCa
+        : "Completat!";
+
+      const allFingers = [
+        { id: "L-pinky", x: 10, y: 35, h: 42 },
+        { id: "L-ring", x: 28, y: 22, h: 55 },
+        { id: "L-middle", x: 46, y: 16, h: 61 },
+        { id: "L-index", x: 64, y: 25, h: 52 },
+        { id: "thumb", x: 84, y: 52, h: 35 },
+        { id: "thumb", x: 112, y: 52, h: 35 },
+        { id: "R-index", x: 132, y: 25, h: 52 },
+        { id: "R-middle", x: 150, y: 16, h: 61 },
+        { id: "R-ring", x: 168, y: 22, h: 55 },
+        { id: "R-pinky", x: 186, y: 35, h: 42 }
+      ];
+
+      document.getElementById("hands-svg-box").innerHTML = `
+        <svg viewBox="0 0 212 115" width="195" height="105">
+          <rect x="10" y="72" width="76" height="36" rx="16" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
+          <rect x="126" y="72" width="76" height="36" rx="16" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
+          ${allFingers.map(f => {
+            const act = activeFinger === f.id;
+            const col = act ? FINGERS[f.id].colorHex : "#f8fafc";
+            return `<rect x="${f.x}" y="${f.y}" width="15" height="${f.h}" rx="7" fill="${col}" stroke="#0f172a" stroke-width="${act?3:1.5}"/>`;
+          }).join("")}
+        </svg>
+      `;
+    }
+
+    function finishTapePhase() {
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      const tot = state.evaluations.length;
+      const errs = state.evaluations.filter(e => !e.correct).length;
+      const acc = tot > 0 ? (tot - errs) / tot : 0;
+      const durS = Math.max(1, Math.round((performance.now() - state.startedAtMs) / 1000));
+      const wpm = Number(((tot / 5) / (durS / 60)).toFixed(1));
+      const b = computeBarretines(acc);
+
+      sfxFanfare();
+      const prev = state.stepBarretines[state.stepId] || 0;
+      state.stepBarretines[state.stepId] = Math.max(prev, b);
+
+      const keyStats = {};
+      for (const ev of state.evaluations) {
+        const k = ev.expected.toLowerCase();
+        if (!keyStats[k]) keyStats[k] = { hits: 0, errors: 0 };
+        if (ev.correct) keyStats[k].hits++;
+        else keyStats[k].errors++;
+      }
+
+      if (state.phaseType === "proverb") {
+        state.proverbHistory.push({
+          title: lvl.titleCa,
+          wpm,
+          acc: Math.round(acc * 100)
+        });
+      }
+      saveProgress();
+
+      const drillObj = lvl.drills.find(d => d.id === state.stepId);
+      recordTelemetrySession({
+        phaseType: state.phaseType,
+        stepId: state.stepId,
+        stepLabel: state.phaseType === "proverb" ? `Dita: «${lvl.proverbCa}»` : (drillObj ? drillObj.label : state.stepId),
+        wpmNet: wpm,
+        accuracyPct: Math.round(acc * 100),
+        errors: errs,
+        totalPresses: tot,
+        barretines: b,
+        keyStats
+      });
+
+      showResultScreen({
+        title: state.phaseType === "proverb"
+          ? `📜 Dita Catalana superada! (${b} / 5 Barretines)`
+          : `⌨️ Pràctica completada! (${b} / 5 Barretines)`,
+        barretines: b,
+        msg: b >= 3
+          ? (state.phaseType === "proverb" ? "Has desbloquejat el següent nivell de Catalunya!" : "Ja tens desbloquejat el següent pas!")
+          : "Necessites almenys 3 Barretines (88% precisió) per desbloquejar el següent pas.",
+        metricsHtml: `
+          <span>Precisió: <strong>${Math.round(acc * 100)}%</strong></span>
+          <span>Errors: <strong>${errs}</strong></span>
+          <span>Velocitat: <strong>${wpm} paraules/min</strong></span>
+        `,
+        showThermometer: state.phaseType === "proverb"
+      });
+    }
+
+    function showResultScreen({ title, barretines, msg, metricsHtml, showThermometer }) {
+      document.getElementById("res-title").textContent = title;
+      document.getElementById("res-barretines").innerHTML =
+        [1, 2, 3, 4, 5].map(n => renderBarretinaSvg(n <= barretines, 4.5)).join("");
+      document.getElementById("res-msg").textContent = msg;
+      document.getElementById("res-metrics").innerHTML = metricsHtml;
+
+      const thBox = document.getElementById("res-thermometer");
+      if (showThermometer && state.proverbHistory.length > 0) {
+        thBox.innerHTML = `
+          <div class="thermometer-box">
+            <strong>📈 Evolució de velocitat en les Dites Catalanes:</strong>
+            ${state.proverbHistory.slice(-4).map(it => `
+              <div class="thermo-bar-row">
+                <span style="min-width:170px;font-weight:700;">${it.title}</span>
+                <div class="thermo-bar-fill" style="width:${Math.min(100, Math.max(20, it.wpm * 3))}%">
+                  ${it.wpm} ppm (${it.acc}%)
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      } else {
+        thBox.innerHTML = "";
+      }
+
+      showScreen("result");
+    }
+
+    window.addEventListener("keydown", (ev) => {
+      if (ev.repeat || ["Shift","Control","Alt","AltGraph","CapsLock","Tab","Escape","Dead"].includes(ev.key)) return;
+      if (ev.key.length !== 1) return;
+
+      const typed = ev.key.toLowerCase();
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+
+      if (state.screen === "ignition") {
+        if (ev.key === " ") ev.preventDefault();
+        const k = ev.key === " " ? " " : typed;
+        if (k === lvl.newKeys[0] || k === lvl.newKeys[1] || k === " ") {
+          state.ignitionPressed[k] = true;
+          sfxTone(640, 70, "square", 0.06);
+          renderIgnitionBoxes(lvl);
+          if (state.ignitionPressed[lvl.newKeys[0]] && state.ignitionPressed[lvl.newKeys[1]] && state.ignitionPressed[" "]) {
+            setTimeout(() => launchActiveStep(), 240);
+          }
+        }
+        return;
+      }
+
+      if (state.screen !== "play") return;
+
+      if (state.phaseType === "arcade") {
+        if (ev.key === " ") ev.preventDefault();
+        handleArcadeTyping(ev.key === " " ? " " : typed);
+        return;
+      }
+
+      if (state.cursor >= state.sequence.length) return;
+      if (ev.key === " ") ev.preventDefault();
+
+      const expected = state.sequence[state.cursor];
+      const correct = typed === expected.toLowerCase();
+      state.evaluations.push({ expected, typed: ev.key, correct });
+      state.cursor++;
+
+      if (correct) {
+        sfxTone(expected === " " ? 587.33 : 440 + (state.cursor % 5) * 30, 45, "triangle", 0.05);
+      } else {
+        sfxErrorHit();
+      }
+
+      renderTapeView();
+      if (state.cursor >= state.sequence.length) {
+        finishTapePhase();
+      }
+    });
+
+    document.getElementById("btn-back").onclick = () => {
+      state.arcadeRunning = false;
+      if (state.screen === "phases") showScreen("home");
+      else showScreen("phases");
+    };
+
+    const popover = document.getElementById("settings-popover");
+    document.getElementById("btn-settings-toggle").onclick = (e) => {
+      e.stopPropagation();
+      popover.classList.toggle("open");
+    };
+    document.addEventListener("click", (e) => {
+      if (!popover.contains(e.target)) popover.classList.remove("open");
+    });
+
+    document.getElementById("cfg-sound").onclick = () => {
+      state.soundEnabled = !state.soundEnabled;
+      document.getElementById("val-sound").textContent = state.soundEnabled ? "Sí" : "No";
+    };
+    document.getElementById("cfg-hands").onclick = () => {
+      state.showHands = !state.showHands;
+      document.getElementById("val-hands").textContent = state.showHands ? "Visibles" : "Ocultes";
+      if (state.screen === "play") renderTapeView();
+    };
+    document.getElementById("cfg-font").onclick = () => {
+      state.fontScale = state.fontScale === 1 ? 1.15 : state.fontScale === 1.15 ? 1.3 : 1;
+      document.documentElement.style.setProperty("--font-scale", state.fontScale);
+      document.getElementById("val-font").textContent = `${Math.round(state.fontScale * 100)}%`;
+    };
+    document.getElementById("cfg-contrast").onclick = () => {
+      state.highContrast = !state.highContrast;
+      document.body.classList.toggle("high-contrast", state.highContrast);
+      document.getElementById("val-contrast").textContent = state.highContrast ? "Sí" : "No";
+    };
+    document.getElementById("cfg-dyslexia").onclick = () => {
+      state.dyslexia = !state.dyslexia;
+      document.body.classList.toggle("dyslexia-font", state.dyslexia);
+      document.getElementById("val-dyslexia").textContent = state.dyslexia ? "Sí" : "No";
+    };
+    document.getElementById("cfg-unlock").onclick = () => {
+      state.freeUnlock = !state.freeUnlock;
+      document.getElementById("val-unlock").textContent = state.freeUnlock ? "Sí" : "No";
+      if (state.screen === "home") renderHomeLevels();
+      if (state.screen === "phases") renderLevelPhases();
+    };
+
+    document.getElementById("btn-skip-ignition").onclick = () => launchActiveStep();
+    document.getElementById("btn-restart-tape").onclick = () => launchActiveStep();
+    document.getElementById("btn-restart-arcade").onclick = () => launchActiveStep();
+
+    document.getElementById("btn-speak-proverb").onclick = () => {
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(lvl.proverbCa);
+        u.lang = "ca-ES";
+        u.rate = 0.85;
+        window.speechSynthesis.speak(u);
+      }
+    };
+
+    document.getElementById("btn-res-phases").onclick = () => showScreen("phases");
+    document.getElementById("btn-res-repeat").onclick = () => launchActiveStep();
+    document.getElementById("btn-res-next").onclick = () => {
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      const steps = getOrderedSteps(lvl);
+      const idx = steps.findIndex(s => s.id === state.stepId);
+      if (idx >= 0 && idx < steps.length - 1) {
+        const nextS = steps[idx + 1];
+        promptIgnitionBeforeStep(lvl.id, nextS.phaseType, nextS.id);
+      } else {
+        showScreen("home");
+      }
+    };
+
+    drawSprite(document.getElementById("logo-canvas").getContext("2d"), SPRITES.spaceship, 2, 2, 2.5);
+    showScreen("home");
+  </script>
+</body>
+</html>

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mecano — Panell del Docent (Fase 2)</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --primary: #1d4ed8;
+      --ok: #15803d;
+      --warn: #b45309;
+      --err: #b91c1c;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem 2.5rem;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      background: var(--surface);
+      padding: 0.85rem 1.15rem;
+      border-radius: 14px;
+      border: 2px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .badge {
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 0.22rem 0.6rem;
+      border-radius: 99px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    button, .btn-link {
+      font: inherit;
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: #ffffff;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    button:hover, .btn-link:hover { background: #f8fafc; border-color: #64748b; }
+    button.primary, .btn-link.primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+    button.primary:hover, .btn-link.primary:hover { background: #1e40af; }
+
+    /* KPIs */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 900px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+    }
+    .kpi-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .kpi-val {
+      font-size: 1.65rem;
+      font-weight: 900;
+      margin-top: 0.2rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .kpi-sub {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    /* Grid de 2 columnes */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 960px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.15rem;
+      margin-bottom: 1rem;
+    }
+    .panel h2 {
+      margin: 0 0 0.3rem;
+      font-size: 1.05rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel p.sub {
+      margin: 0 0 0.85rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* Taula Matriu de Barretines */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+    th, td {
+      padding: 0.55rem 0.6rem;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 800;
+      color: #334155;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+    .step-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.78rem;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      cursor: pointer;
+    }
+    .step-pill.passed {
+      background: #dcfce7;
+      border-color: #16a34a;
+      color: #14532d;
+    }
+
+    /* Termòmetre Dites */
+    .proverb-row {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin: 0.45rem 0;
+      font-size: 0.84rem;
+    }
+    .proverb-bar-bg {
+      flex: 1;
+      height: 24px;
+      background: #e2e8f0;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .proverb-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #16a34a);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.76rem;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      white-space: nowrap;
+    }
+
+    /* Mapa de Calor del Teclat */
+    .heatmap-kb {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: center;
+      background: #f8fafc;
+      padding: 0.85rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .hm-row {
+      display: flex;
+      gap: 5px;
+    }
+    .hm-key {
+      width: 44px;
+      height: 42px;
+      border-radius: 7px;
+      border: 1.5px solid #94a3b8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .hm-key.space { width: 220px; height: 34px; }
+    .hm-key small { font-size: 0.62rem; font-weight: 700; opacity: 0.9; }
+    .hm-ok { background: #bbf7d0; border-color: #16a34a; color: #14532d; }
+    .hm-warn { background: #fef08a; border-color: #ca8a04; color: #713f12; }
+    .hm-err { background: #fecaca; border-color: #dc2626; color: #7f1d1d; }
+
+    .legend-row {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 0.6rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    /* Configuració pedagògica */
+    .cfg-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+    .cfg-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.8rem;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+    select, input[type="number"] {
+      font: inherit;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #94a3b8;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- BARRA SUPERIOR -->
+    <header class="top-bar">
+      <div class="brand">
+        <span style="font-size:1.6rem;">📊</span>
+        <div>
+          <h1>Mecano — Panell del Docent</h1>
+          <div style="font-size:0.8rem;color:var(--muted);">
+            Seguiment individual d'alumne · Google Sheets + Sincronització Local
+          </div>
+        </div>
+        <span class="badge" id="student-badge">Alumne: ALU-01</span>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" id="btn-seed-demo">🧪 Carregar Dades d'Exemple</button>
+        <button type="button" id="btn-export-csv">📥 Exportar CSV (Google Sheets)</button>
+        <button type="button" id="btn-clear-data" style="color:#b91c1c;">🗑️ Reiniciar dades</button>
+        <a href="./student.html" class="btn-link primary">🕹️ Obrir Vista de l'Alumne</a>
+      </div>
+    </header>
+
+    <!-- 5 TARGETES KPI -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Sessions Completades</div>
+        <div class="kpi-val" id="kpi-sessions">0</div>
+        <div class="kpi-sub" id="kpi-time">0 minuts de pràctica</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Velocitat Mitjana</div>
+        <div class="kpi-val" id="kpi-wpm">0 PPM</div>
+        <div class="kpi-sub">Paraules per minut netes</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Precisió Mitjana</div>
+        <div class="kpi-val" id="kpi-acc">100%</div>
+        <div class="kpi-sub">Objectiu mínim: 88% (3 Barretines)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Barretines Aconseguides</div>
+        <div class="kpi-val" id="kpi-barretines">0 / 100</div>
+        <div class="kpi-sub">5 fases × 4 nivells (5 Barretines/pas)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Nivell Actual</div>
+        <div class="kpi-val" id="kpi-level" style="font-size:1.25rem;">Nivell 1 (Montsec)</div>
+        <div class="kpi-sub" id="kpi-weak-keys">Tecles a reforçar: Cap</div>
+      </div>
+    </section>
+
+    <!-- MATRIU DE BARRETINES PER NIVELL I FASE -->
+    <section class="panel">
+      <h2>
+        <span>🗺️ Progrés per Nivell i les 3 Fases («En Bit descobreix Catalunya»)</span>
+        <span style="font-size:0.78rem;font-weight:600;color:var(--muted);">
+          💡 Pots fer clic a qualsevol pas per atorgar 3 Barretines (desbloquejar) o posar-lo a 0
+        </span>
+      </h2>
+      <p class="sub">
+        Cada nivell consta de Fase 1 (Pràctica 1A i 1B), Fase 2 (Joc 8-Bits J1 i J2) i Fase 3 (Repte de la Dita Catalana). Calen ≥ 3 Barretines per avançar.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Nivell i Tradició</th>
+            <th>Tecles</th>
+            <th>Fase 1: Pràctica (1A / 1B)</th>
+            <th>Fase 2: Joc 8-Bits (J1 / J2)</th>
+            <th>Fase 3: Dita Catalana</th>
+            <th>Total Nivell</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+    </section>
+
+    <!-- 2 COLUMNES: MAPA DE CALOR DEL TECLAT + TERMÒMETRE DE LES DITES -->
+    <div class="two-col">
+      <section class="panel" style="margin-bottom:0;">
+        <h2>🔥 Mapa de Calor del Teclat per Precisió</h2>
+        <p class="sub">
+          Identifica quines tecles i dits concentren més errors durant les pràctiques, els jocs i les dites.
+        </p>
+        <div class="heatmap-kb" id="heatmap-kb"></div>
+        <div class="legend-row">
+          <span><i class="dot" style="background:#bbf7d0;border:1px solid #16a34a;"></i>Òptim (&lt;5% errors)</span>
+          <span><i class="dot" style="background:#fef08a;border:1px solid #ca8a04;"></i>Atenció (5–12% errors)</span>
+          <span><i class="dot" style="background:#fecaca;border:1px solid #dc2626;"></i>Cal reforç (&gt;12% errors)</span>
+          <span><i class="dot" style="background:#e2e8f0;border:1px solid #94a3b8;"></i>Sense dades</span>
+        </div>
+        <div id="finger-diagnosis" style="margin-top:0.75rem;padding:0.65rem 0.85rem;background:#f8fafc;border-radius:8px;border:1px solid var(--border);font-size:0.83rem;"></div>
+      </section>
+
+      <section class="panel" style="margin-bottom:0;">
+        <h2>📜 Termòmetre d'Evolució — Dites Catalanes (Fase 3)</h2>
+        <p class="sub">
+          Comparativa de velocitat (PPM) i precisió (%) amb tot el teclat al final de cada nivell.
+        </p>
+        <div id="proverb-chart"></div>
+
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:1rem 0;" />
+
+        <h2 style="margin-bottom:0.5rem;">⚙️ Configuració Pedagògica per a l'Alumne</h2>
+        <div class="cfg-grid">
+          <div class="cfg-item">
+            <span>Precisió per a 3 Barretines:</span>
+            <select id="cfg-min-acc">
+              <option value="85">85% (Adaptat)</option>
+              <option value="88" selected>88% (Estàndard)</option>
+              <option value="92">92% (Exigent)</option>
+            </select>
+          </div>
+          <div class="cfg-item">
+            <span>Desbloquejar tots els nivells:</span>
+            <input type="checkbox" id="cfg-unlock-all" style="width:18px;height:18px;" />
+          </div>
+        </div>
+        <div style="margin-top:0.65rem;text-align:right;">
+          <button type="button" id="btn-save-cfg" class="primary">💾 Desar configuració per a l'alumne</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- HISTORIAL DE SESSIONS -->
+    <section class="panel">
+      <h2>
+        <span>🕒 Historial Detallat de Sessions</span>
+        <div class="btn-row">
+          <button type="button" class="filter-btn primary" data-filter="all">Totes</button>
+          <button type="button" class="filter-btn" data-filter="drill">⌨️ Fase 1 (Pràctica)</button>
+          <button type="button" class="filter-btn" data-filter="arcade">🕹️ Fase 2 (Joc 8-Bits)</button>
+          <button type="button" class="filter-btn" data-filter="proverb">📜 Fase 3 (Dita)</button>
+        </div>
+      </h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Data / Hora</th>
+            <th>Nivell</th>
+            <th>Fase</th>
+            <th>Activitat</th>
+            <th>Velocitat (PPM)</th>
+            <th>Precisió</th>
+            <th>Errors</th>
+            <th>Barretines</th>
+          </tr>
+        </thead>
+        <tbody id="sessions-body"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    const LEVELS_META = [
+      {
+        id: "L01",
+        title: "Nivell 1: Montsec (Meteorits)",
+        keys: "F, J + Espai",
+        drills: ["L01.D1", "L01.D2"],
+        arcades: ["L01.G1", "L01.G2"],
+        proverb: "L01.PROVERB",
+        proverbText: "«qui dia passa any empeny»"
+      },
+      {
+        id: "L02",
+        title: "Nivell 2: Vilafranca (Castells)",
+        keys: "D, K + Espai",
+        drills: ["L02.D1", "L02.D2"],
+        arcades: ["L02.G1", "L02.G2"],
+        proverb: "L02.PROVERB",
+        proverbText: "«cada ovella al seu corral»"
+      },
+      {
+        id: "L03",
+        title: "Nivell 3: Girona (Sardana)",
+        keys: "S, L + Espai",
+        drills: ["L03.D1", "L03.D2"],
+        arcades: ["L03.G1", "L03.G2"],
+        proverb: "L03.PROVERB",
+        proverbText: "«al maig cada dia un raig»"
+      },
+      {
+        id: "L04",
+        title: "Nivell 4: Berga (La Patum)",
+        keys: "A, Ç + Espai",
+        drills: ["L04.D1", "L04.D2"],
+        arcades: ["L04.G1", "L04.G2"],
+        proverb: "L04.PROVERB",
+        proverbText: "«al juny la falç al puny»"
+      }
+    ];
+
+    const KB_ROWS = [
+      ["q","w","e","r","t","y","u","i","o","p"],
+      ["a","s","d","f","g","h","j","k","l","ñ","ç"],
+      ["z","x","c","v","b","n","m",",",".","-"],
+      [" "]
+    ];
+
+    let activeFilter = "all";
+
+    function renderBarretinaMiniSvg(filled = true) {
+      const col = filled ? "#dc2626" : "#cbd5e1";
+      return `<svg width="14" height="10" viewBox="0 0 10 6" style="vertical-align:middle;"><rect x="2" y="0" width="6" height="4" fill="${col}"/><rect x="0" y="4" width="8" height="2" fill="#0f172a"/></svg>`;
+    }
+
+    function loadDashboardData() {
+      const telemetry = JSON.parse(localStorage.getItem("mecano_telemetry_v1") || "{\"sessions\":[],\"keyStats\":{}}");
+      const studentProg = JSON.parse(localStorage.getItem("mecano_v4_distinct") || "{\"stepBarretines\":{},\"proverbHistory\":[]}");
+      const teacherCfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{\"minAccuracyPct\":88,\"unlockedAllLevels\":false}");
+
+      return {
+        sessions: telemetry.sessions || [],
+        keyStats: telemetry.keyStats || {},
+        stepBarretines: studentProg.stepBarretines || {},
+        proverbHistory: studentProg.proverbHistory || [],
+        teacherCfg
+      };
+    }
+
+    function saveStudentBarretines(stepBarretines, proverbHistory) {
+      localStorage.setItem("mecano_v4_distinct", JSON.stringify({
+        stepBarretines,
+        proverbHistory
+      }));
+    }
+
+    function renderAll() {
+      const data = loadDashboardData();
+      const sessions = data.sessions;
+      const totalSessions = sessions.length;
+      const totalSec = sessions.reduce((a, s) => a + (s.durationSec || 20), 0);
+      const avgWpm = totalSessions > 0
+        ? (sessions.reduce((a, s) => a + (s.wpmNet || 0), 0) / totalSessions).toFixed(1)
+        : "0.0";
+      const avgAcc = totalSessions > 0
+        ? Math.round(sessions.reduce((a, s) => a + (s.accuracyPct || 100), 0) / totalSessions)
+        : 100;
+      const totalB = Object.values(data.stepBarretines).reduce((a, b) => a + b, 0);
+
+      document.getElementById("kpi-sessions").textContent = String(totalSessions);
+      document.getElementById("kpi-time").textContent = `${Math.max(1, Math.round(totalSec / 60))} minuts practicats`;
+      document.getElementById("kpi-wpm").textContent = `${avgWpm} PPM`;
+      document.getElementById("kpi-acc").textContent = `${avgAcc}%`;
+      document.getElementById("kpi-barretines").innerHTML = `${totalB} / 100 ${renderBarretinaMiniSvg(true)}`;
+
+      // Determina nivell actual
+      let currentLvlTitle = "Nivell 1 (Montsec)";
+      for (const lvl of LEVELS_META) {
+        if ((data.stepBarretines[lvl.proverb] || 0) >= 3) {
+          const nextIdx = LEVELS_META.indexOf(lvl) + 1;
+          if (nextIdx < LEVELS_META.length) {
+            currentLvlTitle = LEVELS_META[nextIdx].title.split(":")[0] + " (" + LEVELS_META[nextIdx].keys + ")";
+          } else {
+            currentLvlTitle = "Fila Base Completada! 🏆";
+          }
+        }
+      }
+      document.getElementById("kpi-level").textContent = currentLvlTitle;
+
+      renderMatrix(data);
+      renderHeatmap(data.keyStats);
+      renderProverbChart(data);
+      renderSessionsTable(sessions);
+
+      document.getElementById("cfg-min-acc").value = String(data.teacherCfg.minAccuracyPct || 88);
+      document.getElementById("cfg-unlock-all").checked = Boolean(data.teacherCfg.unlockedAllLevels);
+    }
+
+    function renderMatrix(data) {
+      const tbody = document.getElementById("matrix-body");
+      tbody.innerHTML = "";
+
+      for (const lvl of LEVELS_META) {
+        const tr = document.createElement("tr");
+        const allSteps = [...lvl.drills, ...lvl.arcades, lvl.proverb];
+        const lvlEarned = allSteps.reduce((a, id) => a + (data.stepBarretines[id] || 0), 0);
+
+        const renderStepPill = (stepId, shortLabel) => {
+          const b = data.stepBarretines[stepId] || 0;
+          const cls = b >= 3 ? "passed" : "";
+          return `<span class="step-pill ${cls}" data-step="${stepId}" title="Fes clic per canviar les Barretines d'aquest pas">${shortLabel}: ${b}/5 ${renderBarretinaMiniSvg(b >= 3)}</span>`;
+        };
+
+        tr.innerHTML = `
+          <td><strong>${lvl.title}</strong></td>
+          <td><code>${lvl.keys}</code></td>
+          <td style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${renderStepPill(lvl.drills[0], "1A")}
+            ${renderStepPill(lvl.drills[1], "1B")}
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              ${renderStepPill(lvl.arcades[0], "J1")}
+              ${renderStepPill(lvl.arcades[1], "J2")}
+            </div>
+          </td>
+          <td>${renderStepPill(lvl.proverb, "Dita")}</td>
+          <td><strong>${lvlEarned} / 25</strong> ${renderBarretinaMiniSvg(lvlEarned >= 15)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      tbody.querySelectorAll(".step-pill").forEach(pill => {
+        pill.onclick = () => {
+          const stepId = pill.getAttribute("data-step");
+          const cur = data.stepBarretines[stepId] || 0;
+          data.stepBarretines[stepId] = cur >= 3 ? 0 : 4;
+          saveStudentBarretines(data.stepBarretines, data.proverbHistory);
+          renderAll();
+        };
+      });
+    }
+
+    function renderHeatmap(keyStats) {
+      const box = document.getElementById("heatmap-kb");
+      box.innerHTML = "";
+      const weakKeys = [];
+
+      for (const row of KB_ROWS) {
+        const rDiv = document.createElement("div");
+        rDiv.className = "hm-row";
+        for (const ch of row) {
+          const st = keyStats[ch] || { hits: 0, errors: 0 };
+          const total = st.hits + st.errors;
+          const errRate = total > 0 ? (st.errors / total) * 100 : null;
+          let cls = "";
+          if (errRate !== null) {
+            if (errRate > 12) {
+              cls = "hm-err";
+              weakKeys.push({ ch: ch === " " ? "Espai" : ch.toUpperCase(), rate: Math.round(errRate) });
+            } else if (errRate >= 5) {
+              cls = "hm-warn";
+            } else {
+              cls = "hm-ok";
+            }
+          }
+
+          const kDiv = document.createElement("div");
+          kDiv.className = `hm-key ${ch === " " ? "space" : ""} ${cls}`;
+          kDiv.innerHTML = `
+            <span>${ch === " " ? "ESPAI" : ch.toUpperCase()}</span>
+            <small>${errRate !== null ? Math.round(100 - errRate) + "%" : "—"}</small>
+          `;
+          rDiv.appendChild(kDiv);
+        }
+        box.appendChild(rDiv);
+      }
+
+      const diag = document.getElementById("finger-diagnosis");
+      const kpiWeak = document.getElementById("kpi-weak-keys");
+      if (weakKeys.length === 0) {
+        kpiWeak.textContent = "Tecles a reforçar: Cap detectada";
+        diag.innerHTML = `✅ <strong>Diagnòstic automàtic:</strong> Totes les tecles practicades es mantenen per sota del llindar crític d'errors (&lt;12%).`;
+      } else {
+        const listStr = weakKeys.map(w => `${w.ch} (${w.rate}% err)`).join(", ");
+        kpiWeak.textContent = `Reforçar: ${weakKeys.map(w => w.ch).join(", ")}`;
+        diag.innerHTML = `⚠️ <strong>Recomanació pedagògica:</strong> S'observa més dificultat a les tecles <strong>${listStr}</strong>. Es recomana repetir la <em>Fase 1A (Parelles aïllades)</em> del nivell corresponent.`;
+      }
+    }
+
+    function renderProverbChart(data) {
+      const box = document.getElementById("proverb-chart");
+      const proverbsFromSessions = data.sessions.filter(s => s.phaseType === "proverb").slice(0, 6).reverse();
+      const items = proverbsFromSessions.length > 0
+        ? proverbsFromSessions.map(s => ({ label: s.stepLabel, wpm: s.wpmNet, acc: s.accuracyPct }))
+        : (data.proverbHistory || []).map(p => ({ label: p.title, wpm: p.wpm, acc: p.acc }));
+
+      if (items.length === 0) {
+        box.innerHTML = `<div style="padding:1rem;background:#f8fafc;border-radius:8px;color:var(--muted);font-size:0.84rem;">Encara no s'ha completat cap Repte de la Dita Catalana (Fase 3). Pots jugar-ne un a la vista de l'alumne o prémer «🧪 Carregar Dades d'Exemple».</div>`;
+        return;
+      }
+
+      box.innerHTML = items.map(it => `
+        <div class="proverb-row">
+          <span style="min-width:195px;font-weight:700;">${it.label}</span>
+          <div class="proverb-bar-bg">
+            <div class="proverb-bar-fill" style="width:${Math.min(100, Math.max(22, it.wpm * 3))}%">
+              ${it.wpm} PPM · ${it.acc}% precisió
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderSessionsTable(sessions) {
+      const tbody = document.getElementById("sessions-body");
+      const filtered = activeFilter === "all"
+        ? sessions
+        : sessions.filter(s => s.phaseType === activeFilter);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.2rem;">No hi ha sessions registrades per a aquest filtre.</td></tr>`;
+        return;
+      }
+
+      const phaseBadge = (p) => {
+        if (p === "drill") return "⌨️ Fase 1 (Pràctica)";
+        if (p === "arcade") return "🕹️ Fase 2 (Joc 8-Bits)";
+        return "📜 Fase 3 (Dita)";
+      };
+
+      tbody.innerHTML = filtered.slice(0, 30).map(s => {
+        const dt = s.timestampIso ? new Date(s.timestampIso).toLocaleString("ca-ES", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) : "Avui";
+        return `
+          <tr>
+            <td>${dt}</td>
+            <td><strong>${s.levelId}</strong></td>
+            <td>${phaseBadge(s.phaseType)}</td>
+            <td>${s.stepLabel || s.stepId}</td>
+            <td><strong>${s.wpmNet} PPM</strong></td>
+            <td>${s.accuracyPct}%</td>
+            <td>${s.errors}</td>
+            <td>${s.barretines} / 5 ${renderBarretinaMiniSvg(s.barretines >= 3)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // Filtratge de taula
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("primary"));
+        btn.classList.add("primary");
+        activeFilter = btn.getAttribute("data-filter");
+        renderAll();
+      };
+    });
+
+    // Botó Carregar Dades d'Exemple per provar el panell docent al 100%
+    document.getElementById("btn-seed-demo").onclick = () => {
+      const demoStepBarretines = {
+        "L01.D1": 5, "L01.D2": 4, "L01.G1": 4, "L01.G2": 5, "L01.PROVERB": 4,
+        "L02.D1": 4, "L02.D2": 3, "L02.G1": 4, "L02.G2": 3, "L02.PROVERB": 4,
+        "L03.D1": 3
+      };
+      const demoProverbs = [
+        { title: "Nivell 1: L'Aterratge al Montsec", wpm: 14.2, acc: 92 },
+        { title: "Nivell 2: Castells a Vilafranca", wpm: 18.6, acc: 95 }
+      ];
+      const now = Date.now();
+      const demoSessions = [
+        { sessionId: "S-106", timestampIso: new Date(now - 300000).toISOString(), levelId: "L03", phaseType: "drill", stepId: "L03.D1", stepLabel: "1A: Només S i L (ss ll sl ls)", wpmNet: 17.5, accuracyPct: 89, errors: 3, totalPresses: 27, barretines: 3, durationSec: 28 },
+        { sessionId: "S-105", timestampIso: new Date(now - 900000).toISOString(), levelId: "L02", phaseType: "proverb", stepId: "L02.PROVERB", stepLabel: "Dita: «cada ovella al seu corral»", wpmNet: 18.6, accuracyPct: 95, errors: 1, totalPresses: 25, barretines: 4, durationSec: 19 },
+        { sessionId: "S-104", timestampIso: new Date(now - 1500000).toISOString(), levelId: "L02", phaseType: "arcade", stepId: "L02.G2", stepLabel: "J2: 2 Castellers alhora (Mà Esq. + Dreta)", wpmNet: 16.8, accuracyPct: 91, errors: 3, totalPresses: 34, barretines: 3, durationSec: 38 },
+        { sessionId: "S-103", timestampIso: new Date(now - 2100000).toISOString(), levelId: "L02", phaseType: "arcade", stepId: "L02.G1", stepLabel: "J1: Puja el Casteller (D i K)", wpmNet: 17.1, accuracyPct: 94, errors: 2, totalPresses: 28, barretines: 4, durationSec: 32 },
+        { sessionId: "S-102", timestampIso: new Date(now - 3600000).toISOString(), levelId: "L01", phaseType: "proverb", stepId: "L01.PROVERB", stepLabel: "Dita: «qui dia passa any empeny»", wpmNet: 14.2, accuracyPct: 92, errors: 2, totalPresses: 24, barretines: 4, durationSec: 24 },
+        { sessionId: "S-101", timestampIso: new Date(now - 4200000).toISOString(), levelId: "L01", phaseType: "arcade", stepId: "L01.G2", stepLabel: "J2: Eixam + Meteorit Gegant!", wpmNet: 15.4, accuracyPct: 97, errors: 1, totalPresses: 35, barretines: 5, durationSec: 35 }
+      ];
+      const demoKeys = {
+        "f": { hits: 85, errors: 2 },
+        "j": { hits: 82, errors: 3 },
+        "d": { hits: 54, errors: 4 },
+        "k": { hits: 50, errors: 8 },
+        "s": { hits: 22, errors: 5 },
+        "l": { hits: 20, errors: 1 },
+        " ": { hits: 95, errors: 2 }
+      };
+
+      localStorage.setItem("mecano_v4_distinct", JSON.stringify({
+        stepBarretines: demoStepBarretines,
+        proverbHistory: demoProverbs
+      }));
+      localStorage.setItem("mecano_telemetry_v1", JSON.stringify({
+        sessions: demoSessions,
+        keyStats: demoKeys
+      }));
+      renderAll();
+    };
+
+    // Exportació CSV
+    document.getElementById("btn-export-csv").onclick = () => {
+      const data = loadDashboardData();
+      const header = "session_id,timestamp_iso,level_id,phase_type,step_id,step_label,wpm_net,accuracy_pct,errors,barretines,duration_sec";
+      const rows = data.sessions.map(s =>
+        `${s.sessionId},${s.timestampIso},${s.levelId},${s.phaseType},${s.stepId},"${(s.stepLabel || "").replace(/"/g, '""')}",${s.wpmNet},${s.accuracyPct},${s.errors},${s.barretines},${s.durationSec}`
+      );
+      const csv = [header, ...rows].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mecano_ALU-01_sessions.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // Reiniciar dades
+    document.getElementById("btn-clear-data").onclick = () => {
+      if (confirm("Vols esborrar les sessions i les Barretines locals de prova?")) {
+        localStorage.removeItem("mecano_v4_distinct");
+        localStorage.removeItem("mecano_telemetry_v1");
+        renderAll();
+      }
+    };
+
+    // Desar configuració pedagògica
+    document.getElementById("btn-save-cfg").onclick = () => {
+      const minAccuracyPct = Number(document.getElementById("cfg-min-acc").value || 88);
+      const unlockedAllLevels = Boolean(document.getElementById("cfg-unlock-all").checked);
+      localStorage.setItem("mecano_teacher_cfg_v1", JSON.stringify({ minAccuracyPct, unlockedAllLevels }));
+      if (window.google && window.google.script && window.google.script.run) {
+        window.google.script.run.apiSaveTeacherConfig({
+          minAccuracyPct,
+          minBarretinesToUnlock: 3,
+          unlockedAllLevels,
+          requireProverbPhase: true
+        });
+      }
+      alert("Configuració pedagògica desada correctament!");
+    };
+
+    renderAll();
+  </script>
+</body>
+</html>
