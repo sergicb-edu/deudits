@@ -4,8 +4,8 @@
     {
       "id": "L01",
       "order": 1,
-      "titleCa": "Nivell 1: L'Aterratge d'en Bit al Montsec (F, J + Espai)",
-      "descriptionCa": "En Bit arriba de l'espai! Col·loca els índexs a F i J i els polzes a la barra d'Espai per guiar la seva nau fins al Montsec.",
+      "titleCa": "Nivell 1: L'Aterratge d'en Bit al Pedraforca (F, J + Espai)",
+      "descriptionCa": "En Bit arriba de l'espai! Col·loca els índexs a F i J i els polzes a la barra d'Espai per esquivar els asteroides i aterrar als peus del Pedraforca.",
       "newKeys": ["f", "j"],
       "reviewKeys": [],
       "exerciseType": "isolated_keys",

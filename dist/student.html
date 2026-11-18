@@ -244,7 +244,9 @@
       background: #e2e8f0;
     }
     .char-current { background: #fef08a !important; color: #0f172a !important; border-color: #0f172a; font-weight: 800; }
+    .char-current-err { background: #fecaca !important; color: #7f1d1d !important; border-color: #dc2626 !important; font-weight: 900; transform: scale(1.08); }
     .char-ok { background: #dcfce7 !important; color: #166534 !important; }
+    .char-fixed { background: #fef3c7 !important; color: #92400e !important; border-color: #f59e0b !important; }
     .char-err { background: #fee2e2 !important; color: #991b1b !important; text-decoration: underline wavy; }
 
     .arcade-box {
@@ -429,7 +431,7 @@
       </div>
 
       <h2 style="margin:0.15rem 0 0.45rem;font-size:1.1rem;">
-        Tria la missió d'en Bit a Catalunya (Pilot: Montsec i Vilafranca):
+        Tria la missió d'en Bit a Catalunya (Pilot: Pedraforca i Vilafranca):
       </h2>
       <div class="levels-grid" id="levels-grid"></div>
     </main>
@@ -448,16 +450,39 @@
       <div class="phases-cards" id="phases-cards"></div>
     </section>
 
-    <!-- PANTALLA 3: ENGEGAR MOTORS -->
+    <!-- PANTALLA 3: INTRODUCCIÓ ANIMADA (MINIVÍDEO 8-BITS) + ENGEGAR MOTORS -->
     <section class="view-screen" id="screen-ignition">
-      <div class="ignition-screen">
-        <h2 id="ignition-title" style="margin:0 0 0.4rem;">🚀 Engega els motors d'en Bit!</h2>
-        <p id="ignition-desc" style="margin:0;font-size:0.95rem;opacity:0.92;"></p>
-        <div class="ignition-keys" id="ignition-keys"></div>
-        <p style="font-size:0.85rem;opacity:0.8;margin-bottom:0.85rem;">
-          Prem físicament aquestes tecles al teu teclat per començar!
-        </p>
-        <button type="button" id="btn-skip-ignition">Entrar directament</button>
+      <div class="ignition-screen" style="max-width:680px;margin:0.5rem auto;padding:1rem 1.2rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;">
+          <span style="background:#f59e0b;color:#0f172a;font-size:0.74rem;font-weight:900;padding:2px 8px;border-radius:99px;">
+            🎬 MINIVÍDEO DE LA HISTÒRIA
+          </span>
+          <span id="story-caption" style="font-size:0.82rem;color:#fde047;font-weight:700;"></span>
+        </div>
+        <canvas id="story-canvas" width="600" height="145" style="width:100%;max-width:600px;height:auto;border-radius:10px;border:2px solid #475569;background:#060913;image-rendering:pixelated;margin-bottom:0.55rem;"></canvas>
+
+        <h2 id="ignition-title" style="margin:0 0 0.25rem;font-size:1.15rem;">🚀 Engega els motors d'en Bit!</h2>
+        <p id="ignition-desc" style="margin:0;font-size:0.88rem;opacity:0.92;"></p>
+        <div class="ignition-keys" id="ignition-keys" style="margin:0.65rem 0;"></div>
+        <div style="display:flex;justify-content:center;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+          <span style="font-size:0.8rem;opacity:0.8;">Prem físicament les tecles per començar!</span>
+          <button type="button" id="btn-skip-ignition">Saltar i entrar ➡️</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 3B: MINIVÍDEO FINAL D'ATERRATGE AL PEDRAFORCA / CORONACIÓ -->
+    <section class="view-screen" id="screen-cutscene">
+      <div class="ignition-screen" style="max-width:680px;margin:0.8rem auto;padding:1.1rem;border-color:#22c55e;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+          <span style="background:#22c55e;color:#052e16;font-size:0.76rem;font-weight:900;padding:2px 9px;border-radius:99px;">
+            🎬 MINIVÍDEO: OBJECTIU ASSOLIT!
+          </span>
+          <strong id="cutscene-title" style="color:#86efac;font-size:0.95rem;">Aterratge al Pedraforca!</strong>
+        </div>
+        <canvas id="cutscene-canvas" width="620" height="210" style="width:100%;max-width:620px;height:auto;border-radius:10px;border:2px solid #22c55e;background:#060913;image-rendering:pixelated;margin-bottom:0.6rem;"></canvas>
+        <p id="cutscene-desc" style="margin:0 0 0.7rem;font-size:0.9rem;color:#f8fafc;"></p>
+        <button type="button" id="btn-cutscene-continue" class="primary">Veure les meves Barretines ➡️</button>
       </div>
     </section>
 
@@ -600,16 +625,16 @@
         id: "L01",
         order: 1,
         isPilot: true,
-        titleCa: "Nivell 1 (Pilot): L'Aterratge al Montsec",
+        titleCa: "Nivell 1 (Pilot): L'Aterratge al Pedraforca",
         keysLabel: "Tecles F, J + Espai (2 lletres)",
-        descCa: "En Bit arriba de l'espai! Assimilem els dos índexs (F i J) amb 3 passos progressius i destruïm els meteorits i el Meteorit Gegant!",
+        descCa: "En Bit arriba de l'espai! Assimilem els dos índexs (F i J) amb 3 passos progressius i esquivem els asteroides fins a aterrar als peus del Pedraforca!",
         newKeys: ["f", "j"],
         leftKeys: ["f"],
         rightKeys: ["j"],
         reviewKeys: [],
         gameMode: "meteors",
-        gameTitle: "🚀 Montsec: Pluja de Meteorits",
-        gameDesc: "J1: Eixam d'Índexs (10 meteorits). J2: Pluja per 3 carrils + Meteorit Rei Gegant (12 meteorits)!",
+        gameTitle: "🛸 Rumb al Pedraforca: Esquivem Asteroides!",
+        gameDesc: "J1: Esquiva 10 asteroides amb F i J. J2: Esquiva la pluja d'asteroides i el Pas Estret de l'Enforcadura (12 asteroides)!",
         proverbCa: "qui dia passa any empeny",
         proverbMeaningCa: "Anant pas a pas i amb constància cada dia, avancem molt més del que sembla.",
         drills: [
@@ -618,8 +643,8 @@
           { id: "L01.D3", label: "1C: Ritme continu de 4 i 5 lletres", stepType: "growing", wordsCount: 12, mix: false }
         ],
         arcades: [
-          { id: "L01.G1", label: "J1: Meteorits d'Índexs (10 objectius)", subMode: "single", totalTargets: 10 },
-          { id: "L01.G2", label: "J2: Eixam + Meteorit Gegant (12 objectius)", subMode: "dual_boss", totalTargets: 12 }
+          { id: "L01.G1", label: "J1: Esquivem Asteroides amb F i J (10 asteroides)", subMode: "single", totalTargets: 10 },
+          { id: "L01.G2", label: "J2: Pas de l'Enforcadura cap al Pedraforca (12 asteroides)", subMode: "dual_boss", totalTargets: 12 }
         ]
       },
       {
@@ -707,6 +732,21 @@
     ];
 
     const SPRITES = {
+      bitRobot: {
+        palette: { Y: "#fde047", B: "#38bdf8", D: "#0284c7", W: "#f8fafc", G: "#4ade80", R: "#dc2626" },
+        grid: [
+          "....YY....",
+          "....BB....",
+          "..BBBBBB..",
+          ".BWWGGWWB.",
+          ".BBBBBBBB.",
+          "..DDDDDD..",
+          "BBDDDDDDBB",
+          "B.DDYYDD.B",
+          "..DDDDDD..",
+          "..BB..BB.."
+        ]
+      },
       spaceship: {
         palette: { B: "#38bdf8", W: "#f8fafc", D: "#0284c7", Y: "#fde047", R: "#ef4444", G: "#4ade80" },
         grid: [
@@ -802,6 +842,70 @@
       }
     }
 
+    // Dibuixa la silueta inconfusible en forma de FORCA del PEDRAFORCA:
+    // Pollegó Superior (cim esquerre més alt) + L'Enforcadura (coll profund en forma d'U + tartera) + Pollegó Inferior (cim dret escarpat)
+    function drawPedraforcaSilhouette(ctx, leftX, baseY, width, height, showLabels = false) {
+      const pSupX = leftX + width * 0.30;
+      const pSupY = baseY - height;               // Pollegó Superior (2506m)
+      const enforX = leftX + width * 0.52;
+      const enforY = baseY - height * 0.52;       // L'Enforcadura (la forca característica al mig!)
+      const pInfX = leftX + width * 0.72;
+      const pInfY = baseY - height * 0.88;        // Pollegó Inferior / Calderer (2445m)
+
+      // Cos rocallós calcari del Pedraforca
+      ctx.fillStyle = "#475569";
+      ctx.beginPath();
+      ctx.moveTo(leftX, baseY);
+      ctx.lineTo(leftX + width * 0.14, baseY - height * 0.55);
+      ctx.lineTo(pSupX - width * 0.05, pSupY + height * 0.04);
+      ctx.lineTo(pSupX, pSupY);
+      ctx.lineTo(pSupX + width * 0.06, pSupY + height * 0.08);
+      ctx.lineTo(enforX - width * 0.04, enforY);
+      ctx.lineTo(enforX + width * 0.04, enforY);
+      ctx.lineTo(pInfX - width * 0.05, pInfY + height * 0.06);
+      ctx.lineTo(pInfX, pInfY);
+      ctx.lineTo(pInfX + width * 0.08, pInfY + height * 0.25);
+      ctx.lineTo(leftX + width, baseY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Relleu lluminós de les parets de roca i la Tartera de l'Enforcadura
+      ctx.fillStyle = "#94a3b8";
+      ctx.beginPath();
+      ctx.moveTo(pSupX, pSupY);
+      ctx.lineTo(enforX - width * 0.03, enforY);
+      ctx.lineTo(pSupX - width * 0.04, baseY - height * 0.35);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pInfX, pInfY);
+      ctx.lineTo(enforX + width * 0.04, enforY);
+      ctx.lineTo(pInfX + width * 0.03, baseY - height * 0.35);
+      ctx.closePath();
+      ctx.fill();
+
+      // Tartera pedregosa que baixa des de l'Enforcadura
+      ctx.fillStyle = "#64748b";
+      ctx.beginPath();
+      ctx.moveTo(enforX - width * 0.035, enforY);
+      ctx.lineTo(enforX + width * 0.035, enforY);
+      ctx.lineTo(enforX + width * 0.09, baseY);
+      ctx.lineTo(enforX - width * 0.09, baseY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Bosc de pi negre als peus del Pedraforca (Vall de Gósol / Saldes)
+      ctx.fillStyle = "#14532d";
+      ctx.fillRect(leftX, baseY - 12, width, 12);
+
+      if (showLabels) {
+        ctx.fillStyle = "#fde047";
+        ctx.font = "bold 11px sans-serif";
+        ctx.fillText("⛰️ PEDRAFORCA", pSupX - 10, pSupY - 8);
+      }
+    }
+
     function renderBarretinaSvg(filled = true, scale = 3) {
       const sp = SPRITES.barretina;
       const w = 10 * scale, h = 6 * scale;
@@ -823,9 +927,9 @@
       if (gameMode === "meteors") {
         ctx.fillStyle = "#090d16";
         ctx.fillRect(0, 0, 96, 84);
-        drawSprite(ctx, SPRITES.spaceship, 8, 22, 3);
-        drawSprite(ctx, SPRITES.meteor, 54, 14, 2.5);
-        drawSprite(ctx, SPRITES.meteor, 62, 46, 3);
+        drawPedraforcaSilhouette(ctx, 26, 84, 68, 46, false);
+        drawSprite(ctx, SPRITES.spaceship, 6, 16, 2.6);
+        drawSprite(ctx, SPRITES.meteor, 54, 10, 2.2);
       } else if (gameMode === "castells") {
         ctx.fillStyle = "#1e3a8a";
         ctx.fillRect(0, 0, 96, 84);
@@ -860,20 +964,26 @@
 
       ignitionPressed: {},
 
-      // Fase 1 i 3 (Tira de lletres)
+      // Fase 1 i 3 (Tira de lletres amb bloqueig d'avanç en cas d'error!)
       sequence: "",
       cursor: 0,
       evaluations: [],
+      charHadError: {},
+      currentCharWrongFlash: false,
+      tapeTotalErrors: 0,
+      tapeKeyStats: {},
       startedAtMs: 0,
 
-      // Fase 2 (4 Mecàniques de Joc úniques amb 3 Actes integrats!)
+      // Fase 2 (Esquivar asteroides al Pedraforca / Castells / etc.)
       arcadeRunning: false,
       arcadeLives: 5,
       arcadeEnergy: 100,
       arcadeCompleted: 0,
-      arcadeTotal: 9,      // 3 a l'Acte 1 (2 lletres), 3 a l'Acte 2 (3-4 lletres), 3 a l'Acte 3 (Boss/4-5 lletres)
-      arcadeEntities: [],  // Meteorits simultanis / Notes de ritme / Fuets dels 4 cantons / Equilibri del castell
-      arcadeTilt: 0,       // Inclinació del castell (-100 esquerra .. +100 dreta)
+      arcadeTotal: 9,
+      arcadeEntities: [],
+      dodgedAsteroids: [],
+      shipDodgeYOffset: 0,
+      arcadeTilt: 0,
       arcadeTiltDir: 1,
       arcadeJumpTimer: 0,
       arcadeAngle: 0,
@@ -1186,7 +1296,7 @@
       const sb = state.stepBarretines;
       const badges = [
         { icon: "🚀", name: "Índexs a Punt", unlocked: (sb["L01.D3"] || 0) >= 3 },
-        { icon: "☄️", name: "Rei del Montsec", unlocked: (sb["L01.G2"] || 0) >= 3 },
+        { icon: "⛰️", name: "Aterratge al Pedraforca", unlocked: (sb["L01.G2"] || 0) >= 3 },
         { icon: "🧱", name: "Pinya D+K", unlocked: (sb["L02.D2"] || 0) >= 3 },
         { icon: "🏰", name: "Mestre Casteller (4 Lletres)", unlocked: (sb["L02.G3"] || 0) >= 3 },
         { icon: "📜", name: "Pilot Completat!", unlocked: (sb["L01.PROVERB"] || 0) >= 3 && (sb["L02.PROVERB"] || 0) >= 3 }
@@ -1212,12 +1322,201 @@
     }
 
     // =========================================================================
+    // MINIVÍDEOS ANIMATS 8-BITS (Intro abans de cada repte + Aterratge al Pedraforca!)
+    // =========================================================================
+    let storyAnimId = null;
+    let cutsceneAnimId = null;
+    let pendingResultPayload = null;
+
+    function startStoryMiniVideo(lvl, phaseType) {
+      if (storyAnimId) cancelAnimationFrame(storyAnimId);
+      const canvas = document.getElementById("story-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const cap = document.getElementById("story-caption");
+      let t = 0;
+
+      if (lvl.id === "L01") {
+        cap.textContent = phaseType === "arcade"
+          ? "En Bit esquiva el camp d'asteroides rumb al Pedraforca!"
+          : "Hola! Soc en Bit! Ajuda'm a calibrar els propulsors F i J per viatjar cap al Pedraforca!";
+      } else {
+        cap.textContent = "En Bit arriba des del Pedraforca fins a la plaça de Vilafranca per fer pinya amb els castellers!";
+      }
+
+      function tickStory() {
+        if (state.screen !== "ignition") return;
+        t++;
+        ctx.fillStyle = "#060913";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Estrelles al cel
+        ctx.fillStyle = "#94a3b8";
+        for (let i = 0; i < 16; i++) {
+          const sx = (i * 43 - t * 0.6 + 600) % 600;
+          const sy = (i * 23) % 95;
+          ctx.fillRect(sx, sy, 2, 2);
+        }
+
+        if (lvl.id === "L01") {
+          // A la dreta es veu el planeta Terra i el Pedraforca en forma de forca!
+          ctx.fillStyle = "#0284c7";
+          ctx.beginPath();
+          ctx.arc(520, 165, 115, Math.PI, Math.PI * 2);
+          ctx.fill();
+          drawPedraforcaSilhouette(ctx, 430, 145, 155, 78, true);
+
+          // A l'esquerra: el robotet Bit saludant + la seva nau esquivant un asteroide!
+          const bob = Math.sin(t * 0.08) * 5;
+          drawSprite(ctx, SPRITES.bitRobot, 22, 42 + bob, 4.2);
+          ctx.fillStyle = "#fde047";
+          ctx.font = "bold 11px sans-serif";
+          ctx.fillText("🤖 En Bit", 22, 34 + bob);
+
+          // Nau d'en Bit fent maniobra suau d'esquivada (sense disparar!)
+          const shipX = 115 + (t % 180) * 1.1;
+          const shipY = 55 + Math.sin(t * 0.07) * 26;
+          drawSprite(ctx, SPRITES.spaceship, shipX, shipY, 3.2);
+
+          // Asteroide que passa de llarg sense explotar
+          const astX = 390 - (t % 180) * 1.3;
+          drawSprite(ctx, SPRITES.meteor, astX, 62, 3);
+        } else {
+          // Nivell 2: Del Pedraforca al fons esquerre fins als Castells de Vilafranca a la dreta!
+          ctx.fillStyle = "#172554";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          drawPedraforcaSilhouette(ctx, 18, 138, 125, 62, false);
+
+          // En Bit caminant cap a la colla castellera
+          const walkX = 170 + (t % 140) * 1.2;
+          const bounce = Math.abs(Math.sin(t * 0.15)) * 6;
+          drawSprite(ctx, SPRITES.bitRobot, walkX, 82 - bounce, 3.8);
+
+          // Pinya i castell a Vilafranca
+          drawSprite(ctx, SPRITES.casteller, 430, 95, 3);
+          drawSprite(ctx, SPRITES.casteller, 465, 95, 3);
+          drawSprite(ctx, SPRITES.casteller, 448, 62, 3);
+          drawSprite(ctx, SPRITES.casteller, 448, 30, 2.8);
+          ctx.fillStyle = "#fde047";
+          ctx.font = "bold 11px sans-serif";
+          ctx.fillText("🏰 Plaça de Vilafranca", 412, 20);
+        }
+
+        storyAnimId = requestAnimationFrame(tickStory);
+      }
+      tickStory();
+    }
+
+    // Minivídeo quan en Bit esquiva tots els asteroides: es veu la Terra, entra a l'atmosfera i aterra al Pedraforca!
+    function playLandingCutsceneThenResult(lvl, resultPayload) {
+      pendingResultPayload = resultPayload;
+      showScreen("cutscene");
+      if (cutsceneAnimId) cancelAnimationFrame(cutsceneAnimId);
+      const canvas = document.getElementById("cutscene-canvas");
+      const ctx = canvas.getContext("2d");
+      const titleEl = document.getElementById("cutscene-title");
+      const descEl = document.getElementById("cutscene-desc");
+
+      if (lvl.id === "L01") {
+        titleEl.textContent = "🌍 Has esquivat tots els asteroides! Aterrem al Pedraforca!";
+        descEl.textContent = "La nau d'en Bit entra a la Terra, baixa entre els núvols i aterra davant dels dos cims en forma de forca del Pedraforca!";
+      } else {
+        titleEl.textContent = "🏰 L'Enxaneta fa l'aleta a Vilafranca!";
+        descEl.textContent = "Amb la coordinació de les dues mans, en Bit i la colla han coronat el castell!";
+      }
+
+      let frame = 0;
+      function tickCutscene() {
+        if (state.screen !== "cutscene") return;
+        frame++;
+
+        if (lvl.id === "L01") {
+          // Fase 1 del minivídeo (frames 0..90): Vista de la Terra des de l'espai i la nau entrant-hi!
+          // Fase 2 del minivídeo (frames 91+): Aterratge suau als peus del Pedraforca i en Bit surt amb la Barretina!
+          if (frame < 95) {
+            ctx.fillStyle = "#040814";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Estrelles
+            ctx.fillStyle = "#e2e8f0";
+            for (let i = 0; i < 20; i++) ctx.fillRect((i * 57) % 600, (i * 29) % 180, 2, 2);
+
+            // Planeta Terra blau i verd
+            ctx.fillStyle = "#0284c7";
+            ctx.beginPath();
+            ctx.arc(460, 115, 72, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#16a34a";
+            ctx.fillRect(435, 85, 38, 28);
+            ctx.fillRect(450, 115, 30, 24);
+
+            // Nau d'en Bit avançant des de l'esquerra i entrant a la Terra
+            const sx = 60 + frame * 3.6;
+            const sy = 85 + Math.sin(frame * 0.1) * 8;
+            drawSprite(ctx, SPRITES.spaceship, sx, sy, 3.8);
+            ctx.fillStyle = "#fde047";
+            ctx.font = "bold 13px sans-serif";
+            ctx.fillText("1/2 · Entrant al planeta Terra...", 22, 26);
+          } else {
+            // Cel blau del Berguedà / Cerdanya amb el gran Pedraforca al fons!
+            ctx.fillStyle = "#0c4a6e";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Prat verd als peus de la muntanya
+            ctx.fillStyle = "#15803d";
+            ctx.fillRect(0, 178, canvas.width, 32);
+
+            // Gran Pedraforca al centre-dreta amb la seva Enforcadura ben clara!
+            drawPedraforcaSilhouette(ctx, 210, 182, 370, 150, true);
+
+            // La nau baixa suaument fins a tocar terra (frames 95..160)
+            const landProgress = Math.min(1, (frame - 95) / 65);
+            const shipY = 20 + landProgress * 118;
+            drawSprite(ctx, SPRITES.spaceship, 85, shipY, 4);
+
+            // Quan ja ha aterrat, en Bit surt al costat de la nau i saluda!
+            if (landProgress >= 1) {
+              const jump = Math.abs(Math.sin(frame * 0.15)) * 6;
+              drawSprite(ctx, SPRITES.bitRobot, 155, 138 - jump, 4);
+              drawSprite(ctx, SPRITES.barretina, 160, 124 - jump, 2.5);
+              ctx.fillStyle = "#86efac";
+              ctx.font = "bold 13px sans-serif";
+              ctx.fillText("✨ En Bit ja és al Pedraforca (Catalunya)!", 22, 26);
+            } else {
+              ctx.fillStyle = "#fde047";
+              ctx.font = "bold 13px sans-serif";
+              ctx.fillText("2/2 · Aterrant als peus del Pedraforca...", 22, 26);
+            }
+          }
+        } else {
+          // Cinemàtica de celebració castellera a Vilafranca
+          ctx.fillStyle = "#172554";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#334155";
+          ctx.fillRect(0, 182, canvas.width, 28);
+          const bounce = Math.abs(Math.sin(frame * 0.15)) * 6;
+          drawSprite(ctx, SPRITES.casteller, 280, 145, 3.2);
+          drawSprite(ctx, SPRITES.casteller, 320, 145, 3.2);
+          drawSprite(ctx, SPRITES.casteller, 280, 110, 3);
+          drawSprite(ctx, SPRITES.casteller, 320, 110, 3);
+          drawSprite(ctx, SPRITES.casteller, 300, 74 - bounce, 3);
+          drawSprite(ctx, SPRITES.bitRobot, 210, 138 - bounce, 4);
+          ctx.fillStyle = "#fde047";
+          ctx.font = "bold 14px sans-serif";
+          ctx.fillText("🎉 Castell coronat a Vilafranca amb en Bit!", 175, 30);
+        }
+
+        cutsceneAnimId = requestAnimationFrame(tickCutscene);
+      }
+      tickCutscene();
+    }
+
+    // =========================================================================
     // NAVEGACIÓ PER PANTALLES
     // =========================================================================
     function showScreen(screenName) {
       state.screen = screenName;
-      ["home", "phases", "ignition", "play", "result"].forEach(s => {
-        document.getElementById(`screen-${s}`).classList.toggle("active", s === screenName);
+      ["home", "phases", "ignition", "cutscene", "play", "result"].forEach(s => {
+        const el = document.getElementById(`screen-${s}`);
+        if (el) el.classList.toggle("active", s === screenName);
       });
 
       document.getElementById("btn-back").style.display = screenName === "home" ? "none" : "inline-block";
@@ -1289,7 +1588,7 @@
         <div>
           <div style="font-size:1.6rem;">⌨️</div>
           <h3 style="margin:0.3rem 0;">Fase 1: Pràctica de Lletres</h3>
-          <p style="font-size:0.82rem;opacity:0.8;margin:0 0 0.5rem;">Entrena primer les 2 tecles noves i després paraules més llargues.</p>
+          <p style="font-size:0.82rem;opacity:0.8;margin:0 0 0.5rem;">Si t'equivoques sona avís i no avança fins que premis la tecla correcta.</p>
         </div>
         <div class="substeps-list" id="f1-steps"></div>
       `;
@@ -1306,7 +1605,7 @@
       });
       container.appendChild(f1);
 
-      // FASE 2 (2 subnivells de Joc J1 i J2!)
+      // FASE 2
       const f2Unlocked = isStepUnlocked(lvl, lvl.arcades[0].id);
       const f2 = document.createElement("div");
       f2.className = `phase-card ${f2Unlocked ? "" : "locked"}`;
@@ -1375,6 +1674,7 @@
 
       renderIgnitionBoxes(lvl);
       showScreen("ignition");
+      startStoryMiniVideo(lvl, phaseType);
     }
 
     function renderIgnitionBoxes(lvl) {
@@ -1405,7 +1705,7 @@
         if (state.phaseType === "drill") {
           const drill = lvl.drills.find(d => d.id === state.stepId) || lvl.drills[0];
           document.getElementById("tape-title").textContent = drill.label;
-          document.getElementById("tape-subtitle").textContent = "Paraules separades per Espai";
+          document.getElementById("tape-subtitle").textContent = "Si t'equivoques sona avís i no avança fins que premis la tecla correcta";
           document.getElementById("btn-speak-proverb").style.display = "none";
           state.sequence = generateDrillText(lvl, drill, Date.now() & 0xfffffff);
         } else if (state.phaseType === "adaptive") {
@@ -1427,13 +1727,17 @@
         }
         state.cursor = 0;
         state.evaluations = [];
+        state.charHadError = {};
+        state.currentCharWrongFlash = false;
+        state.tapeTotalErrors = 0;
+        state.tapeKeyStats = {};
         state.startedAtMs = performance.now();
         renderTapeView();
       }
     }
 
     // =========================================================================
-    // LES 4 MECÀNIQUES DE JOC REALMENT DIFERENTS (Amb 2 Subnivells J1 i J2!)
+    // LES MECÀNIQUES DE JOC (Esquivar Asteroides cap al Pedraforca + Castells!)
     // =========================================================================
     let animFrameId = null;
 
@@ -1447,8 +1751,10 @@
       state.arcadeLives = 5;
       state.arcadeEnergy = 100;
       state.arcadeCompleted = 0;
-      state.arcadeTotal = arcDef.totalTargets || 8;
+      state.arcadeTotal = arcDef.totalTargets || 10;
       state.arcadeEntities = [];
+      state.dodgedAsteroids = [];
+      state.shipDodgeYOffset = 0;
       state.arcadeParticles = [];
       state.fallingClimbers = [];
       state.leftClimberStep = 0;
@@ -1468,7 +1774,8 @@
     }
 
     function getCurrentActNumber() {
-      return state.arcadeCompleted < 3 ? 1 : state.arcadeCompleted < 6 ? 2 : 3;
+      const third = Math.max(1, Math.floor(state.arcadeTotal / 3));
+      return state.arcadeCompleted < third ? 1 : state.arcadeCompleted < third * 2 ? 2 : 3;
     }
 
     function spawnEntitiesForCurrentMode(lvl) {
@@ -1483,10 +1790,10 @@
           word: w1,
           typedIndex: 0,
           x: 800,
-          y: isBoss ? 95 : (45 + (state.arcadeCompleted % 3) * 65),
-          speed: isBoss ? 0.35 : (0.42 + act * 0.11),
+          y: isBoss ? 95 : (45 + (state.arcadeCompleted % 3) * 62),
+          speed: isBoss ? 0.35 : (0.40 + act * 0.10),
           isBoss,
-          scale: isBoss ? 6.5 : 4
+          scale: isBoss ? 6.2 : 4
         });
         if (arcDef.subMode === "dual_boss" && act >= 2 && !isBoss && state.arcadeEntities.length < 2) {
           const w2 = generateWordByAct(lvl, state.arcadeCompleted + 1, state.arcadeTotal, arcDef.subMode) + " ";
@@ -1495,16 +1802,13 @@
             word: w2,
             typedIndex: 0,
             x: 860,
-            y: 45 + ((state.arcadeCompleted + 1) % 3) * 65,
-            speed: 0.36 + act * 0.1,
+            y: 45 + ((state.arcadeCompleted + 1) % 3) * 62,
+            speed: 0.35 + act * 0.09,
             isBoss: false,
             scale: 3.8
           });
         }
       } else if (lvl.gameMode === "castells") {
-        // MECÀNICA 2 (CASTELLS):
-        // J1 (single_climber): Puja un casteller amb D i K (si t'equivoques cau!).
-        // J2 (dual_climbers): Puja UN CASTELLER PER CADA COSTAT alhora (Esquerra amb D/F + Dreta amb K/J) coordinant les dues mans!
         const w = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
         state.leftClimberStep = 0;
         state.rightClimberStep = 0;
@@ -1551,7 +1855,7 @@
       const arcDef = getActiveArcadeDef(lvl);
       const act = getCurrentActNumber();
       document.getElementById("arcade-title").textContent = `${lvl.gameTitle} — ${arcDef.label}`;
-      document.getElementById("arcade-act-badge").textContent = `Fase ${act}/3`;
+      document.getElementById("arcade-act-badge").textContent = `Tram ${act}/3`;
       document.getElementById("arcade-progress").innerHTML = `<strong>${state.arcadeCompleted} / ${state.arcadeTotal}</strong>`;
       document.getElementById("arcade-energy-fill").style.width = `${Math.max(0, state.arcadeEnergy)}%`;
       document.getElementById("arcade-lives").innerHTML =
@@ -1578,7 +1882,9 @@
         } else if (lvl.gameMode === "patum") {
           hintEl.textContent = `🔥 Sona la música de la Patum! Apaga el fuet del cantó ${ent.dir}!`;
         } else {
-          hintEl.textContent = ent.isBoss ? "☄️ METEORIT REI GEGANT! Destrueix-lo!" : "🚀 Dispara als meteorits amb ESPAI!";
+          hintEl.textContent = ent.isBoss
+            ? "⛰️ PAS ESTRET DE L'ENFORCADURA! Fes la doble maniobra d'esquivada per aterrar al Pedraforca!"
+            : "🛸 Escriu la seqüència + ESPAI per fer la maniobra i ESQUIVAR l'asteroide rumb al Pedraforca!";
         }
       } else {
         wordEl.textContent = "---";
@@ -1620,16 +1926,16 @@
     }
 
     function spawnParticles(x, y, color = "#fde047") {
-      for (let i = 0; i < 18; i++) {
+      for (let i = 0; i < 16; i++) {
         const a = Math.random() * Math.PI * 2;
-        const sp = 1.5 + Math.random() * 4;
+        const sp = 1.4 + Math.random() * 3.5;
         state.arcadeParticles.push({
           x, y,
           vx: Math.cos(a) * sp,
           vy: Math.sin(a) * sp,
-          size: 4 + Math.floor(Math.random() * 4),
-          color: i % 2 === 0 ? color : "#f97316",
-          life: 24
+          size: 4 + Math.floor(Math.random() * 3),
+          color: i % 2 === 0 ? color : "#38bdf8",
+          life: 22
         });
       }
     }
@@ -1642,6 +1948,8 @@
       const shakeX = state.arcadeShake > 0 ? (Math.random() - 0.5) * 8 : 0;
       if (state.arcadeShake > 0) state.arcadeShake--;
       if (state.arcadeJumpTimer > 0) state.arcadeJumpTimer--;
+      if (Math.abs(state.shipDodgeYOffset) > 0.5) state.shipDodgeYOffset *= 0.88;
+      else state.shipDodgeYOffset = 0;
 
       if (lvl.gameMode === "meteors") {
         tickAndDrawMeteors(ctx, canvas, lvl, shakeX);
@@ -1653,7 +1961,7 @@
         tickAndDrawPatum(ctx, canvas, lvl, shakeX);
       }
 
-      // Partícules
+      // Partícules d'impuls / estrelles
       const remP = [];
       for (const p of state.arcadeParticles) {
         p.x += p.vx;
@@ -1668,23 +1976,20 @@
       animFrameId = requestAnimationFrame(arcadeTick);
     }
 
-    // 1) MECÀNICA 1: MONTSEC (Meteorits simultanis + Meteorit Gegant que es divideix!)
+    // 1) MECÀNICA 1: RUMB AL PEDRAFORCA (Esquivem els asteroides sense explotar-los mentre ens apropem a la muntanya en forma de forca!)
     function tickAndDrawMeteors(ctx, canvas, lvl, shakeX) {
       ctx.fillStyle = "#060913";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = "#1e293b";
-      ctx.beginPath();
-      ctx.moveTo(0, 250);
-      ctx.lineTo(200, 205);
-      ctx.lineTo(440, 232);
-      ctx.lineTo(680, 195);
-      ctx.lineTo(880, 228);
-      ctx.lineTo(880, 250);
-      ctx.fill();
+      // Silueta del PEDRAFORCA a l'horitzó dret (es fa més propera a mesura que esquives asteroides!)
+      const progressRatio = state.arcadeCompleted / Math.max(1, state.arcadeTotal);
+      const pedraW = 240 + progressRatio * 90;
+      const pedraH = 105 + progressRatio * 45;
+      drawPedraforcaSilhouette(ctx, canvas.width - pedraW - 10, 250, pedraW, pedraH, true);
 
       const ent = getPrimaryEntity();
-      const shipY = ent ? ent.y : 110;
+      const baseShipY = ent ? ent.y : 110;
+      const shipY = Math.max(18, Math.min(195, baseShipY + state.shipDodgeYOffset));
       drawSprite(ctx, SPRITES.spaceship, 38 + shakeX, shipY, 4);
 
       if (state.arcadeRunning) {
@@ -1700,6 +2005,19 @@
         }
       }
 
+      // Asteroides ja esquivats que passen de llarg suaument per darrere sense explotar!
+      const remDodged = [];
+      for (const dm of state.dodgedAsteroids) {
+        dm.x -= 6.5;
+        dm.y += dm.vy;
+        drawSprite(ctx, SPRITES.meteor, dm.x, dm.y, dm.scale);
+        ctx.fillStyle = "#86efac";
+        ctx.font = "bold 12px sans-serif";
+        ctx.fillText("✨ Esquivat!", dm.x, dm.y - 8);
+        if (dm.x > -60) remDodged.push(dm);
+      }
+      state.dodgedAsteroids = remDodged;
+
       state.arcadeEntities.forEach((m, idx) => {
         drawSprite(ctx, SPRITES.meteor, m.x, m.y, m.scale);
         drawWordBox(ctx, m.word, m.typedIndex, m.x - 10, m.y - 26, idx === 0);
@@ -1707,7 +2025,6 @@
     }
 
     // 2) MECÀNICA 2: CASTELLS A VILAFRANCA
-    // A J1 puja un casteller (si falles, cau!). A J2 pugen 2 castellers alhora: un pel costat ESQUERRE (Mà Esq: D, F) i un pel costat DRET (Mà Dreta: K, J)!
     function tickAndDrawCastells(ctx, canvas, lvl, shakeX) {
       ctx.fillStyle = "#172554";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1718,12 +2035,10 @@
       const isDual = ent && (ent.subMode === "dual_climbers" || ent.subMode === "hand_blocks");
       const baseX = 425 + shakeX;
 
-      // Dibuixa la Pinya a la base
       drawSprite(ctx, SPRITES.casteller, baseX - 55, 186, 3.2);
       drawSprite(ctx, SPRITES.casteller, baseX + 35, 186, 3.2);
       drawSprite(ctx, SPRITES.casteller, baseX - 10, 186, 3.2);
 
-      // Pisos ja consolidats del tronc (2 colles / pilars paral·lels a J2!)
       const builtFloors = Math.min(4, Math.floor(state.arcadeCompleted / 2) + 1);
       for (let f = 1; f <= builtFloors; f++) {
         const yPos = 186 - f * 28;
@@ -1735,17 +2050,14 @@
         }
       }
 
-      // Dibuixa els castellers que estan PUJANT ara mateix pels costats!
       if (ent) {
         if (isDual) {
-          // Casteller ESQUERRE (puja quan prems D o F)
           const leftY = 180 - state.leftClimberStep * 28;
           ctx.fillStyle = "#38bdf8";
           ctx.font = "bold 12px sans-serif";
           ctx.fillText("⬅️ Mà Esq. (D, F)", 185, 30);
           drawSprite(ctx, SPRITES.casteller, baseX - 75, leftY, 3);
 
-          // Casteller DRET (puja quan prems K o J)
           const rightY = 180 - state.rightClimberStep * 28;
           ctx.fillStyle = "#fde047";
           ctx.fillText("Mà Dreta (K, J) ➡️", 575, 30);
@@ -1753,19 +2065,17 @@
 
           drawWordBox(ctx, ent.word, ent.typedIndex, 375, 22, true);
         } else {
-          // J1: 1 Casteller pujant pel costat esquerre cap al cim
           const climbY = 180 - ent.typedIndex * 24;
           drawSprite(ctx, SPRITES.casteller, baseX - 68, climbY, 3.1);
           drawWordBox(ctx, ent.word, ent.typedIndex, 210, 95, true);
         }
       }
 
-      // Animació dels castellers que CAUEN quan t'equivoques de tecla!
       const remFall = [];
       for (const fc of state.fallingClimbers) {
         fc.x += fc.vx;
         fc.y += fc.vy;
-        fc.vy += 0.28; // Gravetat!
+        fc.vy += 0.28;
         fc.life--;
         drawSprite(ctx, SPRITES.casteller, fc.x, fc.y, 3);
         ctx.fillStyle = "#ef4444";
@@ -1776,7 +2086,7 @@
       state.fallingClimbers = remFall;
     }
 
-    // 3) MECÀNICA 3: SARDANA A GIRONA (Pista de Ritme Musical + Melodia Cobla 8-bits!)
+    // 3) MECÀNICA 3: SARDANA A GIRONA
     function tickAndDrawSardana(ctx, canvas, lvl, shakeX) {
       ctx.fillStyle = "#064e3b";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1819,7 +2129,7 @@
       }
     }
 
-    // 4) MECÀNICA 4: LA PATUM DE BERGA (4 Cantons + Música del Tirabol de la Patum en 8-bits!)
+    // 4) MECÀNICA 4: LA PATUM DE BERGA
     function tickAndDrawPatum(ctx, canvas, lvl, shakeX) {
       ctx.fillStyle = "#2a0a0a";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1896,7 +2206,6 @@
         ent.typedIndex++;
         playGameNote(lvl.gameMode);
 
-        // Als Castells J2, si prems una tecla de la mà esquerra (d, f) puja el casteller esquerre; si prems mà dreta (k, j) puja el dret!
         if (lvl.gameMode === "castells") {
           if (lvl.leftKeys.includes(typedChar)) state.leftClimberStep++;
           if (lvl.rightKeys.includes(typedChar)) state.rightClimberStep++;
@@ -1904,20 +2213,31 @@
 
         if (ent.typedIndex >= ent.word.length) {
           sfxActionSuccess();
-          spawnParticles(440, 120, "#4ade80");
+          spawnParticles(95, ent.y || 120, "#fde047");
           state.arcadeAngle += 0.8;
           state.arcadeJumpTimer = 18;
           state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
 
-          if (lvl.gameMode === "meteors" && ent.isBoss && !ent.hasSplit) {
-            ent.hasSplit = true;
-            ent.isBoss = false;
-            ent.scale = 3.8;
-            ent.word = `${lvl.newKeys[0]}${lvl.newKeys[1]}${lvl.newKeys[0]} `;
-            ent.typedIndex = 0;
-            ent.x = Math.min(720, ent.x + 140);
-            updateArcadeHud(lvl);
-            return;
+          if (lvl.gameMode === "meteors") {
+            // Maniobra pacífica d'esquivada! La nau salta de carril i l'asteroide passa de llarg sense explotar!
+            state.shipDodgeYOffset = ent.y > 110 ? -42 : 42;
+            state.dodgedAsteroids.push({
+              x: ent.x,
+              y: ent.y,
+              vy: ent.y > 110 ? 1.2 : -1.2,
+              scale: ent.scale
+            });
+
+            if (ent.isBoss && !ent.hasSplit) {
+              ent.hasSplit = true;
+              ent.isBoss = false;
+              ent.scale = 3.8;
+              ent.word = `${lvl.newKeys[0]}${lvl.newKeys[1]}${lvl.newKeys[0]} `;
+              ent.typedIndex = 0;
+              ent.x = Math.min(720, ent.x + 140);
+              updateArcadeHud(lvl);
+              return;
+            }
           }
 
           state.arcadeEntities.shift();
@@ -1935,14 +2255,13 @@
           updateArcadeHud(lvl);
         }
       } else {
-        // Error de tecla: si estem als Castells, el casteller que estava pujant CAU!
         state.arcadeErrors++;
         state.arcadeKeyErrors[expected].errors++;
 
         if (lvl.gameMode === "castells") {
           const isRightExpected = lvl.rightKeys.includes(expected);
           triggerFallingClimber(isRightExpected ? "right" : "left");
-          if (ent.subMode === "dual_climbers") {
+          if (ent.subMode === "dual_climbers" || ent.subMode === "hand_blocks") {
             if (isRightExpected) state.rightClimberStep = Math.max(0, state.rightClimberStep - 1);
             else state.leftClimberStep = Math.max(0, state.leftClimberStep - 1);
           } else {
@@ -1986,44 +2305,53 @@
         keyStats: state.arcadeKeyErrors
       });
 
-      showResultScreen({
+      const resultPayload = {
         title: survived
-          ? `🎉 Joc superat! Has guanyat ${earnedB} / 5 Barretines!`
+          ? `🎉 Missió superada! Has guanyat ${earnedB} / 5 Barretines!`
           : `💥 Has perdut les 5 Barretines!`,
         barretines: earnedB,
         msg: survived
           ? (earnedB >= 3 ? "Molt bona feina! Ja tens desbloquejat el següent pas!" : "Necessites conservar almenys 3 Barretines per avançar!")
           : "Recorda escriure sense pressa: cada tecla errònia resta un 25% d'energia!",
         metricsHtml: `
-          <span>Superats: <strong>${state.arcadeCompleted} / ${state.arcadeTotal}</strong></span>
+          <span>Esquivats / Completats: <strong>${state.arcadeCompleted} / ${state.arcadeTotal}</strong></span>
           <span>Precisió: <strong>${acc}%</strong></span>
           <span>Barretines: <strong>${earnedB} / 5</strong></span>
         `,
         showThermometer: false
-      });
+      };
+
+      // Quan supera el joc d'esquivar asteroides (o el castell), mostrem primer el Minivídeo d'Aterratge al Pedraforca / Coronació!
+      if (survived) {
+        playLandingCutsceneThenResult(lvl, resultPayload);
+      } else {
+        showResultScreen(resultPayload);
+      }
     }
 
     // =========================================================================
-    // TIRA DE LLETRES (FASE 1 i FASE 3) I TECLAT DE SUPORT
+    // TIRA DE LLETRES (FASE 1 i FASE 3) — BLOQUEIG EN CAS D'ERROR FINS QUE PREMIS LA TECLA CORRECTA!
     // =========================================================================
     function renderTapeView() {
       const tape = document.getElementById("prompt-tape");
       tape.innerHTML = "";
       state.sequence.split("").forEach((ch, idx) => {
         const span = document.createElement("span");
-        const ev = state.evaluations[idx];
-        const cls = idx < state.cursor
-          ? (ev.correct ? "char-ok" : "char-err")
-          : (idx === state.cursor ? "char-current" : "char-pending");
+        let cls = "char-pending";
+        if (idx < state.cursor) {
+          cls = state.charHadError[idx] ? "char-fixed" : "char-ok";
+        } else if (idx === state.cursor) {
+          cls = state.currentCharWrongFlash ? "char-current-err" : "char-current";
+        }
         span.className = `prompt-char ${ch === " " ? "space-char" : ""} ${cls}`;
         span.textContent = ch === " " ? "␣" : ch;
         tape.appendChild(span);
       });
 
-      const tot = state.evaluations.length;
-      const errs = state.evaluations.filter(e => !e.correct).length;
-      const acc = tot > 0 ? Math.round(((tot - errs) / tot) * 100) : 100;
-      document.getElementById("tape-progress").innerHTML = `Pulsació: <strong>${state.cursor} / ${state.sequence.length}</strong>`;
+      const correctCount = state.cursor;
+      const totalAttempts = correctCount + state.tapeTotalErrors;
+      const acc = totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 100;
+      document.getElementById("tape-progress").innerHTML = `Pulsació: <strong>${state.cursor} / ${state.sequence.length}</strong> (Errors: <strong>${state.tapeTotalErrors}</strong>)`;
       document.getElementById("tape-accuracy").innerHTML = `Precisió: <strong>${acc}%</strong>`;
 
       const expectedChar = state.cursor < state.sequence.length ? state.sequence[state.cursor] : null;
@@ -2089,24 +2417,17 @@
 
     function finishTapePhase() {
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
-      const tot = state.evaluations.length;
-      const errs = state.evaluations.filter(e => !e.correct).length;
-      const acc = tot > 0 ? (tot - errs) / tot : 0;
+      const correctCount = state.sequence.length;
+      const errs = state.tapeTotalErrors;
+      const totalAttempts = correctCount + errs;
+      const acc = totalAttempts > 0 ? correctCount / totalAttempts : 1;
       const durS = Math.max(1, Math.round((performance.now() - state.startedAtMs) / 1000));
-      const wpm = Number(((tot / 5) / (durS / 60)).toFixed(1));
+      const wpm = Number(((correctCount / 5) / (durS / 60)).toFixed(1));
       const b = computeBarretines(acc);
 
       sfxFanfare();
       const prev = state.stepBarretines[state.stepId] || 0;
       state.stepBarretines[state.stepId] = Math.max(prev, b);
-
-      const keyStats = {};
-      for (const ev of state.evaluations) {
-        const k = ev.expected.toLowerCase();
-        if (!keyStats[k]) keyStats[k] = { hits: 0, errors: 0 };
-        if (ev.correct) keyStats[k].hits++;
-        else keyStats[k].errors++;
-      }
 
       if (state.phaseType === "proverb" || state.phaseType === "diagnostic") {
         state.proverbHistory.push({
@@ -2133,9 +2454,9 @@
         wpmNet: wpm,
         accuracyPct: Math.round(acc * 100),
         errors: errs,
-        totalPresses: tot,
+        totalPresses: totalAttempts,
         barretines: b,
-        keyStats
+        keyStats: state.tapeKeyStats
       });
 
       showResultScreen({
@@ -2147,10 +2468,10 @@
         barretines: b,
         msg: b >= 3
           ? (state.phaseType === "proverb" ? "Has completat totes les fases d'aquest nivell del Pilot!" : "Ja tens desbloquejat el següent pas!")
-          : "Necessites almenys 3 Barretines (88% precisió) per desbloquejar el següent pas.",
+          : "Els errors han penalitzat les Barretines (<88% precisió). Torna-ho a provar per obtenir ≥ 3 Barretines!",
         metricsHtml: `
           <span>Precisió: <strong>${Math.round(acc * 100)}%</strong></span>
-          <span>Errors: <strong>${errs}</strong></span>
+          <span>Errors comesos: <strong>${errs}</strong></span>
           <span>Velocitat: <strong>${wpm} paraules/min</strong></span>
         `,
         showThermometer: state.phaseType === "proverb" || state.phaseType === "diagnostic"
@@ -2207,6 +2528,16 @@
         return;
       }
 
+      if (state.screen === "cutscene") {
+        if (ev.key === " " && pendingResultPayload) {
+          ev.preventDefault();
+          const p = pendingResultPayload;
+          pendingResultPayload = null;
+          showResultScreen(p);
+        }
+        return;
+      }
+
       if (state.screen !== "play") return;
 
       if (state.phaseType === "arcade") {
@@ -2219,19 +2550,30 @@
       if (ev.key === " ") ev.preventDefault();
 
       const expected = state.sequence[state.cursor];
-      const correct = typed === expected.toLowerCase();
-      state.evaluations.push({ expected, typed: ev.key, correct });
-      state.cursor++;
+      const expectedLower = expected.toLowerCase();
+      const correct = (ev.key === " " ? " " : typed) === expectedLower;
+      if (!state.tapeKeyStats[expectedLower]) state.tapeKeyStats[expectedLower] = { hits: 0, errors: 0 };
 
       if (correct) {
+        // Només quan prem la tecla CORRECTA avança el cursor!
+        state.tapeKeyStats[expectedLower].hits++;
+        state.currentCharWrongFlash = false;
+        state.evaluations.push({ expected, typed: ev.key, correct: true });
+        state.cursor++;
         sfxTone(expected === " " ? 587.33 : 440 + (state.cursor % 5) * 30, 45, "triangle", 0.05);
-      } else {
-        sfxErrorHit();
-      }
 
-      renderTapeView();
-      if (state.cursor >= state.sequence.length) {
-        finishTapePhase();
+        renderTapeView();
+        if (state.cursor >= state.sequence.length) {
+          finishTapePhase();
+        }
+      } else {
+        // Si s'equivoca: sona el fallo, penalitza la precisió (i les Barretines), però NO avança fins que premi la correcta!
+        state.tapeTotalErrors++;
+        state.tapeKeyStats[expectedLower].errors++;
+        state.charHadError[state.cursor] = true;
+        state.currentCharWrongFlash = true;
+        sfxErrorHit();
+        renderTapeView();
       }
     });
 
@@ -2284,6 +2626,16 @@
     document.getElementById("btn-skip-ignition").onclick = () => launchActiveStep();
     document.getElementById("btn-restart-tape").onclick = () => launchActiveStep();
     document.getElementById("btn-restart-arcade").onclick = () => launchActiveStep();
+
+    document.getElementById("btn-cutscene-continue").onclick = () => {
+      if (pendingResultPayload) {
+        const p = pendingResultPayload;
+        pendingResultPayload = null;
+        showResultScreen(p);
+      } else {
+        showScreen("phases");
+      }
+    };
 
     document.getElementById("btn-diagnostic-zero").onclick = () => {
       state.levelId = "L01";
