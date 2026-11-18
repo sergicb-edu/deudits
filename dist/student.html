@@ -141,11 +141,11 @@
       font-size: 1.35rem;
     }
 
-    /* PANTALLA 2: LES 3 FASES DEL NIVELL */
+    /* PANTALLA 2: PAS 1 (PRÀCTICA) i PAS 2 (JOC) — DISSENY SIMPLIFICAT NESE */
     .phases-cards {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.85rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
       margin-top: 0.5rem;
     }
     .phase-card {
@@ -411,6 +411,7 @@
           <button type="button" id="cfg-dyslexia"><span>📏 Lletra espaiada</span><strong id="val-dyslexia">No</strong></button>
           <hr style="width:100%;border:0;border-top:1px solid #cbd5e1;margin:0.2rem 0;" />
           <button type="button" id="cfg-unlock"><span>🔓 Desbloquejar tot (Proves)</span><strong id="val-unlock">No</strong></button>
+          <button type="button" id="cfg-reset-zero" style="color:#b91c1c;"><span>🗑️ Reiniciar progrés a zero</span><strong>Netejar</strong></button>
           <a href="./admin.html" style="display:flex;justify-content:space-between;align-items:center;padding:0.42rem 0.65rem;border-radius:8px;background:#dbeafe;color:#1e40af;text-decoration:none;font-weight:800;font-size:0.84rem;margin-top:0.2rem;">
             <span>📊 Panell del Docent</span><span>↗️</span>
           </a>
@@ -436,7 +437,7 @@
       <div class="levels-grid" id="levels-grid"></div>
     </main>
 
-    <!-- PANTALLA 2: LES 3 FASES DEL NIVELL -->
+    <!-- PANTALLA 2: PAS 1 (PRÀCTICA) I PAS 2 (JOC) — SIMPLIFICAT PER A NESE (SENSE MOSTRAR LA FASE 3 COM UNA CAIXA MÉS) -->
     <section class="view-screen" id="screen-phases">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.4rem;">
         <div>
@@ -448,6 +449,7 @@
         </button>
       </div>
       <div class="phases-cards" id="phases-cards"></div>
+      <div id="proverb-gate-banner" style="margin-top:0.75rem;"></div>
     </section>
 
     <!-- PANTALLA 3: INTRODUCCIÓ ANIMADA (MINIVÍDEO 8-BITS) + ENGEGAR MOTORS -->
@@ -627,14 +629,14 @@
         isPilot: true,
         titleCa: "Nivell 1 (Pilot): L'Aterratge al Pedraforca",
         keysLabel: "Tecles F, J + Espai (2 lletres)",
-        descCa: "En Bit viatja cap a la Terra! A J1 esquivem asteroides per arribar a la Terra, i a J2 baixem verticalment per l'atmosfera esquivant ocells cada cop més ràpids fins a aterrar al Pedraforca!",
+        descCa: "En Bit viatja cap a la Terra! A J1 esquivem asteroides per arribar a la Terra, i a J2 baixem verticalment per l'atmosfera esquivant ocells fins a aterrar al Pedraforca!",
         newKeys: ["f", "j"],
         leftKeys: ["f"],
         rightKeys: ["j"],
         reviewKeys: [],
         gameMode: "meteors",
         gameTitle: "🛸 Rumb al Pedraforca (Espai + Atmosfera)",
-        gameDesc: "J1: Esquiva asteroides per arribar a la Terra. J2: Descens vertical per l'atmosfera esquivant ocells (velocitat progressiva) fins al Pedraforca!",
+        gameDesc: "J1: Esquiva asteroides rumb a la Terra. J2: Descens vertical esquivant ocells (paraules més llargues, velocitat suau) + ⭐ Joc Extra de velocitat!",
         proverbCa: "qui dia passa any empeny",
         proverbMeaningCa: "Anant pas a pas i amb constància cada dia, avancem molt més del que sembla.",
         drills: [
@@ -643,8 +645,9 @@
           { id: "L01.D3", label: "1C: Ritme continu de 4 i 5 lletres", stepType: "growing", wordsCount: 12, mix: false }
         ],
         arcades: [
-          { id: "L01.G1", label: "J1: Esquivem Asteroides rumb a la Terra (10 asteroides)", subMode: "space_asteroids", totalTargets: 10 },
-          { id: "L01.G2", label: "J2: Entrada Vertical a l'Atmosfera — Esquivem Ocells (12 ocells)", subMode: "atmosphere_birds", totalTargets: 12 }
+          { id: "L01.G1", label: "J1: Esquivem Asteroides rumb a la Terra (10 asteroides)", subMode: "space_asteroids", totalTargets: 10, isExtra: false },
+          { id: "L01.G2", label: "J2: Entrada Vertical a l'Atmosfera — Esquivem Ocells (12 ocells)", subMode: "atmosphere_birds", totalTargets: 12, isExtra: false },
+          { id: "L01.EXTRA", label: "⭐ EXTRA (Opcional): Descens Turbo d'Ocells (Puja la velocitat! No condiciona res)", subMode: "atmosphere_birds_turbo", totalTargets: 12, isExtra: true }
         ]
       },
       {
@@ -959,7 +962,7 @@
       }
     }
 
-    const saved = JSON.parse(localStorage.getItem("mecano_v4_distinct") || "{}");
+    const saved = JSON.parse(localStorage.getItem("mecano_pilot_nese_v2") || "{}");
 
     const state = {
       screen: "home",
@@ -1025,7 +1028,7 @@
 
     function saveProgress() {
       try {
-        localStorage.setItem("mecano_v4_distinct", JSON.stringify({
+        localStorage.setItem("mecano_pilot_nese_v2", JSON.stringify({
           stepBarretines: state.stepBarretines,
           proverbHistory: state.proverbHistory
         }));
@@ -1120,14 +1123,21 @@
     function getOrderedSteps(lvl) {
       return [
         ...lvl.drills.map(d => ({ id: d.id, label: d.label, phaseType: "drill" })),
-        ...lvl.arcades.map(a => ({ id: a.id, label: a.label, phaseType: "arcade" })),
-        { id: `${lvl.id}.PROVERB`, label: "Repte Dita Catalana", phaseType: "proverb" }
+        ...lvl.arcades.filter(a => !a.isExtra).map(a => ({ id: a.id, label: a.label, phaseType: "arcade" })),
+        { id: `${lvl.id}.PROVERB`, label: "Repte per passar al següent nivell (Dita)", phaseType: "proverb" }
       ];
     }
 
     function isStepUnlocked(lvl, stepId) {
       if (state.freeUnlock) return true;
       if (!isLevelUnlocked(lvl)) return false;
+      // Si és un joc EXTRA opcional (com L01.EXTRA de velocitat), es desbloqueja quan s'ha superat J2 però no condiciona res!
+      const extraArc = lvl.arcades.find(a => a.id === stepId && a.isExtra);
+      if (extraArc) {
+        const mandatoryArcs = lvl.arcades.filter(a => !a.isExtra);
+        const lastMandatory = mandatoryArcs[mandatoryArcs.length - 1];
+        return lastMandatory ? (state.stepBarretines[lastMandatory.id] || 0) >= 3 : true;
+      }
       const steps = getOrderedSteps(lvl);
       const idx = steps.findIndex(s => s.id === stepId);
       if (idx <= 0) return true;
@@ -1615,14 +1625,14 @@
       const container = document.getElementById("phases-cards");
       container.innerHTML = "";
 
-      // FASE 1
+      // PAS 1: PRÀCTICA DE LLETRES
       const f1 = document.createElement("div");
       f1.className = "phase-card";
       f1.innerHTML = `
         <div>
           <div style="font-size:1.6rem;">⌨️</div>
-          <h3 style="margin:0.3rem 0;">Fase 1: Pràctica de Lletres</h3>
-          <p style="font-size:0.82rem;opacity:0.8;margin:0 0 0.5rem;">Si t'equivoques sona avís i no avança fins que premis la tecla correcta.</p>
+          <h3 style="margin:0.3rem 0;">Pas 1: Practicar les Lletres</h3>
+          <p style="font-size:0.82rem;opacity:0.8;margin:0 0 0.5rem;">Completa cada exercici amb ≥ 3 Barretines per obrir el següent.</p>
         </div>
         <div class="substeps-list" id="f1-steps"></div>
       `;
@@ -1634,19 +1644,19 @@
         btn.className = "substep-btn";
         btn.disabled = !unl;
         btn.innerHTML = `<span>${unl ? "▶️" : "🔒"} ${d.label}</span><span>${b}/5 ${renderBarretinaSvg(b >= 3, 2)}</span>`;
-        btn.onclick = () => promptIgnitionBeforeStep(lvl.id, "drill", d.id);
+        if (unl) btn.onclick = () => promptIgnitionBeforeStep(lvl.id, "drill", d.id);
         f1List.appendChild(btn);
       });
       container.appendChild(f1);
 
-      // FASE 2
+      // PAS 2: JOC D'AVENTURA (Bloquejat fins que s'hagin superat totes les pràctiques del Pas 1!)
       const f2Unlocked = isStepUnlocked(lvl, lvl.arcades[0].id);
       const f2 = document.createElement("div");
       f2.className = `phase-card ${f2Unlocked ? "" : "locked"}`;
       f2.innerHTML = `
         <div>
           <div style="font-size:1.6rem;">🕹️</div>
-          <h3 style="margin:0.3rem 0;">Fase 2: ${lvl.gameTitle}</h3>
+          <h3 style="margin:0.3rem 0;">Pas 2: ${lvl.gameTitle}</h3>
           <p style="font-size:0.82rem;opacity:0.85;margin:0 0 0.5rem;">${lvl.gameDesc}</p>
         </div>
         <div class="substeps-list" id="f2-steps"></div>
@@ -1657,36 +1667,38 @@
         const b = state.stepBarretines[arc.id] || 0;
         const btn = document.createElement("button");
         btn.className = "substep-btn";
+        if (arc.isExtra) {
+          btn.style.background = unl ? "#fef3c7" : "";
+          btn.style.borderColor = unl ? "#f59e0b" : "";
+        }
         btn.disabled = !unl;
-        btn.innerHTML = `<span>${unl ? "🕹️" : "🔒"} ${arc.label}</span><span>${b}/5 ${renderBarretinaSvg(b >= 3, 2)}</span>`;
-        btn.onclick = () => promptIgnitionBeforeStep(lvl.id, "arcade", arc.id);
+        btn.innerHTML = `<span>${unl ? (arc.isExtra ? "⭐" : "🕹️") : "🔒"} ${arc.label}</span><span>${b}/5 ${renderBarretinaSvg(b >= 3, 2)}</span>`;
+        if (unl) btn.onclick = () => promptIgnitionBeforeStep(lvl.id, "arcade", arc.id);
         f2List.appendChild(btn);
       });
       container.appendChild(f2);
 
-      // FASE 3 (Repte Dita Catalana)
+      // REQUISIT PER PASSAR AL SEGÜENT NIVELL (La Dita no apareix com una Fase 3 a la graella, sinó només com a clau final un cop superat el Pas 2!)
       const provId = `${lvl.id}.PROVERB`;
-      const f3Unlocked = isStepUnlocked(lvl, provId);
+      const provUnlocked = isStepUnlocked(lvl, provId);
       const provB = state.stepBarretines[provId] || 0;
-      const f3 = document.createElement("div");
-      f3.className = `phase-card ${f3Unlocked ? "" : "locked"}`;
-      f3.innerHTML = `
-        <div>
-          <div style="font-size:1.6rem;">📜</div>
-          <h3 style="margin:0.3rem 0;">Fase 3: Repte Dita Catalana</h3>
-          <p style="font-size:0.82rem;opacity:0.85;margin:0 0 0.5rem;">
-            Escriu <strong>«${lvl.proverbCa}»</strong> amb tot el teclat per desbloquejar el següent nivell!
-          </p>
-        </div>
-        <div class="substeps-list">
-          <button type="button" class="substep-btn" id="btn-start-proverb" ${f3Unlocked ? "" : "disabled"}>
-            <span>${f3Unlocked ? "📜" : "🔒"} Començar Dita</span>
-            <span>${provB}/5 ${renderBarretinaSvg(provB >= 3, 2)}</span>
-          </button>
-        </div>
-      `;
-      f3.querySelector("#btn-start-proverb").onclick = () => promptIgnitionBeforeStep(lvl.id, "proverb", provId);
-      container.appendChild(f3);
+      const gateBanner = document.getElementById("proverb-gate-banner");
+      if (provUnlocked) {
+        gateBanner.innerHTML = `
+          <div style="background:#fef3c7;border:3px solid #f59e0b;border-radius:14px;padding:0.75rem 1.1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;">
+            <div>
+              <strong style="color:#78350f;font-size:0.98rem;">🔑 Requisit per obrir el següent nivell: Escriu la Dita «${lvl.proverbCa}»</strong>
+              <div style="font-size:0.8rem;color:#92400e;">Ja has superat els jocs d'aquest nivell! Completa aquesta frase amb ≥ 3 Barretines per passar al següent nivell.</div>
+            </div>
+            <button type="button" id="btn-start-proverb-gate" class="primary" style="font-size:0.9rem;">
+              🔑 Fer el Repte per passar de nivell (${provB}/5) ➡️
+            </button>
+          </div>
+        `;
+        document.getElementById("btn-start-proverb-gate").onclick = () => promptIgnitionBeforeStep(lvl.id, "proverb", provId);
+      } else {
+        gateBanner.innerHTML = "";
+      }
     }
 
     function promptIgnitionBeforeStep(levelId, phaseType, stepId) {
@@ -1817,34 +1829,36 @@
       const act = getCurrentActNumber();
 
       if (lvl.gameMode === "meteors") {
-        if (arcDef.subMode === "atmosphere_birds") {
+        if (arcDef.subMode === "atmosphere_birds" || arcDef.subMode === "atmosphere_birds_turbo") {
           // J2 (Nivell 1): Entrada VERTICAL a l'atmosfera esquivant ocells cap al Pedraforca!
-          // Més ràpid i amb velocitat que va augmentant progressivament a cada ocell!
+          // A J2 la velocitat és CONSTANT i suau (0.38, sense augmentar la velocitat: la dificultat és només que les paraules són més llargues).
+          // Al Joc EXTRA opcional (atmosphere_birds_turbo), la velocitat sí que va pujant progressivament!
+          const isTurboExtra = arcDef.subMode === "atmosphere_birds_turbo";
           const lanesX = [235, 415, 595];
           const laneX = lanesX[state.arcadeCompleted % lanesX.length];
           const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
-          const progSpeed = 0.56 + state.arcadeCompleted * 0.065; // Velocitat progressiva!
+          const birdSpeed = isTurboExtra ? (0.50 + state.arcadeCompleted * 0.065) : 0.38;
           state.arcadeEntities.push({
             id: Date.now() + Math.random(),
             word: w1,
             typedIndex: 0,
             x: laneX,
             y: 225,
-            speed: progSpeed,
+            speed: birdSpeed,
             isBird: true,
+            isTurboExtra,
             scale: 3.6
           });
         } else {
-          // J1 (Nivell 1): Esquivar asteroides per l'espai rumb al planeta Terra (velocitat progressiva!)
+          // J1 (Nivell 1): Esquivar asteroides per l'espai rumb al planeta Terra (velocitat suau 0.38)
           const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
-          const progSpeed = 0.40 + state.arcadeCompleted * 0.042;
           state.arcadeEntities.push({
             id: Date.now() + Math.random(),
             word: w1,
             typedIndex: 0,
             x: 800,
             y: 45 + (state.arcadeCompleted % 3) * 62,
-            speed: progSpeed,
+            speed: 0.38,
             isBoss: false,
             scale: 4
           });
@@ -1924,8 +1938,10 @@
           hintEl.textContent = `🔥 Sona la música de la Patum! Apaga el fuet del cantó ${ent.dir}!`;
         } else {
           hintEl.textContent = ent.isBird
-            ? `🦅 J2 (Velocitat x${(1 + state.arcadeCompleted * 0.1).toFixed(1)}): Descens vertical per l'atmosfera! Esquiva els ocells per aterrar al Pedraforca!`
-            : `🛸 J1 (Velocitat x${(1 + state.arcadeCompleted * 0.08).toFixed(1)}): Esquiva els asteroides per arribar al planeta Terra!`;
+            ? (ent.isTurboExtra
+                ? `⭐ JOC EXTRA TURBO (Velocitat x${(1 + state.arcadeCompleted * 0.12).toFixed(1)}): No condiciona passar de nivell!`
+                : `🦅 J2 (Velocitat suau): Descens vertical per l'atmosfera! Les paraules es fan més llargues!`)
+            : `🛸 J1: Esquiva els asteroides per arribar al planeta Terra!`;
         }
       } else {
         wordEl.textContent = "---";
@@ -2024,8 +2040,8 @@
       const progressRatio = state.arcadeCompleted / Math.max(1, state.arcadeTotal);
       const ent = getPrimaryEntity();
 
-      if (arcDef.subMode === "atmosphere_birds") {
-        // J2: DESCENS VERTICAL PER L'ATMOSFERA CAP AL PEDRAFORCA ESQUIVANT OCELLS!
+      if (arcDef.subMode === "atmosphere_birds" || arcDef.subMode === "atmosphere_birds_turbo") {
+        // J2 (velocitat suau) i EXTRA (velocitat progressiva): DESCENS VERTICAL PER L'ATMOSFERA CAP AL PEDRAFORCA ESQUIVANT OCELLS!
         ctx.fillStyle = "#0369a1";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -2786,6 +2802,14 @@
       document.getElementById("val-unlock").textContent = state.freeUnlock ? "Sí" : "No";
       if (state.screen === "home") renderHomeLevels();
       if (state.screen === "phases") renderLevelPhases();
+    };
+    document.getElementById("cfg-reset-zero").onclick = () => {
+      if (confirm("Vols reiniciar tot el progrés de l'alumne a zero (només el primer exercici obert)?")) {
+        state.stepBarretines = {};
+        state.proverbHistory = [];
+        localStorage.removeItem("mecano_pilot_nese_v2");
+        showScreen("home");
+      }
     };
 
     document.getElementById("btn-skip-ignition").onclick = () => launchActiveStep();

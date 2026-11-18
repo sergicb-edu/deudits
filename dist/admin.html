@@ -477,8 +477,9 @@
           { id: "L01.D3", short: "1C" }
         ],
         arcades: [
-          { id: "L01.G1", short: "J1" },
-          { id: "L01.G2", short: "J2" }
+          { id: "L01.G1", short: "J1 (Espai)" },
+          { id: "L01.G2", short: "J2 (Atmosfera)" },
+          { id: "L01.EXTRA", short: "⭐ EXTRA Turbo" }
         ],
         proverb: "L01.PROVERB",
         proverbText: "«qui dia passa any empeny»"
@@ -553,7 +554,7 @@
 
     function loadDashboardData() {
       const telemetry = JSON.parse(localStorage.getItem("mecano_telemetry_v1") || "{\"sessions\":[],\"keyStats\":{}}");
-      const studentProg = JSON.parse(localStorage.getItem("mecano_v4_distinct") || "{\"stepBarretines\":{},\"proverbHistory\":[]}");
+      const studentProg = JSON.parse(localStorage.getItem("mecano_pilot_nese_v2") || "{\"stepBarretines\":{},\"proverbHistory\":[]}");
       const teacherCfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{\"minAccuracyPct\":88,\"unlockedAllLevels\":false}");
 
       return {
@@ -566,7 +567,7 @@
     }
 
     function saveStudentBarretines(stepBarretines, proverbHistory) {
-      localStorage.setItem("mecano_v4_distinct", JSON.stringify({
+      localStorage.setItem("mecano_pilot_nese_v2", JSON.stringify({
         stepBarretines,
         proverbHistory
       }));
@@ -799,7 +800,7 @@
         " ": { hits: 120, errors: 2 }
       };
 
-      localStorage.setItem("mecano_v4_distinct", JSON.stringify({
+      localStorage.setItem("mecano_pilot_nese_v2", JSON.stringify({
         stepBarretines: demoStepBarretines,
         proverbHistory: demoProverbs
       }));
@@ -829,7 +830,8 @@
 
     // Reiniciar dades
     document.getElementById("btn-clear-data").onclick = () => {
-      if (confirm("Vols esborrar les sessions i les Barretines locals de prova?")) {
+      if (confirm("Vols esborrar les sessions i deixar el progrés de l'alumne a zero (només l'exercici 1A obert)?")) {
+        localStorage.removeItem("mecano_pilot_nese_v2");
         localStorage.removeItem("mecano_v4_distinct");
         localStorage.removeItem("mecano_telemetry_v1");
         renderAll();
