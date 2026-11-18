@@ -317,6 +317,7 @@
       </div>
 
       <div class="btn-row">
+        <button type="button" id="btn-toggle-cloud" style="background:#dcfce7;border-color:#16a34a;color:#14532d;">☁️ Connectar amb Google Drive (Assistent)</button>
         <button type="button" id="btn-seed-demo">🧪 Carregar Dades d'Exemple</button>
         <button type="button" id="btn-export-csv">📥 Exportar CSV (Google Sheets)</button>
         <button type="button" id="btn-clear-data" style="color:#b91c1c;">🗑️ Reiniciar dades</button>
@@ -324,12 +325,41 @@
       </div>
     </header>
 
+    <!-- ASSISTENT VISUAL PER CONNECTAR AMB GOOGLE DRIVE EN 3 CLICS (SENSE SER EXPERT!) -->
+    <div id="cloud-wizard-panel" style="display:none;background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+        <strong style="font-size:1rem;color:#14532d;">☁️ Assistent ràpid per guardar totes les partides al teu Google Drive (Google Sheets)</strong>
+        <span id="cloud-status-pill" style="font-size:0.78rem;font-weight:800;padding:2px 8px;border-radius:99px;background:#fef3c7;color:#92400e;">No connectat al núvol</span>
+      </div>
+      <p style="margin:0 0 0.75rem;font-size:0.84rem;color:#166534;">
+        Només cal que una sola persona (el coordinador o el docent) faci aquests 3 passos una vegada per tenir totes les 6 pestanyes de Google Sheets connectades en temps real:
+      </p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:0.8rem;">
+        <div style="background:#ffffff;border:1px solid #86efac;border-radius:8px;padding:0.65rem;">
+          <strong style="font-size:0.82rem;color:#14532d;">Pas 1: Crea el full</strong>
+          <p style="font-size:0.78rem;margin:0.3rem 0 0.5rem;color:#475569;">Obre un full de càlcul nou al teu Google Drive escolar.</p>
+          <a href="https://sheets.new" target="_blank" rel="noopener" class="btn-link" style="width:100%;justify-content:center;background:#eff6ff;border-color:#3b82f6;color:#1d4ed8;">📊 Obrir sheets.new ↗️</a>
+        </div>
+        <div style="background:#ffffff;border:1px solid #86efac;border-radius:8px;padding:0.65rem;">
+          <strong style="font-size:0.82rem;color:#14532d;">Pas 2: Enganxa l'script màgic</strong>
+          <p style="font-size:0.78rem;margin:0.3rem 0 0.5rem;color:#475569;">Al full, ves a <em>Extensions → Apps Script</em>, enganxa aquest codi i prem <em>Implementa → Aplicació web</em>.</p>
+          <button type="button" id="btn-copy-gas-code" style="width:100%;justify-content:center;background:#fef3c7;border-color:#f59e0b;color:#78350f;">📋 Copiar Codi Automàtic</button>
+        </div>
+        <div style="background:#ffffff;border:1px solid #86efac;border-radius:8px;padding:0.65rem;">
+          <strong style="font-size:0.82rem;color:#14532d;">Pas 3: Enganxa l'enllaç aquí</strong>
+          <input type="url" id="input-cloud-url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%;padding:0.38rem 0.5rem;border:1px solid #94a3b8;border-radius:6px;font-size:0.78rem;margin:0.3rem 0 0.45rem;" />
+          <button type="button" id="btn-sync-cloud-now" class="primary" style="width:100%;justify-content:center;">🔄 Connectar i Sincronitzar ara</button>
+        </div>
+      </div>
+      <div id="cloud-sync-feedback" style="font-size:0.8rem;font-weight:700;color:#15803d;"></div>
+    </div>
+
     <!-- BANNER EXPLICATIU DE CONNEXIÓ ALUMNE <-> DOCENT -->
     <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.95rem;font-size:0.83rem;color:#1e3a8a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
       <div>
         🔗 <strong>Com es connecta amb la Vista de l'Alumne i on es guarden les dades?</strong><br/>
-        • <strong>En mode local (ara al teu navegador):</strong> Tota partida o pràctica feta a <code>student.html</code> es desa automàticament al <code>localStorage</code> compartit del navegador (claus <code>mecano_telemetry_v1</code> i <code>mecano_v4_distinct</code>) i apareix aquí a l'instant.<br/>
-        • <strong>A l'escola (Google Workspace / Fase 4):</strong> Es desa al núvol dins d'un llibre de <strong>Google Sheets</strong> de Google Drive (6 pestanyes automàtiques) + còpia local per si falla la Wi-Fi, o pots descarregar-ho amb <strong>«📥 Exportar CSV»</strong>.
+        • <strong>En mode local (automàtic):</strong> Tota partida feta a <code>student.html</code> es desa a l'instant al navegador i apareix aquí sense configurar res.<br/>
+        • <strong>Al teu Google Drive (Google Sheets):</strong> Fes clic al botó verd <strong>«☁️ Connectar amb Google Drive (Assistent)»</strong> de dalt per enviar totes les partides automàticament a un full de càlcul de Google Sheets, o descarrega-les amb <strong>«📥 Exportar CSV»</strong>.
       </div>
     </div>
 
@@ -852,6 +882,91 @@
         });
       }
       alert("Configuració pedagògica desada correctament!");
+    };
+
+    // =========================================================================
+    // ASSISTENT DE CONNEXIÓ AMB GOOGLE DRIVE EN 3 CLICS (SENSE SER EXPERT!)
+    // =========================================================================
+    const savedCloudUrl = localStorage.getItem("mecano_cloud_webhook_url") || "";
+    const cloudInput = document.getElementById("input-cloud-url");
+    const cloudStatusPill = document.getElementById("cloud-status-pill");
+    const cloudFeedback = document.getElementById("cloud-sync-feedback");
+
+    function updateCloudBadge() {
+      const url = localStorage.getItem("mecano_cloud_webhook_url") || "";
+      cloudInput.value = url;
+      if (url.startsWith("https://script.google.com/")) {
+        cloudStatusPill.textContent = "✅ Connectat a Google Drive";
+        cloudStatusPill.style.background = "#bbf7d0";
+        cloudStatusPill.style.color = "#14532d";
+      } else {
+        cloudStatusPill.textContent = "Mode Local (No connectat al núvol)";
+        cloudStatusPill.style.background = "#fef3c7";
+        cloudStatusPill.style.color = "#92400e";
+      }
+    }
+    updateCloudBadge();
+
+    document.getElementById("btn-toggle-cloud").onclick = () => {
+      const panel = document.getElementById("cloud-wizard-panel");
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
+    };
+
+    document.getElementById("btn-copy-gas-code").onclick = async () => {
+      const gasScript = [
+        "function onOpen() {",
+        "  SpreadsheetApp.getUi().createMenu('🪄 MECANO ESCOLA')",
+        "    .addItem('🚀 Inicialitzar Pestanyes (1 clic)', 'ensureTabs').addToUi();",
+        "}",
+        "function doGet() { ensureTabs(); return ContentService.createTextOutput('Mecano Cloud OK'); }",
+        "function doPost(e) {",
+        "  ensureTabs();",
+        "  var b = JSON.parse(e.postData.contents);",
+        "  var list = b.action === 'sync_batch' ? b.sessions : [b];",
+        "  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sessions');",
+        "  for (var i = 0; i < list.length; i++) {",
+        "    var s = list[i];",
+        "    sh.appendRow([s.sessionId, s.timestampIso, s.studentName || 'ALU-01', s.levelId, s.phaseType, s.stepId, s.stepLabel, s.wpmNet, s.accuracyPct, s.errors, s.totalPresses, s.barretines, s.durationSec]);",
+        "  }",
+        "  return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);",
+        "}",
+        "function ensureTabs() {",
+        "  var ss = SpreadsheetApp.getActiveSpreadsheet();",
+        "  if (!ss.getSheetByName('Sessions')) {",
+        "    var sh = ss.insertSheet('Sessions');",
+        "    sh.appendRow(['session_id','timestamp_iso','student','level_id','phase_type','step_id','step_label','wpm_net','accuracy_pct','errors','total_presses','barretines','duration_sec']);",
+        "  }",
+        "}"
+      ].join("\\n");
+      try {
+        await navigator.clipboard.writeText(gasScript);
+        cloudFeedback.textContent = "✅ Codi copiat al porta-retalls! Ara enganxa'l a Extensions → Apps Script del teu Google Sheet i prem Implementa → Aplicació web.";
+      } catch {
+        alert("Copia el fitxer dist/Code.gs a Extensions -> Apps Script.");
+      }
+    };
+
+    document.getElementById("btn-sync-cloud-now").onclick = async () => {
+      const url = cloudInput.value.trim();
+      if (!url.startsWith("https://script.google.com/")) {
+        alert("Enganxa una adreça vàlida de Google Apps Script (comença per https://script.google.com/macros/s/.../exec)");
+        return;
+      }
+      localStorage.setItem("mecano_cloud_webhook_url", url);
+      updateCloudBadge();
+      const data = loadDashboardData();
+      cloudFeedback.textContent = "⏳ Enviant sessions al teu Google Sheet...";
+      try {
+        await fetch(url, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "sync_batch", sessions: data.sessions })
+        });
+        cloudFeedback.textContent = `✅ Sincronitzat! S'han enviat ${data.sessions.length} sessions al teu Google Sheet, i a partir d'ara cada partida nova s'hi desarà automàticament!`;
+      } catch (err) {
+        cloudFeedback.textContent = "⚠️ No s'ha pogut connectar. Revisa que l'aplicació web tingui accés obert.";
+      }
     };
 
     window.addEventListener("storage", () => renderAll());
