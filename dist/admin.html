@@ -342,9 +342,9 @@
         <div class="kpi-sub">Objectiu mínim: 88% (3 Barretines)</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Barretines Aconseguides</div>
-        <div class="kpi-val" id="kpi-barretines">0 / 100</div>
-        <div class="kpi-sub">5 fases × 4 nivells (5 Barretines/pas)</div>
+        <div class="kpi-label">Barretines del Pilot</div>
+        <div class="kpi-val" id="kpi-barretines">0 / 75</div>
+        <div class="kpi-sub">Nivell 1 (30) + Nivell 2 Extens (45)</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Nivell Actual</div>
@@ -459,37 +459,70 @@
     const LEVELS_META = [
       {
         id: "L01",
-        title: "Nivell 1: Montsec (Meteorits)",
-        keys: "F, J + Espai",
-        drills: ["L01.D1", "L01.D2"],
-        arcades: ["L01.G1", "L01.G2"],
+        isPilot: true,
+        title: "Nivell 1 (Pilot): Montsec (Meteorits)",
+        keys: "F, J + Espai (2 lletres)",
+        drills: [
+          { id: "L01.D1", short: "1A" },
+          { id: "L01.D2", short: "1B" },
+          { id: "L01.D3", short: "1C" }
+        ],
+        arcades: [
+          { id: "L01.G1", short: "J1" },
+          { id: "L01.G2", short: "J2" }
+        ],
         proverb: "L01.PROVERB",
         proverbText: "«qui dia passa any empeny»"
       },
       {
         id: "L02",
-        title: "Nivell 2: Vilafranca (Castells)",
-        keys: "D, K + Espai",
-        drills: ["L02.D1", "L02.D2"],
-        arcades: ["L02.G1", "L02.G2"],
+        isPilot: true,
+        title: "Nivell 2 (Pilot Extens): Vilafranca (Castells)",
+        keys: "D, K + F, J + Espai (4 lletres)",
+        drills: [
+          { id: "L02.D1", short: "1A (D+K)" },
+          { id: "L02.D2", short: "1B (Grups DK)" },
+          { id: "L02.D3", short: "1C (Per Mà)" },
+          { id: "L02.D4", short: "1D (Creuat)" },
+          { id: "L02.D5", short: "1E (Domini 4)" }
+        ],
+        arcades: [
+          { id: "L02.G1", short: "J1 (D+K)" },
+          { id: "L02.G2", short: "J2 (Per Mans)" },
+          { id: "L02.G3", short: "J3 (2 Castellers)" }
+        ],
         proverb: "L02.PROVERB",
         proverbText: "«cada ovella al seu corral»"
       },
       {
         id: "L03",
-        title: "Nivell 3: Girona (Sardana)",
-        keys: "S, L + Espai",
-        drills: ["L03.D1", "L03.D2"],
-        arcades: ["L03.G1", "L03.G2"],
+        isPilot: false,
+        title: "Nivell 3 (Post-Pilot): Girona (Sardana)",
+        keys: "S, L + Espai (Reservat Post-Pilot)",
+        drills: [
+          { id: "L03.D1", short: "1A" },
+          { id: "L03.D2", short: "1B" }
+        ],
+        arcades: [
+          { id: "L03.G1", short: "J1" },
+          { id: "L03.G2", short: "J2" }
+        ],
         proverb: "L03.PROVERB",
         proverbText: "«al maig cada dia un raig»"
       },
       {
         id: "L04",
-        title: "Nivell 4: Berga (La Patum)",
-        keys: "A, Ç + Espai",
-        drills: ["L04.D1", "L04.D2"],
-        arcades: ["L04.G1", "L04.G2"],
+        isPilot: false,
+        title: "Nivell 4 (Post-Pilot): Berga (La Patum)",
+        keys: "A, Ç + Espai (Reservat Post-Pilot)",
+        drills: [
+          { id: "L04.D1", short: "1A" },
+          { id: "L04.D2", short: "1B" }
+        ],
+        arcades: [
+          { id: "L04.G1", short: "J1" },
+          { id: "L04.G2", short: "J2" }
+        ],
         proverb: "L04.PROVERB",
         proverbText: "«al juny la falç al puny»"
       }
@@ -547,19 +580,14 @@
       document.getElementById("kpi-time").textContent = `${Math.max(1, Math.round(totalSec / 60))} minuts practicats`;
       document.getElementById("kpi-wpm").textContent = `${avgWpm} PPM`;
       document.getElementById("kpi-acc").textContent = `${avgAcc}%`;
-      document.getElementById("kpi-barretines").innerHTML = `${totalB} / 100 ${renderBarretinaMiniSvg(true)}`;
+      document.getElementById("kpi-barretines").innerHTML = `${totalB} / 75 ${renderBarretinaMiniSvg(true)}`;
 
-      // Determina nivell actual
+      // Determina nivell actual del Pilot (Nivells 1 i 2)
       let currentLvlTitle = "Nivell 1 (Montsec)";
-      for (const lvl of LEVELS_META) {
-        if ((data.stepBarretines[lvl.proverb] || 0) >= 3) {
-          const nextIdx = LEVELS_META.indexOf(lvl) + 1;
-          if (nextIdx < LEVELS_META.length) {
-            currentLvlTitle = LEVELS_META[nextIdx].title.split(":")[0] + " (" + LEVELS_META[nextIdx].keys + ")";
-          } else {
-            currentLvlTitle = "Fila Base Completada! 🏆";
-          }
-        }
+      if ((data.stepBarretines["L01.PROVERB"] || 0) >= 3) {
+        currentLvlTitle = (data.stepBarretines["L02.PROVERB"] || 0) >= 3
+          ? "Pilot (Nivells 1 i 2) Completat! 🏆"
+          : "Nivell 2 Extens (Vilafranca)";
       }
       document.getElementById("kpi-level").textContent = currentLvlTitle;
 
@@ -578,8 +606,9 @@
 
       for (const lvl of LEVELS_META) {
         const tr = document.createElement("tr");
-        const allSteps = [...lvl.drills, ...lvl.arcades, lvl.proverb];
-        const lvlEarned = allSteps.reduce((a, id) => a + (data.stepBarretines[id] || 0), 0);
+        const allStepIds = [...lvl.drills.map(d => d.id), ...lvl.arcades.map(a => a.id), lvl.proverb];
+        const lvlEarned = allStepIds.reduce((a, id) => a + (data.stepBarretines[id] || 0), 0);
+        const maxLvlB = allStepIds.length * 5;
 
         const renderStepPill = (stepId, shortLabel) => {
           const b = data.stepBarretines[stepId] || 0;
@@ -590,18 +619,18 @@
         tr.innerHTML = `
           <td><strong>${lvl.title}</strong></td>
           <td><code>${lvl.keys}</code></td>
-          <td style="display:flex;gap:6px;flex-wrap:wrap;">
-            ${renderStepPill(lvl.drills[0], "1A")}
-            ${renderStepPill(lvl.drills[1], "1B")}
+          <td>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+              ${lvl.drills.map(d => renderStepPill(d.id, d.short)).join("")}
+            </div>
           </td>
           <td>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              ${renderStepPill(lvl.arcades[0], "J1")}
-              ${renderStepPill(lvl.arcades[1], "J2")}
+            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+              ${lvl.arcades.map(a => renderStepPill(a.id, a.short)).join("")}
             </div>
           </td>
           <td>${renderStepPill(lvl.proverb, "Dita")}</td>
-          <td><strong>${lvlEarned} / 25</strong> ${renderBarretinaMiniSvg(lvlEarned >= 15)}</td>
+          <td><strong>${lvlEarned} / ${maxLvlB}</strong> ${renderBarretinaMiniSvg(lvlEarned >= allStepIds.length * 3)}</td>
         `;
         tbody.appendChild(tr);
       }
@@ -735,31 +764,30 @@
     // Botó Carregar Dades d'Exemple per provar el panell docent al 100%
     document.getElementById("btn-seed-demo").onclick = () => {
       const demoStepBarretines = {
-        "L01.D1": 5, "L01.D2": 4, "L01.G1": 4, "L01.G2": 5, "L01.PROVERB": 4,
-        "L02.D1": 4, "L02.D2": 3, "L02.G1": 4, "L02.G2": 3, "L02.PROVERB": 4,
-        "L03.D1": 3
+        "L01.D1": 5, "L01.D2": 4, "L01.D3": 5, "L01.G1": 4, "L01.G2": 5, "L01.PROVERB": 4,
+        "L02.D1": 5, "L02.D2": 4, "L02.D3": 4, "L02.D4": 3, "L02.D5": 4, "L02.G1": 4, "L02.G2": 4, "L02.G3": 3, "L02.PROVERB": 4
       };
       const demoProverbs = [
-        { title: "Nivell 1: L'Aterratge al Montsec", wpm: 14.2, acc: 92 },
-        { title: "Nivell 2: Castells a Vilafranca", wpm: 18.6, acc: 95 }
+        { title: "⏱️ Prova Inicial (Termòmetre Zero)", wpm: 11.4, acc: 86 },
+        { title: "Nivell 1: L'Aterratge al Montsec", wpm: 15.2, acc: 93 },
+        { title: "Nivell 2: Castells a Vilafranca", wpm: 19.4, acc: 96 }
       ];
       const now = Date.now();
       const demoSessions = [
-        { sessionId: "S-106", timestampIso: new Date(now - 300000).toISOString(), levelId: "L03", phaseType: "drill", stepId: "L03.D1", stepLabel: "1A: Només S i L (ss ll sl ls)", wpmNet: 17.5, accuracyPct: 89, errors: 3, totalPresses: 27, barretines: 3, durationSec: 28 },
-        { sessionId: "S-105", timestampIso: new Date(now - 900000).toISOString(), levelId: "L02", phaseType: "proverb", stepId: "L02.PROVERB", stepLabel: "Dita: «cada ovella al seu corral»", wpmNet: 18.6, accuracyPct: 95, errors: 1, totalPresses: 25, barretines: 4, durationSec: 19 },
-        { sessionId: "S-104", timestampIso: new Date(now - 1500000).toISOString(), levelId: "L02", phaseType: "arcade", stepId: "L02.G2", stepLabel: "J2: 2 Castellers alhora (Mà Esq. + Dreta)", wpmNet: 16.8, accuracyPct: 91, errors: 3, totalPresses: 34, barretines: 3, durationSec: 38 },
-        { sessionId: "S-103", timestampIso: new Date(now - 2100000).toISOString(), levelId: "L02", phaseType: "arcade", stepId: "L02.G1", stepLabel: "J1: Puja el Casteller (D i K)", wpmNet: 17.1, accuracyPct: 94, errors: 2, totalPresses: 28, barretines: 4, durationSec: 32 },
-        { sessionId: "S-102", timestampIso: new Date(now - 3600000).toISOString(), levelId: "L01", phaseType: "proverb", stepId: "L01.PROVERB", stepLabel: "Dita: «qui dia passa any empeny»", wpmNet: 14.2, accuracyPct: 92, errors: 2, totalPresses: 24, barretines: 4, durationSec: 24 },
-        { sessionId: "S-101", timestampIso: new Date(now - 4200000).toISOString(), levelId: "L01", phaseType: "arcade", stepId: "L01.G2", stepLabel: "J2: Eixam + Meteorit Gegant!", wpmNet: 15.4, accuracyPct: 97, errors: 1, totalPresses: 35, barretines: 5, durationSec: 35 }
+        { sessionId: "S-107", timestampIso: new Date(now - 300000).toISOString(), levelId: "L02", phaseType: "proverb", stepId: "L02.PROVERB", stepLabel: "Dita: «cada ovella al seu corral»", wpmNet: 19.4, accuracyPct: 96, errors: 1, totalPresses: 25, barretines: 4, durationSec: 18 },
+        { sessionId: "S-106", timestampIso: new Date(now - 900000).toISOString(), levelId: "L02", phaseType: "arcade", stepId: "L02.G3", stepLabel: "J3: Gran Castell 4 Lletres — 2 Castellers alhora (14 pisos)", wpmNet: 17.8, accuracyPct: 91, errors: 4, totalPresses: 48, barretines: 3, durationSec: 46 },
+        { sessionId: "S-105", timestampIso: new Date(now - 1500000).toISOString(), levelId: "L02", phaseType: "arcade", stepId: "L02.G2", stepLabel: "J2: Pugem per Mans D+F i K+J (12 pisos)", wpmNet: 17.2, accuracyPct: 94, errors: 2, totalPresses: 38, barretines: 4, durationSec: 39 },
+        { sessionId: "S-104", timestampIso: new Date(now - 2100000).toISOString(), levelId: "L02", phaseType: "drill", stepId: "L02.D4", stepLabel: "1D: Encreuament de les 4 lletres (dkfj fjdk dfkj)", wpmNet: 16.5, accuracyPct: 90, errors: 6, totalPresses: 62, barretines: 3, durationSec: 45 },
+        { sessionId: "S-103", timestampIso: new Date(now - 2700000).toISOString(), levelId: "L02", phaseType: "drill", stepId: "L02.D3", stepLabel: "1C: Coordinació per Mà: Esq. (df fd) i Dreta (kj jk)", wpmNet: 16.9, accuracyPct: 94, errors: 3, totalPresses: 52, barretines: 4, durationSec: 38 },
+        { sessionId: "S-102", timestampIso: new Date(now - 3600000).toISOString(), levelId: "L01", phaseType: "proverb", stepId: "L01.PROVERB", stepLabel: "Dita: «qui dia passa any empeny»", wpmNet: 15.2, accuracyPct: 93, errors: 2, totalPresses: 24, barretines: 4, durationSec: 22 },
+        { sessionId: "S-101", timestampIso: new Date(now - 4500000).toISOString(), levelId: "L01", phaseType: "proverb", stepId: "DIAG.ZERO", stepLabel: "⏱️ Prova Inicial (Termòmetre Zero)", wpmNet: 11.4, accuracyPct: 86, errors: 3, totalPresses: 20, barretines: 2, durationSec: 26 }
       ];
       const demoKeys = {
-        "f": { hits: 85, errors: 2 },
-        "j": { hits: 82, errors: 3 },
-        "d": { hits: 54, errors: 4 },
-        "k": { hits: 50, errors: 8 },
-        "s": { hits: 22, errors: 5 },
-        "l": { hits: 20, errors: 1 },
-        " ": { hits: 95, errors: 2 }
+        "f": { hits: 110, errors: 3 },
+        "j": { hits: 105, errors: 4 },
+        "d": { hits: 92, errors: 6 },
+        "k": { hits: 88, errors: 13 },
+        " ": { hits: 120, errors: 2 }
       };
 
       localStorage.setItem("mecano_v4_distinct", JSON.stringify({

@@ -416,18 +416,35 @@
       </div>
     </header>
 
-    <!-- PANTALLA 1: MAPA PRINCIPAL DE NIVELLS -->
+    <!-- PANTALLA 1: MAPA PRINCIPAL DE NIVELLS (PILOT NIVELLS 1 i 2) -->
     <main class="view-screen active" id="screen-home">
-      <h2 style="margin:0.2rem 0 0.5rem;font-size:1.15rem;">
-        Tria la missió d'en Bit a Catalunya:
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.55rem;background:var(--surface);padding:0.55rem 0.85rem;border-radius:12px;border:2px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+          <span style="background:#dbeafe;color:#1e40af;font-weight:800;font-size:0.78rem;padding:0.2rem 0.55rem;border-radius:99px;">🧪 VERSIÓ PILOT (Nivells 1 i 2)</span>
+          <span id="badges-strip" style="font-size:0.82rem;font-weight:700;display:flex;gap:0.4rem;flex-wrap:wrap;"></span>
+        </div>
+        <button type="button" id="btn-diagnostic-zero" style="background:#fef3c7;border-color:#f59e0b;color:#78350f;font-size:0.8rem;">
+          ⏱️ Prova Inicial (Termòmetre Zero)
+        </button>
+      </div>
+
+      <h2 style="margin:0.15rem 0 0.45rem;font-size:1.1rem;">
+        Tria la missió d'en Bit a Catalunya (Pilot: Montsec i Vilafranca):
       </h2>
       <div class="levels-grid" id="levels-grid"></div>
     </main>
 
     <!-- PANTALLA 2: LES 3 FASES DEL NIVELL -->
     <section class="view-screen" id="screen-phases">
-      <h2 id="phases-level-title" style="margin:0.2rem 0 0.2rem;font-size:1.15rem;"></h2>
-      <p id="phases-level-desc" style="margin:0 0 0.6rem;font-size:0.88rem;opacity:0.85;"></p>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.4rem;">
+        <div>
+          <h2 id="phases-level-title" style="margin:0;font-size:1.12rem;"></h2>
+          <p id="phases-level-desc" style="margin:0.1rem 0 0;font-size:0.84rem;opacity:0.85;"></p>
+        </div>
+        <button type="button" id="btn-adaptive-drill" style="background:#dcfce7;border-color:#16a34a;color:#14532d;font-size:0.8rem;">
+          💪 Reforç Adaptatiu (Tecles amb més errors)
+        </button>
+      </div>
       <div class="phases-cards" id="phases-cards"></div>
     </section>
 
@@ -574,62 +591,74 @@
       ["Space"]
     ];
 
-    // Cada nivell té 2 subnivells a la Fase 1 (1A, 1B) i 2 subnivells de Joc a la Fase 2 (J1, J2) + Fase 3 (Dita)
+    // VERSIÓ PILOT (Fase 3):
+    // - Nivell 1 (F, J + Espai): Mida equilibrada per a 2 lletres (3 pràctiques 1A-1C + 2 jocs J1-J2 + Dita).
+    // - Nivell 2 (D, K + F, J + Espai): Molt més extens i progressiu per assimilar a fons les 4 lletres (5 pràctiques 1A-1E + 3 jocs J1-J3 + Dita).
+    // - Nivells 3 i 4: Marcats com a Post-Pilot (s'obriran un cop validat el Pilot amb alumnes reals).
     const LEVELS = [
       {
         id: "L01",
         order: 1,
-        titleCa: "Nivell 1: L'Aterratge al Montsec",
-        keysLabel: "Tecles F, J + Espai",
-        descCa: "En Bit arriba de l'espai! Practica amb els índexs (F i J) i destrueix els meteorits i el Meteorit Gegant!",
+        isPilot: true,
+        titleCa: "Nivell 1 (Pilot): L'Aterratge al Montsec",
+        keysLabel: "Tecles F, J + Espai (2 lletres)",
+        descCa: "En Bit arriba de l'espai! Assimilem els dos índexs (F i J) amb 3 passos progressius i destruïm els meteorits i el Meteorit Gegant!",
         newKeys: ["f", "j"],
         leftKeys: ["f"],
         rightKeys: ["j"],
         reviewKeys: [],
         gameMode: "meteors",
         gameTitle: "🚀 Montsec: Pluja de Meteorits",
-        gameDesc: "J1: Meteorits amb F i J. J2: Eixam en diversos carrils + Meteorit Gegant!",
+        gameDesc: "J1: Eixam d'Índexs (10 meteorits). J2: Pluja per 3 carrils + Meteorit Rei Gegant (12 meteorits)!",
         proverbCa: "qui dia passa any empeny",
         proverbMeaningCa: "Anant pas a pas i amb constància cada dia, avancem molt més del que sembla.",
         drills: [
-          { id: "L01.D1", label: "1A: Parelles (ff jj fj jf)", stepType: "isolated_pairs", wordsCount: 8, mix: false },
-          { id: "L01.D2", label: "1B: Paraules de 3 a 5 lletres", stepType: "growing", wordsCount: 9, mix: false }
+          { id: "L01.D1", label: "1A: Parelles d'Índexs (ff jj fj jf)", stepType: "isolated_pairs", wordsCount: 10, mix: false },
+          { id: "L01.D2", label: "1B: Grups de 3 i 4 lletres (ffj jjf fjfj)", stepType: "isolated_groups", wordsCount: 10, mix: false },
+          { id: "L01.D3", label: "1C: Ritme continu de 4 i 5 lletres", stepType: "growing", wordsCount: 12, mix: false }
         ],
         arcades: [
-          { id: "L01.G1", label: "J1: Meteorits d'Índexs (F i J)", subMode: "single", totalTargets: 7 },
-          { id: "L01.G2", label: "J2: Eixam + Meteorit Gegant!", subMode: "dual_boss", totalTargets: 9 }
+          { id: "L01.G1", label: "J1: Meteorits d'Índexs (10 objectius)", subMode: "single", totalTargets: 10 },
+          { id: "L01.G2", label: "J2: Eixam + Meteorit Gegant (12 objectius)", subMode: "dual_boss", totalTargets: 12 }
         ]
       },
       {
         id: "L02",
         order: 2,
-        titleCa: "Nivell 2: Castells a Vilafranca",
-        keysLabel: "Tecles D, K + Espai",
-        descCa: "Fes pujar els castellers! A J1 puja amb D i K (si t'equivoques, el casteller cau!). A J2 puja un casteller per cada costat coordinant les dues mans alhora!",
+        isPilot: true,
+        titleCa: "Nivell 2 (Pilot Extens): Castells a Vilafranca",
+        keysLabel: "Tecles D, K + F, J + Espai (4 lletres)",
+        descCa: "Nivell ampliat per assimilar a fons les 4 lletres! Primer aïllem D i K, després coordinem cada mà (D+F i K+J), i finalment creuem les 4 lletres pujant 2 castellers alhora!",
         newKeys: ["d", "k"],
         leftKeys: ["d", "f"],
         rightKeys: ["k", "j"],
         reviewKeys: ["f", "j"],
         gameMode: "castells",
-        gameTitle: "🏰 Vilafranca: Pugem el Castell!",
-        gameDesc: "J1: Puja amb D i K (vigila no caure!). J2: Puja 1 casteller per cada costat amb les 2 mans alhora!",
+        gameTitle: "🏰 Vilafranca: Pugem el Castell (3 Missions)",
+        gameDesc: "J1: Només D i K (si falles, cau!). J2: Coordinació per mans (D+F / K+J). J3: Gran Castell de 4 lletres amb 2 castellers alhora!",
         proverbCa: "cada ovella al seu corral",
         proverbMeaningCa: "Cada dit té el seu lloc a la fila base del teclat!",
         drills: [
-          { id: "L02.D1", label: "1A: Només D i K (dd kk dk kd)", stepType: "isolated_pairs", wordsCount: 8, mix: false },
-          { id: "L02.D2", label: "1B: Barreja D, K + F, J", stepType: "growing", wordsCount: 9, mix: true }
+          { id: "L02.D1", label: "1A: Aïllem D i K en parelles (dd kk dk kd)", stepType: "isolated_pairs", wordsCount: 12, mix: false },
+          { id: "L02.D2", label: "1B: D i K en grups de 3 i 4 (dkd kdk dkkd)", stepType: "isolated_groups", wordsCount: 12, mix: false },
+          { id: "L02.D3", label: "1C: Coordinació per Mà: Esq. (df fd) i Dreta (kj jk)", stepType: "same_hand_pairs", wordsCount: 14, mix: true },
+          { id: "L02.D4", label: "1D: Encreuament de les 4 lletres (dkfj fjdk dfkj)", stepType: "cross_four", wordsCount: 14, mix: true },
+          { id: "L02.D5", label: "1E: Domini Total de les 4 lletres (4-5 lletres)", stepType: "master_four", wordsCount: 16, mix: true }
         ],
         arcades: [
-          { id: "L02.G1", label: "J1: Puja el Casteller (D i K)", subMode: "single_climber", totalTargets: 7 },
-          { id: "L02.G2", label: "J2: 2 Castellers alhora (Mà Esq. + Dreta)", subMode: "dual_climbers", totalTargets: 8 }
+          { id: "L02.G1", label: "J1: Pinya i Troncs — Només D i K (10 pisos)", subMode: "single_climber", totalTargets: 10 },
+          { id: "L02.G2", label: "J2: Pugem per Mans D+F i K+J (12 pisos)", subMode: "hand_blocks", totalTargets: 12 },
+          { id: "L02.G3", label: "J3: Gran Castell 4 Lletres — 2 Castellers alhora (14 pisos)", subMode: "dual_climbers", totalTargets: 14 }
         ]
       },
       {
         id: "L03",
         order: 3,
-        titleCa: "Nivell 3: La Sardana a Girona",
-        keysLabel: "Tecles S, L + Espai",
-        descCa: "Segueix el compàs musical de la cobla a Girona amb melodia 8-bits i fes saltar la rotllana!",
+        isPilot: false,
+        isPostPilot: true,
+        titleCa: "Nivell 3 (Post-Pilot): La Sardana a Girona",
+        keysLabel: "Tecles S, L + Espai (S'obrirà després del Pilot)",
+        descCa: "Reservat per a la fase post-pilot un cop haguem testejat els Nivells 1 i 2 amb alumnes reals.",
         newKeys: ["s", "l"],
         leftKeys: ["s", "d", "f"],
         rightKeys: ["l", "k", "j"],
@@ -640,20 +669,22 @@
         proverbCa: "al maig cada dia un raig",
         proverbMeaningCa: "Amb una mica de pràctica diària els dits agafen soltesa.",
         drills: [
-          { id: "L03.D1", label: "1A: Només S i L (ss ll sl ls)", stepType: "isolated_pairs", wordsCount: 8, mix: false },
-          { id: "L03.D2", label: "1B: Barreja dels 6 dits", stepType: "growing", wordsCount: 9, mix: true }
+          { id: "L03.D1", label: "1A: Només S i L (ss ll sl ls)", stepType: "isolated_pairs", wordsCount: 10, mix: false },
+          { id: "L03.D2", label: "1B: Barreja dels 6 dits", stepType: "growing", wordsCount: 12, mix: true }
         ],
         arcades: [
-          { id: "L03.G1", label: "J1: Passos Curts (Només S i L)", subMode: "isolated", totalTargets: 7 },
-          { id: "L03.G2", label: "J2: Rotllana dels 6 Dits + Cobla", subMode: "mixed", totalTargets: 9 }
+          { id: "L03.G1", label: "J1: Passos Curts (Només S i L)", subMode: "isolated", totalTargets: 9 },
+          { id: "L03.G2", label: "J2: Rotllana dels 6 Dits + Cobla", subMode: "mixed", totalTargets: 11 }
         ]
       },
       {
         id: "L04",
         order: 4,
-        titleCa: "Nivell 4: La Patum de Berga",
-        keysLabel: "Tecles A, Ç + Espai",
-        descCa: "En Bit i la Guita són al mig de la plaça amb la música de la Patum en 8-bits i apaguen els fuets dels 4 cantons!",
+        isPilot: false,
+        isPostPilot: true,
+        titleCa: "Nivell 4 (Post-Pilot): La Patum de Berga",
+        keysLabel: "Tecles A, Ç + Espai (S'obrirà després del Pilot)",
+        descCa: "Reservat per a la fase post-pilot un cop haguem testejat els Nivells 1 i 2 amb alumnes reals.",
         newKeys: ["a", "ç"],
         leftKeys: ["a", "s", "d", "f"],
         rightKeys: ["ç", "l", "k", "j"],
@@ -665,12 +696,12 @@
         proverbMeaningCa: "Dita tradicional de la sega amb la nostra lletra Ç!",
         realWords: ["sal", "laç", "faç", "cal", "all", "dall", "sala", "falç", "cala", "casal"],
         drills: [
-          { id: "L04.D1", label: "1A: Només A i Ç (aa çç aç ça)", stepType: "isolated_pairs", wordsCount: 8, mix: false },
-          { id: "L04.D2", label: "1B: Paraules reals Fila Base", stepType: "growing", wordsCount: 9, mix: true }
+          { id: "L04.D1", label: "1A: Només A i Ç (aa çç aç ça)", stepType: "isolated_pairs", wordsCount: 10, mix: false },
+          { id: "L04.D2", label: "1B: Paraules reals Fila Base", stepType: "growing", wordsCount: 12, mix: true }
         ],
         arcades: [
-          { id: "L04.G1", label: "J1: Fuets d'A i Ç", subMode: "isolated", totalTargets: 7 },
-          { id: "L04.G2", label: "J2: 4 Cantons + Paraules Catalanes", subMode: "real_words", totalTargets: 9 }
+          { id: "L04.G1", label: "J1: Fuets d'A i Ç", subMode: "isolated", totalTargets: 9 },
+          { id: "L04.G2", label: "J2: 4 Cantons + Paraules Catalanes", subMode: "real_words", totalTargets: 11 }
         ]
       }
     ];
@@ -958,6 +989,7 @@
 
     function isLevelUnlocked(lvl) {
       if (state.freeUnlock) return true;
+      if (lvl.isPostPilot) return false; // Reservat per a després del Pilot amb alumnes reals
       if (lvl.order === 1) return true;
       const prevLvl = LEVELS.find(l => l.order === lvl.order - 1);
       return (state.stepBarretines[`${prevLvl.id}.PROVERB`] || 0) >= 3;
@@ -990,27 +1022,39 @@
       };
     }
 
-    // Genera paraules segons l'acte i si estem al subnivell J1 o J2 (p.ex. coordinant mà esquerra + mà dreta als Castells J2!)
+    // Genera paraules segons l'acte i el subnivell de joc (J1, J2, J3)
     function generateWordByAct(lvl, stepIndex, totalSteps, subMode = "single") {
       const rng = createRng(Date.now() + stepIndex * 173);
-      const act = stepIndex < 3 ? 1 : stepIndex < 6 ? 2 : 3;
-      const len = act === 1 ? 2 : act === 2 ? (stepIndex % 2 === 0 ? 3 : 4) : (stepIndex === totalSteps - 1 ? 5 : 4);
+      const third = Math.max(1, Math.floor(totalSteps / 3));
+      const act = stepIndex < third ? 1 : stepIndex < third * 2 ? 2 : 3;
+      const len = act === 1 ? 2 : act === 2 ? (stepIndex % 2 === 0 ? 3 : 4) : (stepIndex >= totalSteps - 2 ? 5 : 4);
 
       if (subMode === "real_words" && lvl.realWords) {
         return lvl.realWords[stepIndex % lvl.realWords.length];
       }
 
-      // Al Joc 2 dels Castells (dual_climbers), alternem una tecla de la MÀ ESQUERRA (D/F) i una de la MÀ DRETA (K/J) perquè pugin 2 castellers alhora un per cada costat!
-      if (subMode === "dual_climbers") {
+      // J2 dels Castells (hand_blocks): alterna blocs de Mà Esquerra (df, fd, dfd) i Mà Dreta (kj, jk, kjk)
+      if (subMode === "hand_blocks") {
+        const useLeft = stepIndex % 2 === 0;
+        const handPool = useLeft ? lvl.leftKeys : lvl.rightKeys;
         let w = "";
-        for (let i = 0; i < len; i++) {
-          const pool = i % 2 === 0 ? lvl.leftKeys : lvl.rightKeys;
-          w += pool[(stepIndex + i) % pool.length];
+        for (let i = 0; i < Math.min(4, len); i++) {
+          w += handPool[(stepIndex + i) % handPool.length];
         }
         return w;
       }
 
-      const onlyNew = (subMode === "single" || subMode === "single_climber" || subMode === "isolated") && act <= 2;
+      // J3 dels Castells (dual_climbers): alterna una tecla de la MÀ ESQUERRA (D/F) i una de la MÀ DRETA (K/J) perquè pugin 2 castellers alhora un per cada costat!
+      if (subMode === "dual_climbers") {
+        let w = "";
+        for (let i = 0; i < len; i++) {
+          const pool = i % 2 === 0 ? lvl.leftKeys : lvl.rightKeys;
+          w += pool[Math.floor((stepIndex + i) / 2) % pool.length];
+        }
+        return w;
+      }
+
+      const onlyNew = (subMode === "single" || subMode === "single_climber" || subMode === "isolated");
       const pool = onlyNew ? lvl.newKeys : [...lvl.newKeys, ...lvl.reviewKeys];
 
       let w = "", prev = "", run = 0;
@@ -1029,20 +1073,127 @@
 
     function generateDrillText(lvl, drill, seed) {
       const rng = createRng(seed);
+      const k1 = lvl.newKeys[0], k2 = lvl.newKeys[1];
+
+      // 1A: Parelles aïllades de les 2 tecles noves (ff jj fj jf / dd kk dk kd)
       if (drill.stepType === "isolated_pairs") {
-        const k1 = lvl.newKeys[0], k2 = lvl.newKeys[1];
         const pairs = [`${k1}${k1}`, `${k2}${k2}`, `${k1}${k2}`, `${k2}${k1}`];
         const out = [];
         for (let i = 0; i < drill.wordsCount; i++) {
-          out.push(i < pairs.length ? pairs[i] : pairs[Math.floor(rng() * pairs.length)]);
+          out.push(pairs[i % pairs.length]);
         }
         return out.join(" ");
       }
+
+      // 1B: Grups de 3 i 4 lletres només amb les 2 tecles noves (dkd kdk dkkd kddk)
+      if (drill.stepType === "isolated_groups") {
+        const groups = [
+          `${k1}${k2}${k1}`, `${k2}${k1}${k2}`, `${k1}${k1}${k2}`, `${k2}${k2}${k1}`,
+          `${k1}${k2}${k1}${k2}`, `${k2}${k1}${k2}${k1}`, `${k1}${k2}${k2}${k1}`, `${k2}${k1}${k1}${k2}`
+        ];
+        const out = [];
+        for (let i = 0; i < drill.wordsCount; i++) {
+          out.push(groups[i % groups.length]);
+        }
+        return out.join(" ");
+      }
+
+      // 1C (Nivell 2): Coordinació per Mà — Mà Esquerra (df, fd, dfd, fdf) i Mà Dreta (kj, jk, kjk, jkj)
+      if (drill.stepType === "same_hand_pairs") {
+        const L1 = lvl.leftKeys[0], L2 = lvl.leftKeys[1] || L1;
+        const R1 = lvl.rightKeys[0], R2 = lvl.rightKeys[1] || R1;
+        const handBlocks = [
+          `${L1}${L2}`, `${R1}${R2}`, `${L2}${L1}`, `${R2}${R1}`,
+          `${L1}${L2}${L1}`, `${R1}${R2}${R1}`, `${L2}${L1}${L2}`, `${R2}${R1}${R2}`,
+          `${L1}${L2}${L1}${L2}`, `${R1}${R2}${R1}${R2}`
+        ];
+        const out = [];
+        for (let i = 0; i < drill.wordsCount; i++) {
+          out.push(handBlocks[i % handBlocks.length]);
+        }
+        return out.join(" ");
+      }
+
+      // 1D (Nivell 2): Encreuament simètric de les 4 lletres entre mans (dkfj, fjdk, dfkj, kjdf...)
+      if (drill.stepType === "cross_four") {
+        const L1 = lvl.leftKeys[0], L2 = lvl.leftKeys[1] || L1;
+        const R1 = lvl.rightKeys[0], R2 = lvl.rightKeys[1] || R1;
+        const crossBlocks = [
+          `${L1}${R1}${L2}${R2}`, `${L2}${R2}${L1}${R1}`,
+          `${L1}${L2}${R1}${R2}`, `${R1}${R2}${L1}${L2}`,
+          `${L1}${R2}${L2}${R1}`, `${R1}${L2}${R2}${L1}`,
+          `${L2}${L1}${R2}${R1}`, `${R2}${R1}${L2}${L1}`
+        ];
+        const out = [];
+        for (let i = 0; i < drill.wordsCount; i++) {
+          out.push(crossBlocks[i % crossBlocks.length]);
+        }
+        return out.join(" ");
+      }
+
+      // 1E (Nivell 2): Domini Total de les 4 lletres en cadenes de 4 i 5 lletres
+      if (drill.stepType === "master_four") {
+        const pool = [...lvl.newKeys, ...lvl.reviewKeys];
+        const out = [];
+        for (let i = 0; i < drill.wordsCount; i++) {
+          const wLen = i % 2 === 0 ? 4 : 5;
+          let w = "", prev = "";
+          for (let c = 0; c < wLen; c++) {
+            const choices = pool.filter(k => k !== prev);
+            const ch = choices[Math.floor(rng() * choices.length)];
+            prev = ch;
+            w += ch;
+          }
+          out.push(w);
+        }
+        return out.join(" ");
+      }
+
       const out = [];
       for (let i = 0; i < drill.wordsCount; i++) {
         out.push(generateWordByAct(lvl, i, drill.wordsCount));
       }
       return out.join(" ");
+    }
+
+    function generateAdaptiveWeakDrill(lvl) {
+      const telemetry = JSON.parse(localStorage.getItem("mecano_telemetry_v1") || "{\"keyStats\":{}}");
+      const allowed = [...lvl.newKeys, ...lvl.reviewKeys];
+      const ranked = allowed
+        .map(k => {
+          const st = (telemetry.keyStats && telemetry.keyStats[k]) || { hits: 0, errors: 0 };
+          const rate = (st.hits + st.errors) > 0 ? st.errors / (st.hits + st.errors) : 0.25;
+          return { k, rate };
+        })
+        .sort((a, b) => b.rate - a.rate);
+
+      const focus1 = ranked[0].k;
+      const focus2 = ranked[1] ? ranked[1].k : ranked[0].k;
+      const blocks = [];
+      for (let i = 0; i < 12; i++) {
+        const extra = allowed[i % allowed.length];
+        blocks.push(i % 2 === 0 ? `${focus1}${focus2}${focus1}` : `${focus2}${extra}${focus1}${focus2}`);
+      }
+      return {
+        focusLabel: `${focus1.toUpperCase()} i ${focus2.toUpperCase()}`,
+        text: blocks.join(" ")
+      };
+    }
+
+    function renderBadgesStrip() {
+      const el = document.getElementById("badges-strip");
+      if (!el) return;
+      const sb = state.stepBarretines;
+      const badges = [
+        { icon: "🚀", name: "Índexs a Punt", unlocked: (sb["L01.D3"] || 0) >= 3 },
+        { icon: "☄️", name: "Rei del Montsec", unlocked: (sb["L01.G2"] || 0) >= 3 },
+        { icon: "🧱", name: "Pinya D+K", unlocked: (sb["L02.D2"] || 0) >= 3 },
+        { icon: "🏰", name: "Mestre Casteller (4 Lletres)", unlocked: (sb["L02.G3"] || 0) >= 3 },
+        { icon: "📜", name: "Pilot Completat!", unlocked: (sb["L01.PROVERB"] || 0) >= 3 && (sb["L02.PROVERB"] || 0) >= 3 }
+      ];
+      el.innerHTML = badges.map(b =>
+        `<span style="padding:0.15rem 0.45rem;border-radius:6px;border:1px solid ${b.unlocked ? '#16a34a' : '#cbd5e1'};background:${b.unlocked ? '#dcfce7' : '#f1f5f9'};opacity:${b.unlocked ? '1' : '0.55'};" title="${b.name}">${b.icon} ${b.name}</span>`
+      ).join("");
     }
 
     function resolveChar(ch) {
@@ -1071,13 +1222,14 @@
 
       document.getElementById("btn-back").style.display = screenName === "home" ? "none" : "inline-block";
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
-      document.getElementById("header-breadcrumb").textContent = screenName === "home" ? "Mapa de Catalunya" : lvl.titleCa;
+      document.getElementById("header-breadcrumb").textContent = screenName === "home" ? "Mapa de Catalunya (Pilot)" : lvl.titleCa;
 
       const totalB = Object.values(state.stepBarretines).reduce((a, b) => a + b, 0);
       document.getElementById("header-barretines").innerHTML = `${totalB} ${renderBarretinaSvg(true, 2)}`;
 
       if (screenName === "home") {
         state.arcadeRunning = false;
+        renderBadgesStrip();
         renderHomeLevels();
       } else if (screenName === "phases") {
         state.arcadeRunning = false;
@@ -1096,14 +1248,17 @@
 
         const card = document.createElement("div");
         card.className = `level-card ${unlocked ? "" : "locked"}`;
+        const pilotTag = lvl.isPilot
+          ? `<span style="background:#dcfce7;color:#14532d;font-size:0.7rem;padding:1px 6px;border-radius:99px;font-weight:800;margin-left:4px;">ACTIU AL PILOT</span>`
+          : `<span style="background:#e2e8f0;color:#475569;font-size:0.7rem;padding:1px 6px;border-radius:99px;font-weight:800;margin-left:4px;">POST-PILOT</span>`;
         card.innerHTML = `
           <canvas class="level-thumb" width="96" height="84"></canvas>
           <div>
-            <div style="font-weight:800;font-size:1.05rem;">${lvl.titleCa}</div>
+            <div style="font-weight:800;font-size:1.02rem;">${lvl.titleCa} ${pilotTag}</div>
             <div style="font-size:0.82rem;font-weight:700;color:#1d4ed8;margin:0.15rem 0;">${lvl.keysLabel}</div>
-            <div style="font-size:0.8rem;opacity:0.85;">${lvl.descCa}</div>
+            <div style="font-size:0.79rem;opacity:0.85;">${lvl.descCa}</div>
             <div style="margin-top:0.35rem;font-size:0.8rem;font-weight:800;">
-              ${renderBarretinaSvg(earned > 0, 2)} ${earned} / ${maxB} Barretines
+              ${renderBarretinaSvg(earned > 0, 2)} ${earned} / ${maxB} Barretines (${steps.length} reptes)
             </div>
           </div>
           <div class="lock-badge">${unlocked ? "▶️" : "🔒"}</div>
@@ -1253,6 +1408,17 @@
           document.getElementById("tape-subtitle").textContent = "Paraules separades per Espai";
           document.getElementById("btn-speak-proverb").style.display = "none";
           state.sequence = generateDrillText(lvl, drill, Date.now() & 0xfffffff);
+        } else if (state.phaseType === "adaptive") {
+          const adapt = generateAdaptiveWeakDrill(lvl);
+          document.getElementById("tape-title").textContent = `💪 Reforç Adaptatiu (${adapt.focusLabel})`;
+          document.getElementById("tape-subtitle").textContent = "Exercici generat automàticament amb les tecles que necessiten més pràctica";
+          document.getElementById("btn-speak-proverb").style.display = "none";
+          state.sequence = adapt.text;
+        } else if (state.phaseType === "diagnostic") {
+          document.getElementById("tape-title").textContent = `⏱️ Prova Inicial (Termòmetre Zero): «pas a pas es fa cami»`;
+          document.getElementById("tape-subtitle").textContent = "Punt de partida inicial per comparar el teu progrés durant el Pilot!";
+          document.getElementById("btn-speak-proverb").style.display = "none";
+          state.sequence = "pas a pas es fa cami";
         } else {
           document.getElementById("tape-title").textContent = `📜 Dita Catalana: «${lvl.proverbCa}»`;
           document.getElementById("tape-subtitle").textContent = lvl.proverbMeaningCa;
@@ -1403,8 +1569,10 @@
 
         if (lvl.gameMode === "castells") {
           hintEl.textContent = ent.subMode === "dual_climbers"
-            ? "👐 J2: Puja 1 casteller per cada costat! Mà Esq. (D,F) fa pujar l'esquerre i Mà Dreta (K,J) el dret! Si falles, cau!"
-            : "🧗 J1: Fes pujar el casteller amb D i K! Vigila: si t'equivoques de tecla, el casteller rellisca i cau!";
+            ? "👐 J3: Gran Castell 4 Lletres! Puja 1 casteller per cada costat combinant Mà Esq. (D,F) i Mà Dreta (K,J)! Si falles, cau!"
+            : ent.subMode === "hand_blocks"
+            ? "🖐️ J2: Pugem per Mans! Coordina D+F al costat esquerre i K+J al costat dret! Si falles, cau!"
+            : "🧗 J1: Pinya i Troncs amb D i K! Vigila: si t'equivoques de tecla, el casteller rellisca i cau!";
         } else if (lvl.gameMode === "sardana") {
           hintEl.textContent = "🎵 Segueix la melodia de la cobla i completa les notes dins del Cercle Daurat!";
         } else if (lvl.gameMode === "patum") {
@@ -1547,7 +1715,7 @@
       ctx.fillRect(0, 222, canvas.width, 28);
 
       const ent = getPrimaryEntity();
-      const isDual = ent && ent.subMode === "dual_climbers";
+      const isDual = ent && (ent.subMode === "dual_climbers" || ent.subMode === "hand_blocks");
       const baseX = 425 + shakeX;
 
       // Dibuixa la Pinya a la base
@@ -1940,9 +2108,9 @@
         else keyStats[k].errors++;
       }
 
-      if (state.phaseType === "proverb") {
+      if (state.phaseType === "proverb" || state.phaseType === "diagnostic") {
         state.proverbHistory.push({
-          title: lvl.titleCa,
+          title: state.phaseType === "diagnostic" ? "⏱️ Prova Inicial (Termòmetre Zero)" : lvl.titleCa,
           wpm,
           acc: Math.round(acc * 100)
         });
@@ -1950,10 +2118,18 @@
       saveProgress();
 
       const drillObj = lvl.drills.find(d => d.id === state.stepId);
+      const stepLabel = state.phaseType === "diagnostic"
+        ? "⏱️ Prova Inicial (Termòmetre Zero)"
+        : state.phaseType === "adaptive"
+        ? `💪 Reforç Adaptatiu (${lvl.id})`
+        : state.phaseType === "proverb"
+        ? `Dita: «${lvl.proverbCa}»`
+        : (drillObj ? drillObj.label : state.stepId);
+
       recordTelemetrySession({
-        phaseType: state.phaseType,
+        phaseType: state.phaseType === "diagnostic" ? "proverb" : (state.phaseType === "adaptive" ? "drill" : state.phaseType),
         stepId: state.stepId,
-        stepLabel: state.phaseType === "proverb" ? `Dita: «${lvl.proverbCa}»` : (drillObj ? drillObj.label : state.stepId),
+        stepLabel,
         wpmNet: wpm,
         accuracyPct: Math.round(acc * 100),
         errors: errs,
@@ -1963,19 +2139,21 @@
       });
 
       showResultScreen({
-        title: state.phaseType === "proverb"
+        title: state.phaseType === "diagnostic"
+          ? `⏱️ Prova Inicial enregistrada! (${wpm} PPM · ${Math.round(acc * 100)}%)`
+          : state.phaseType === "proverb"
           ? `📜 Dita Catalana superada! (${b} / 5 Barretines)`
           : `⌨️ Pràctica completada! (${b} / 5 Barretines)`,
         barretines: b,
         msg: b >= 3
-          ? (state.phaseType === "proverb" ? "Has desbloquejat el següent nivell de Catalunya!" : "Ja tens desbloquejat el següent pas!")
+          ? (state.phaseType === "proverb" ? "Has completat totes les fases d'aquest nivell del Pilot!" : "Ja tens desbloquejat el següent pas!")
           : "Necessites almenys 3 Barretines (88% precisió) per desbloquejar el següent pas.",
         metricsHtml: `
           <span>Precisió: <strong>${Math.round(acc * 100)}%</strong></span>
           <span>Errors: <strong>${errs}</strong></span>
           <span>Velocitat: <strong>${wpm} paraules/min</strong></span>
         `,
-        showThermometer: state.phaseType === "proverb"
+        showThermometer: state.phaseType === "proverb" || state.phaseType === "diagnostic"
       });
     }
 
@@ -2106,6 +2284,19 @@
     document.getElementById("btn-skip-ignition").onclick = () => launchActiveStep();
     document.getElementById("btn-restart-tape").onclick = () => launchActiveStep();
     document.getElementById("btn-restart-arcade").onclick = () => launchActiveStep();
+
+    document.getElementById("btn-diagnostic-zero").onclick = () => {
+      state.levelId = "L01";
+      state.phaseType = "diagnostic";
+      state.stepId = "DIAG.ZERO";
+      launchActiveStep();
+    };
+
+    document.getElementById("btn-adaptive-drill").onclick = () => {
+      state.phaseType = "adaptive";
+      state.stepId = `${state.levelId}.ADAPTIVE`;
+      launchActiveStep();
+    };
 
     document.getElementById("btn-speak-proverb").onclick = () => {
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];

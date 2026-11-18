@@ -150,29 +150,59 @@
       },
       "sublevels": [
         {
-          "id": "L02.1",
+          "id": "L02.D1",
           "screenNumber": 1,
-          "titleCa": "Pantalla 1: Només D i K en parelles",
+          "titleCa": "1A: Aïllem D i K en parelles",
           "subtitleCa": "Aïllem els dits del mig: dd, kk, dk i kd + Espai (sense F ni J).",
           "stepType": "isolated_pairs",
           "wordLengthRange": [2, 2],
-          "wordsCount": 10,
+          "wordsCount": 12,
           "includeReviewKeys": false
         },
         {
-          "id": "L02.2",
+          "id": "L02.D2",
           "screenNumber": 2,
-          "titleCa": "Pantalla 2: Només D i K en grups de 3 i 4",
+          "titleCa": "1B: D i K en grups de 3 i 4",
           "subtitleCa": "Afiançament dels dits del mig: dkd, kdk, dkkd + Espai.",
           "stepType": "isolated_groups",
           "wordLengthRange": [3, 4],
-          "wordsCount": 10,
+          "wordsCount": 12,
           "includeReviewKeys": false
         },
         {
-          "id": "L02.3",
+          "id": "L02.D3",
           "screenNumber": 3,
-          "titleCa": "Pantalla 3: Fem pinya amb D i K",
+          "titleCa": "1C: Coordinació per Mà: Esq. (df fd) i Dreta (kj jk)",
+          "subtitleCa": "Entrenem el pas cor↔índex a cada mà separadament.",
+          "stepType": "isolated_groups",
+          "wordLengthRange": [2, 4],
+          "wordsCount": 14,
+          "includeReviewKeys": true
+        },
+        {
+          "id": "L02.D4",
+          "screenNumber": 4,
+          "titleCa": "1D: Encreuament de les 4 lletres (dkfj fjdk dfkj)",
+          "subtitleCa": "Alternem les dues mans amb les 4 tecles.",
+          "stepType": "adventure_mixed",
+          "wordLengthRange": [4, 4],
+          "wordsCount": 14,
+          "includeReviewKeys": true
+        },
+        {
+          "id": "L02.D5",
+          "screenNumber": 5,
+          "titleCa": "1E: Domini Total de les 4 lletres (4-5 lletres)",
+          "subtitleCa": "Cadenes llargues barrejant D, K, F i J + Espai.",
+          "stepType": "adventure_mixed",
+          "wordLengthRange": [4, 5],
+          "wordsCount": 16,
+          "includeReviewKeys": true
+        },
+        {
+          "id": "L02.G1",
+          "screenNumber": 6,
+          "titleCa": "J1: Pinya i Troncs — Només D i K (10 pisos)",
           "subtitleCa": "Aixeca els primers pisos del castell utilitzant els dits del mig!",
           "stepType": "adventure_new",
           "wordLengthRange": [2, 4],
@@ -180,23 +210,23 @@
           "includeReviewKeys": false
         },
         {
-          "id": "L02.4",
-          "screenNumber": 4,
-          "titleCa": "Pantalla 4: El tronc del castell (D, K + F, J)",
-          "subtitleCa": "Ara sí! Combinem els dits del mig (D, K) amb els índexs (F, J).",
+          "id": "L02.G2",
+          "screenNumber": 7,
+          "titleCa": "J2: Pugem per Mans D+F i K+J (12 pisos)",
+          "subtitleCa": "Coordina cada mà mentre pugen els castellers.",
           "stepType": "adventure_mixed",
           "wordLengthRange": [3, 4],
-          "wordsCount": 10,
+          "wordsCount": 12,
           "includeReviewKeys": true
         },
         {
-          "id": "L02.5",
-          "screenNumber": 5,
-          "titleCa": "Pantalla 5: L'Aleta de l'Enxaneta + Dita Catalana",
-          "subtitleCa": "Coronem el castell i escrivim la dita castellera!",
+          "id": "L02.G3",
+          "screenNumber": 8,
+          "titleCa": "J3: Gran Castell 4 Lletres — 2 Castellers alhora (14 pisos)",
+          "subtitleCa": "Pugen 2 castellers alhora un per cada costat combinant D, K, F i J!",
           "stepType": "master_proverb",
           "wordLengthRange": [3, 5],
-          "wordsCount": 8,
+          "wordsCount": 14,
           "includeReviewKeys": true
         }
       ]
