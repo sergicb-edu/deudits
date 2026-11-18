@@ -627,14 +627,14 @@
         isPilot: true,
         titleCa: "Nivell 1 (Pilot): L'Aterratge al Pedraforca",
         keysLabel: "Tecles F, J + Espai (2 lletres)",
-        descCa: "En Bit arriba de l'espai! Assimilem els dos índexs (F i J) amb 3 passos progressius i esquivem els asteroides fins a aterrar als peus del Pedraforca!",
+        descCa: "En Bit viatja cap a la Terra! A J1 esquivem asteroides per arribar a la Terra, i a J2 baixem verticalment per l'atmosfera esquivant ocells cada cop més ràpids fins a aterrar al Pedraforca!",
         newKeys: ["f", "j"],
         leftKeys: ["f"],
         rightKeys: ["j"],
         reviewKeys: [],
         gameMode: "meteors",
-        gameTitle: "🛸 Rumb al Pedraforca: Esquivem Asteroides!",
-        gameDesc: "J1: Esquiva 10 asteroides amb F i J. J2: Esquiva la pluja d'asteroides i el Pas Estret de l'Enforcadura (12 asteroides)!",
+        gameTitle: "🛸 Rumb al Pedraforca (Espai + Atmosfera)",
+        gameDesc: "J1: Esquiva asteroides per arribar a la Terra. J2: Descens vertical per l'atmosfera esquivant ocells (velocitat progressiva) fins al Pedraforca!",
         proverbCa: "qui dia passa any empeny",
         proverbMeaningCa: "Anant pas a pas i amb constància cada dia, avancem molt més del que sembla.",
         drills: [
@@ -643,8 +643,8 @@
           { id: "L01.D3", label: "1C: Ritme continu de 4 i 5 lletres", stepType: "growing", wordsCount: 12, mix: false }
         ],
         arcades: [
-          { id: "L01.G1", label: "J1: Esquivem Asteroides amb F i J (10 asteroides)", subMode: "single", totalTargets: 10 },
-          { id: "L01.G2", label: "J2: Pas de l'Enforcadura cap al Pedraforca (12 asteroides)", subMode: "dual_boss", totalTargets: 12 }
+          { id: "L01.G1", label: "J1: Esquivem Asteroides rumb a la Terra (10 asteroides)", subMode: "space_asteroids", totalTargets: 10 },
+          { id: "L01.G2", label: "J2: Entrada Vertical a l'Atmosfera — Esquivem Ocells (12 ocells)", subMode: "atmosphere_birds", totalTargets: 12 }
         ]
       },
       {
@@ -773,6 +773,18 @@
           "MMMMMMOOMM",
           ".MMMMDDMM.",
           "..DDDDDD.."
+        ]
+      },
+      bird: {
+        palette: { W: "#f8fafc", B: "#38bdf8", D: "#0369a1", Y: "#f59e0b", K: "#0f172a" },
+        grid: [
+          "WW........WW",
+          ".WWB....BWW.",
+          "..WWBBBBWW..",
+          "...BBBBBB...",
+          "...BBKWBBY..",
+          "....DDDDYY..",
+          ".....DD....."
         ]
       },
       casteller: {
@@ -1337,9 +1349,13 @@
       let t = 0;
 
       if (lvl.id === "L01") {
-        cap.textContent = phaseType === "arcade"
-          ? "En Bit esquiva el camp d'asteroides rumb al Pedraforca!"
-          : "Hola! Soc en Bit! Ajuda'm a calibrar els propulsors F i J per viatjar cap al Pedraforca!";
+        if (state.stepId === "L01.G2") {
+          cap.textContent = "J2: Entrem verticalment a l'atmosfera! Esquiva els ocells cada cop més ràpids per aterrar al Pedraforca!";
+        } else if (state.stepId === "L01.G1") {
+          cap.textContent = "J1: Esquiva els asteroides per l'espai fins a arribar a l'òrbita del planeta Terra!";
+        } else {
+          cap.textContent = "Hola! Soc en Bit! Entrena els índexs F i J abans d'iniciar el viatge cap a la Terra!";
+        }
       } else {
         cap.textContent = "En Bit arriba des del Pedraforca fins a la plaça de Vilafranca per fer pinya amb els castellers!";
       }
@@ -1347,38 +1363,47 @@
       function tickStory() {
         if (state.screen !== "ignition") return;
         t++;
-        ctx.fillStyle = "#060913";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Estrelles al cel
-        ctx.fillStyle = "#94a3b8";
-        for (let i = 0; i < 16; i++) {
-          const sx = (i * 43 - t * 0.6 + 600) % 600;
-          const sy = (i * 23) % 95;
-          ctx.fillRect(sx, sy, 2, 2);
-        }
+        if (lvl.id === "L01" && state.stepId === "L01.G2") {
+          // Minivídeo d'introducció a la J2: Descens vertical per l'atmosfera esquivant ocells amb el Pedraforca a sota!
+          ctx.fillStyle = "#0284c7";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          drawPedraforcaSilhouette(ctx, 180, 145, 240, 72, true);
+          const shipX = 275 + Math.sin(t * 0.08) * 55;
+          drawSprite(ctx, SPRITES.spaceship, shipX, 16, 3.2);
+          const birdY = 125 - (t % 95);
+          drawSprite(ctx, SPRITES.bird, 285, birdY, 3);
+        } else if (lvl.id === "L01") {
+          // Minivídeo de presentació d'en Bit a l'espai i viatge cap a la Terra (Fase 1 i J1)
+          ctx.fillStyle = "#060913";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#94a3b8";
+          for (let i = 0; i < 16; i++) {
+            const sx = (i * 43 - t * 0.6 + 600) % 600;
+            const sy = (i * 23) % 95;
+            ctx.fillRect(sx, sy, 2, 2);
+          }
 
-        if (lvl.id === "L01") {
-          // A la dreta es veu el planeta Terra i el Pedraforca en forma de forca!
+          // Planeta Terra a la dreta
           ctx.fillStyle = "#0284c7";
           ctx.beginPath();
-          ctx.arc(520, 165, 115, Math.PI, Math.PI * 2);
+          ctx.arc(520, 75, 48, 0, Math.PI * 2);
           ctx.fill();
-          drawPedraforcaSilhouette(ctx, 430, 145, 155, 78, true);
+          ctx.fillStyle = "#16a34a";
+          ctx.fillRect(500, 55, 26, 20);
+          ctx.fillRect(515, 80, 22, 16);
 
-          // A l'esquerra: el robotet Bit saludant + la seva nau esquivant un asteroide!
+          // El robotet Bit saludant + la seva nau esquivant un asteroide rumb a la Terra!
           const bob = Math.sin(t * 0.08) * 5;
           drawSprite(ctx, SPRITES.bitRobot, 22, 42 + bob, 4.2);
           ctx.fillStyle = "#fde047";
           ctx.font = "bold 11px sans-serif";
           ctx.fillText("🤖 En Bit", 22, 34 + bob);
 
-          // Nau d'en Bit fent maniobra suau d'esquivada (sense disparar!)
           const shipX = 115 + (t % 180) * 1.1;
-          const shipY = 55 + Math.sin(t * 0.07) * 26;
+          const shipY = 55 + Math.sin(t * 0.07) * 24;
           drawSprite(ctx, SPRITES.spaceship, shipX, shipY, 3.2);
 
-          // Asteroide que passa de llarg sense explotar
           const astX = 390 - (t % 180) * 1.3;
           drawSprite(ctx, SPRITES.meteor, astX, 62, 3);
         } else {
@@ -1387,12 +1412,10 @@
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           drawPedraforcaSilhouette(ctx, 18, 138, 125, 62, false);
 
-          // En Bit caminant cap a la colla castellera
           const walkX = 170 + (t % 140) * 1.2;
           const bounce = Math.abs(Math.sin(t * 0.15)) * 6;
           drawSprite(ctx, SPRITES.bitRobot, walkX, 82 - bounce, 3.8);
 
-          // Pinya i castell a Vilafranca
           drawSprite(ctx, SPRITES.casteller, 430, 95, 3);
           drawSprite(ctx, SPRITES.casteller, 465, 95, 3);
           drawSprite(ctx, SPRITES.casteller, 448, 62, 3);
@@ -1407,7 +1430,7 @@
       tickStory();
     }
 
-    // Minivídeo quan en Bit esquiva tots els asteroides: es veu la Terra, entra a l'atmosfera i aterra al Pedraforca!
+    // Minivídeo quan supera J1 (arriba a l'òrbita de la Terra) o quan supera J2 (entra a l'atmosfera i aterra al Pedraforca!)
     function playLandingCutsceneThenResult(lvl, resultPayload) {
       pendingResultPayload = resultPayload;
       showScreen("cutscene");
@@ -1417,9 +1440,15 @@
       const titleEl = document.getElementById("cutscene-title");
       const descEl = document.getElementById("cutscene-desc");
 
-      if (lvl.id === "L01") {
-        titleEl.textContent = "🌍 Has esquivat tots els asteroides! Aterrem al Pedraforca!";
-        descEl.textContent = "La nau d'en Bit entra a la Terra, baixa entre els núvols i aterra davant dels dos cims en forma de forca del Pedraforca!";
+      const isJ1 = state.stepId === "L01.G1";
+      const isJ2 = state.stepId === "L01.G2";
+
+      if (isJ1) {
+        titleEl.textContent = "🌍 Has esquivat els asteroides i has arribat a l'òrbita de la Terra!";
+        descEl.textContent = "Ara passa al repte J2 per fer l'entrada vertical a l'atmosfera esquivant els ocells i aterrar al Pedraforca!";
+      } else if (isJ2) {
+        titleEl.textContent = "⛰️ Descens completat! En Bit aterra al Pedraforca!";
+        descEl.textContent = "Després de superar el J2 travessant l'atmosfera, la nau d'en Bit aterra als peus dels dos cims en forca del Pedraforca!";
       } else {
         titleEl.textContent = "🏰 L'Enxaneta fa l'aleta a Vilafranca!";
         descEl.textContent = "Amb la coordinació de les dues mans, en Bit i la colla han coronat el castell!";
@@ -1430,56 +1459,62 @@
         if (state.screen !== "cutscene") return;
         frame++;
 
-        if (lvl.id === "L01") {
-          // Fase 1 del minivídeo (frames 0..90): Vista de la Terra des de l'espai i la nau entrant-hi!
-          // Fase 2 del minivídeo (frames 91+): Aterratge suau als peus del Pedraforca i en Bit surt amb la Barretina!
-          if (frame < 95) {
+        if (isJ1) {
+          // Minivídeo de final de J1: Només arriba a l'òrbita del planeta Terra (encara NO aterra al Pedraforca!)
+          ctx.fillStyle = "#040814";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#e2e8f0";
+          for (let i = 0; i < 20; i++) ctx.fillRect((i * 57) % 600, (i * 29) % 180, 2, 2);
+
+          ctx.fillStyle = "#0284c7";
+          ctx.beginPath();
+          ctx.arc(460, 110, 74, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#16a34a";
+          ctx.fillRect(435, 80, 38, 28);
+          ctx.fillRect(450, 110, 30, 24);
+
+          const sx = Math.min(340, 50 + frame * 2.8);
+          const sy = 90 + Math.sin(frame * 0.1) * 8;
+          drawSprite(ctx, SPRITES.spaceship, sx, sy, 3.8);
+          ctx.fillStyle = "#fde047";
+          ctx.font = "bold 13px sans-serif";
+          ctx.fillText("🛸 En òrbita davant la Terra! A J2 entrarem a l'atmosfera!", 22, 28);
+        } else if (isJ2) {
+          // Minivídeo de final de J2: Ara sí! Entra a la Terra i aterra als peus de la forca del Pedraforca!
+          if (frame < 75) {
             ctx.fillStyle = "#040814";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // Estrelles
-            ctx.fillStyle = "#e2e8f0";
-            for (let i = 0; i < 20; i++) ctx.fillRect((i * 57) % 600, (i * 29) % 180, 2, 2);
-
-            // Planeta Terra blau i verd
             ctx.fillStyle = "#0284c7";
             ctx.beginPath();
             ctx.arc(460, 115, 72, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = "#16a34a";
             ctx.fillRect(435, 85, 38, 28);
-            ctx.fillRect(450, 115, 30, 24);
-
-            // Nau d'en Bit avançant des de l'esquerra i entrant a la Terra
-            const sx = 60 + frame * 3.6;
-            const sy = 85 + Math.sin(frame * 0.1) * 8;
-            drawSprite(ctx, SPRITES.spaceship, sx, sy, 3.8);
+            const sx = 180 + frame * 3.5;
+            drawSprite(ctx, SPRITES.spaceship, sx, 95, 3.8);
             ctx.fillStyle = "#fde047";
             ctx.font = "bold 13px sans-serif";
-            ctx.fillText("1/2 · Entrant al planeta Terra...", 22, 26);
+            ctx.fillText("1/2 · Travessant les últimes capes de l'atmosfera...", 22, 26);
           } else {
-            // Cel blau del Berguedà / Cerdanya amb el gran Pedraforca al fons!
             ctx.fillStyle = "#0c4a6e";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // Prat verd als peus de la muntanya
             ctx.fillStyle = "#15803d";
             ctx.fillRect(0, 178, canvas.width, 32);
 
-            // Gran Pedraforca al centre-dreta amb la seva Enforcadura ben clara!
             drawPedraforcaSilhouette(ctx, 210, 182, 370, 150, true);
 
-            // La nau baixa suaument fins a tocar terra (frames 95..160)
-            const landProgress = Math.min(1, (frame - 95) / 65);
+            const landProgress = Math.min(1, (frame - 75) / 65);
             const shipY = 20 + landProgress * 118;
             drawSprite(ctx, SPRITES.spaceship, 85, shipY, 4);
 
-            // Quan ja ha aterrat, en Bit surt al costat de la nau i saluda!
             if (landProgress >= 1) {
               const jump = Math.abs(Math.sin(frame * 0.15)) * 6;
               drawSprite(ctx, SPRITES.bitRobot, 155, 138 - jump, 4);
               drawSprite(ctx, SPRITES.barretina, 160, 124 - jump, 2.5);
               ctx.fillStyle = "#86efac";
               ctx.font = "bold 13px sans-serif";
-              ctx.fillText("✨ En Bit ja és al Pedraforca (Catalunya)!", 22, 26);
+              ctx.fillText("✨ En Bit ha aterrat al Pedraforca (Catalunya)!", 22, 26);
             } else {
               ctx.fillStyle = "#fde047";
               ctx.font = "bold 13px sans-serif";
@@ -1487,7 +1522,6 @@
             }
           }
         } else {
-          // Cinemàtica de celebració castellera a Vilafranca
           ctx.fillStyle = "#172554";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.fillStyle = "#334155";
@@ -1783,29 +1817,36 @@
       const act = getCurrentActNumber();
 
       if (lvl.gameMode === "meteors") {
-        const isBoss = arcDef.subMode === "dual_boss" && state.arcadeCompleted === state.arcadeTotal - 1;
-        const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
-        state.arcadeEntities.push({
-          id: Date.now() + Math.random(),
-          word: w1,
-          typedIndex: 0,
-          x: 800,
-          y: isBoss ? 95 : (45 + (state.arcadeCompleted % 3) * 62),
-          speed: isBoss ? 0.35 : (0.40 + act * 0.10),
-          isBoss,
-          scale: isBoss ? 6.2 : 4
-        });
-        if (arcDef.subMode === "dual_boss" && act >= 2 && !isBoss && state.arcadeEntities.length < 2) {
-          const w2 = generateWordByAct(lvl, state.arcadeCompleted + 1, state.arcadeTotal, arcDef.subMode) + " ";
+        if (arcDef.subMode === "atmosphere_birds") {
+          // J2 (Nivell 1): Entrada VERTICAL a l'atmosfera esquivant ocells cap al Pedraforca!
+          // Més ràpid i amb velocitat que va augmentant progressivament a cada ocell!
+          const lanesX = [235, 415, 595];
+          const laneX = lanesX[state.arcadeCompleted % lanesX.length];
+          const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
+          const progSpeed = 0.56 + state.arcadeCompleted * 0.065; // Velocitat progressiva!
           state.arcadeEntities.push({
-            id: Date.now() + Math.random() + 1,
-            word: w2,
+            id: Date.now() + Math.random(),
+            word: w1,
             typedIndex: 0,
-            x: 860,
-            y: 45 + ((state.arcadeCompleted + 1) % 3) * 62,
-            speed: 0.35 + act * 0.09,
+            x: laneX,
+            y: 225,
+            speed: progSpeed,
+            isBird: true,
+            scale: 3.6
+          });
+        } else {
+          // J1 (Nivell 1): Esquivar asteroides per l'espai rumb al planeta Terra (velocitat progressiva!)
+          const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
+          const progSpeed = 0.40 + state.arcadeCompleted * 0.042;
+          state.arcadeEntities.push({
+            id: Date.now() + Math.random(),
+            word: w1,
+            typedIndex: 0,
+            x: 800,
+            y: 45 + (state.arcadeCompleted % 3) * 62,
+            speed: progSpeed,
             isBoss: false,
-            scale: 3.8
+            scale: 4
           });
         }
       } else if (lvl.gameMode === "castells") {
@@ -1882,9 +1923,9 @@
         } else if (lvl.gameMode === "patum") {
           hintEl.textContent = `🔥 Sona la música de la Patum! Apaga el fuet del cantó ${ent.dir}!`;
         } else {
-          hintEl.textContent = ent.isBoss
-            ? "⛰️ PAS ESTRET DE L'ENFORCADURA! Fes la doble maniobra d'esquivada per aterrar al Pedraforca!"
-            : "🛸 Escriu la seqüència + ESPAI per fer la maniobra i ESQUIVAR l'asteroide rumb al Pedraforca!";
+          hintEl.textContent = ent.isBird
+            ? `🦅 J2 (Velocitat x${(1 + state.arcadeCompleted * 0.1).toFixed(1)}): Descens vertical per l'atmosfera! Esquiva els ocells per aterrar al Pedraforca!`
+            : `🛸 J1 (Velocitat x${(1 + state.arcadeCompleted * 0.08).toFixed(1)}): Esquiva els asteroides per arribar al planeta Terra!`;
         }
       } else {
         wordEl.textContent = "---";
@@ -1961,7 +2002,6 @@
         tickAndDrawPatum(ctx, canvas, lvl, shakeX);
       }
 
-      // Partícules d'impuls / estrelles
       const remP = [];
       for (const p of state.arcadeParticles) {
         p.x += p.vx;
@@ -1976,52 +2016,122 @@
       animFrameId = requestAnimationFrame(arcadeTick);
     }
 
-    // 1) MECÀNICA 1: RUMB AL PEDRAFORCA (Esquivem els asteroides sense explotar-los mentre ens apropem a la muntanya en forma de forca!)
+    // 1) MECÀNICA 1 (Nivell 1):
+    // - A J1 (space_asteroids): Viatge horitzontal per l'espai esquivant asteroides fins a arribar al Planeta Terra!
+    // - A J2 (atmosphere_birds): Entrada VERTICAL per l'atmosfera esquivant ocells (cada cop més ràpids) mentre el Pedraforca s'apropa a sota!
     function tickAndDrawMeteors(ctx, canvas, lvl, shakeX) {
-      ctx.fillStyle = "#060913";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Silueta del PEDRAFORCA a l'horitzó dret (es fa més propera a mesura que esquives asteroides!)
+      const arcDef = getActiveArcadeDef(lvl);
       const progressRatio = state.arcadeCompleted / Math.max(1, state.arcadeTotal);
-      const pedraW = 240 + progressRatio * 90;
-      const pedraH = 105 + progressRatio * 45;
-      drawPedraforcaSilhouette(ctx, canvas.width - pedraW - 10, 250, pedraW, pedraH, true);
-
       const ent = getPrimaryEntity();
-      const baseShipY = ent ? ent.y : 110;
-      const shipY = Math.max(18, Math.min(195, baseShipY + state.shipDodgeYOffset));
-      drawSprite(ctx, SPRITES.spaceship, 38 + shakeX, shipY, 4);
 
-      if (state.arcadeRunning) {
-        for (const m of state.arcadeEntities) {
-          m.x -= m.speed;
-          if (m.x <= 95) {
-            penalizeMistakeOrTimeout(100, true);
-            m.x = 790;
-            m.typedIndex = 0;
-            updateArcadeHud(lvl);
-            break;
+      if (arcDef.subMode === "atmosphere_birds") {
+        // J2: DESCENS VERTICAL PER L'ATMOSFERA CAP AL PEDRAFORCA ESQUIVANT OCELLS!
+        ctx.fillStyle = "#0369a1";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Núvols que pugen donant sensació de caiguda/entrada vertical
+        ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+        const cloudOffset = (performance.now() * 0.08) % 250;
+        ctx.fillRect(90, 250 - cloudOffset, 110, 18);
+        ctx.fillRect(660, (250 - cloudOffset + 120) % 250, 120, 18);
+
+        // A sota es veu la silueta en forma de forca del PEDRAFORCA fent-se més gran a mesura que baixem!
+        const pedraW = 320 + progressRatio * 140;
+        const pedraH = 75 + progressRatio * 55;
+        drawPedraforcaSilhouette(ctx, (canvas.width - pedraW) / 2, 250, pedraW, pedraH, true);
+
+        // La nau d'en Bit baixa des de dalt (y = 22) i es mou lateralment quan esquiva un ocell!
+        const baseShipX = ent ? ent.x : 415;
+        const shipX = Math.max(80, Math.min(760, baseShipX + state.shipDodgeYOffset + shakeX));
+        drawSprite(ctx, SPRITES.spaceship, shipX, 20, 4);
+
+        if (state.arcadeRunning) {
+          for (const b of state.arcadeEntities) {
+            b.y -= b.speed; // L'ocell puja cap a la nau mentre la nau baixa!
+            if (b.y <= 56) {
+              penalizeMistakeOrTimeout(100, true);
+              b.y = 225;
+              b.typedIndex = 0;
+              updateArcadeHud(lvl);
+              break;
+            }
           }
         }
-      }
 
-      // Asteroides ja esquivats que passen de llarg suaument per darrere sense explotar!
-      const remDodged = [];
-      for (const dm of state.dodgedAsteroids) {
-        dm.x -= 6.5;
-        dm.y += dm.vy;
-        drawSprite(ctx, SPRITES.meteor, dm.x, dm.y, dm.scale);
-        ctx.fillStyle = "#86efac";
-        ctx.font = "bold 12px sans-serif";
-        ctx.fillText("✨ Esquivat!", dm.x, dm.y - 8);
-        if (dm.x > -60) remDodged.push(dm);
-      }
-      state.dodgedAsteroids = remDodged;
+        // Ocells ja esquivats que passen volant cap amunt
+        const remDodged = [];
+        for (const db of state.dodgedAsteroids) {
+          db.y -= 5.5;
+          db.x += db.vx || 1.5;
+          drawSprite(ctx, SPRITES.bird, db.x, db.y, db.scale);
+          ctx.fillStyle = "#fde047";
+          ctx.font = "bold 12px sans-serif";
+          ctx.fillText("💨 Esquivat!", db.x, db.y - 6);
+          if (db.y > -40) remDodged.push(db);
+        }
+        state.dodgedAsteroids = remDodged;
 
-      state.arcadeEntities.forEach((m, idx) => {
-        drawSprite(ctx, SPRITES.meteor, m.x, m.y, m.scale);
-        drawWordBox(ctx, m.word, m.typedIndex, m.x - 10, m.y - 26, idx === 0);
-      });
+        state.arcadeEntities.forEach((b, idx) => {
+          drawSprite(ctx, SPRITES.bird, b.x, b.y, b.scale);
+          drawWordBox(ctx, b.word, b.typedIndex, b.x - 14, b.y - 28, idx === 0);
+        });
+      } else {
+        // J1: VIATGE HORITZONTAL PER L'ESPAI ESQUIVANT ASTEROIDES FINS A ARRIBAR AL PLANETA TERRA!
+        ctx.fillStyle = "#060913";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Estrelles
+        ctx.fillStyle = "#94a3b8";
+        for (let i = 0; i < 18; i++) {
+          ctx.fillRect((i * 53) % canvas.width, (i * 31) % canvas.height, 2, 2);
+        }
+
+        // El planeta TERRA a la dreta (es fa més gran a mesura que avances de 0/10 a 10/10!)
+        const earthR = 45 + progressRatio * 55;
+        ctx.fillStyle = "#0284c7";
+        ctx.beginPath();
+        ctx.arc(canvas.width - 55, 125, earthR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#16a34a";
+        ctx.fillRect(canvas.width - 75, 105, earthR * 0.55, earthR * 0.45);
+        ctx.fillStyle = "#fde047";
+        ctx.font = "bold 11px sans-serif";
+        ctx.fillText("🌍 Planeta Terra", canvas.width - 115, 25);
+
+        const baseShipY = ent ? ent.y : 110;
+        const shipY = Math.max(18, Math.min(195, baseShipY + state.shipDodgeYOffset));
+        drawSprite(ctx, SPRITES.spaceship, 38 + shakeX, shipY, 4);
+
+        if (state.arcadeRunning) {
+          for (const m of state.arcadeEntities) {
+            m.x -= m.speed;
+            if (m.x <= 95) {
+              penalizeMistakeOrTimeout(100, true);
+              m.x = 790;
+              m.typedIndex = 0;
+              updateArcadeHud(lvl);
+              break;
+            }
+          }
+        }
+
+        const remDodged = [];
+        for (const dm of state.dodgedAsteroids) {
+          dm.x -= 6.5;
+          dm.y += dm.vy;
+          drawSprite(ctx, SPRITES.meteor, dm.x, dm.y, dm.scale);
+          ctx.fillStyle = "#86efac";
+          ctx.font = "bold 12px sans-serif";
+          ctx.fillText("✨ Esquivat!", dm.x, dm.y - 8);
+          if (dm.x > -60) remDodged.push(dm);
+        }
+        state.dodgedAsteroids = remDodged;
+
+        state.arcadeEntities.forEach((m, idx) => {
+          drawSprite(ctx, SPRITES.meteor, m.x, m.y, m.scale);
+          drawWordBox(ctx, m.word, m.typedIndex, m.x - 10, m.y - 26, idx === 0);
+        });
+      }
     }
 
     // 2) MECÀNICA 2: CASTELLS A VILAFRANCA
@@ -2213,30 +2323,30 @@
 
         if (ent.typedIndex >= ent.word.length) {
           sfxActionSuccess();
-          spawnParticles(95, ent.y || 120, "#fde047");
+          spawnParticles(ent.x || 120, ent.y || 120, "#fde047");
           state.arcadeAngle += 0.8;
           state.arcadeJumpTimer = 18;
           state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
 
           if (lvl.gameMode === "meteors") {
-            // Maniobra pacífica d'esquivada! La nau salta de carril i l'asteroide passa de llarg sense explotar!
-            state.shipDodgeYOffset = ent.y > 110 ? -42 : 42;
-            state.dodgedAsteroids.push({
-              x: ent.x,
-              y: ent.y,
-              vy: ent.y > 110 ? 1.2 : -1.2,
-              scale: ent.scale
-            });
-
-            if (ent.isBoss && !ent.hasSplit) {
-              ent.hasSplit = true;
-              ent.isBoss = false;
-              ent.scale = 3.8;
-              ent.word = `${lvl.newKeys[0]}${lvl.newKeys[1]}${lvl.newKeys[0]} `;
-              ent.typedIndex = 0;
-              ent.x = Math.min(720, ent.x + 140);
-              updateArcadeHud(lvl);
-              return;
+            if (ent.isBird) {
+              // Esquivada lateral d'ocell a la J2 (entrada vertical a l'atmosfera)!
+              state.shipDodgeYOffset = ent.x >= 415 ? -75 : 75;
+              state.dodgedAsteroids.push({
+                x: ent.x,
+                y: ent.y,
+                vx: ent.x >= 415 ? 2.2 : -2.2,
+                scale: ent.scale
+              });
+            } else {
+              // Esquivada d'asteroide a la J1 (espai)!
+              state.shipDodgeYOffset = ent.y > 110 ? -42 : 42;
+              state.dodgedAsteroids.push({
+                x: ent.x,
+                y: ent.y,
+                vy: ent.y > 110 ? 1.2 : -1.2,
+                scale: ent.scale
+              });
             }
           }
 
@@ -2268,7 +2378,10 @@
             ent.typedIndex = Math.max(0, ent.typedIndex - 1);
           }
         }
-        if (lvl.gameMode === "meteors") ent.x -= 28;
+        if (lvl.gameMode === "meteors") {
+          if (ent.isBird) ent.y -= 18;
+          else ent.x -= 28;
+        }
         if (lvl.gameMode === "sardana") ent.y += 18;
         if (lvl.gameMode === "patum") ent.dist -= 0.1;
 
@@ -2306,13 +2419,15 @@
       });
 
       const resultPayload = {
-        title: survived
+        title: survived && earnedB >= 3
           ? `🎉 Missió superada! Has guanyat ${earnedB} / 5 Barretines!`
+          : survived
+          ? `⚠️ Has acabat amb ${earnedB} / 5 Barretines (en calen mínim 3 per avançar!)`
           : `💥 Has perdut les 5 Barretines!`,
         barretines: earnedB,
-        msg: survived
-          ? (earnedB >= 3 ? "Molt bona feina! Ja tens desbloquejat el següent pas!" : "Necessites conservar almenys 3 Barretines per avançar!")
-          : "Recorda escriure sense pressa: cada tecla errònia resta un 25% d'energia!",
+        msg: earnedB >= 3
+          ? "Molt bona feina! Ja tens desbloquejat el següent repte!"
+          : "Sense almenys 3 Barretines no es pot passar al següent repte. Repeteix-lo per aconseguir ≥ 3 Barretines!",
         metricsHtml: `
           <span>Esquivats / Completats: <strong>${state.arcadeCompleted} / ${state.arcadeTotal}</strong></span>
           <span>Precisió: <strong>${acc}%</strong></span>
@@ -2321,8 +2436,8 @@
         showThermometer: false
       };
 
-      // Quan supera el joc d'esquivar asteroides (o el castell), mostrem primer el Minivídeo d'Aterratge al Pedraforca / Coronació!
-      if (survived) {
+      // Només si supera el joc amb >= 3 Barretines mostrem el Minivídeo (a J1 arribada a la Terra; a J2 aterratge al Pedraforca!)
+      if (survived && earnedB >= 3) {
         playLandingCutsceneThenResult(lvl, resultPayload);
       } else {
         showResultScreen(resultPayload);
@@ -2330,8 +2445,27 @@
     }
 
     // =========================================================================
-    // TIRA DE LLETRES (FASE 1 i FASE 3) — BLOQUEIG EN CAS D'ERROR FINS QUE PREMIS LA TECLA CORRECTA!
+    // TECLAT AMB COLORS ESTÀNDARD DEL TECLAT CLEVY!
+    // - Vocals (A, E, I, O, U): Blau clar (#38bdf8)
+    // - Consonants: Blau fosc (#1e3a8a amb text blanc)
+    // - Signes de puntuació (, . -): Taronja (#f97316)
+    // - Barra d'Espai: Verd (#16a34a amb text blanc)
     // =========================================================================
+    function getClevyKeyStyle(code, charNormal) {
+      const vowels = ["a", "e", "i", "o", "u"];
+      const punct = [",", ".", "-"];
+      if (code === "Space" || charNormal === " ") {
+        return { bg: "#16a34a", fg: "#ffffff", border: "#14532d" }; // Verd Clevy (Funció / Espai)
+      }
+      if (vowels.includes(charNormal)) {
+        return { bg: "#38bdf8", fg: "#0f172a", border: "#0284c7" }; // Blau clar Clevy (Vocals)
+      }
+      if (punct.includes(charNormal)) {
+        return { bg: "#f97316", fg: "#ffffff", border: "#c2410c" }; // Taronja Clevy (Puntuació)
+      }
+      return { bg: "#1e3a8a", fg: "#ffffff", border: "#172554" };   // Blau fosc Clevy (Consonants)
+    }
+
     function renderTapeView() {
       const tape = document.getElementById("prompt-tape");
       tape.innerHTML = "";
@@ -2369,15 +2503,35 @@
         for (const code of row) {
           const k = KEYS[code];
           const fMeta = FINGERS[k.finger];
+          const clevy = getClevyKeyStyle(code, k.charNormal);
           const kDiv = document.createElement("div");
           const isTarget = targetKey && targetKey.code === code;
           kDiv.className = `kb-key ${code === "Space" ? "kb-space" : ""} ${isTarget ? "kb-target" : ""}`;
-          kDiv.style.setProperty("--key-bg", isTarget ? fMeta.colorHex : fMeta.colorHex + "40");
-          kDiv.innerHTML = `<span>${k.label}</span>${k.isHomeKey ? `<span class="kb-home-dot">${code==="KeyF"||code==="KeyJ"?"▬":"•"}</span>` : ""}<span class="kb-finger-tag">${fMeta.short}</span>`;
+          kDiv.style.backgroundColor = clevy.bg;
+          kDiv.style.color = clevy.fg;
+          kDiv.style.borderColor = isTarget ? "#fde047" : clevy.border;
+          if (isTarget) {
+            kDiv.style.boxShadow = "0 0 0 4px #fde047";
+            kDiv.style.transform = "scale(1.09)";
+            kDiv.style.zIndex = "3";
+          }
+          kDiv.innerHTML = `<span>${k.label}</span>${k.isHomeKey ? `<span class="kb-home-dot">${code==="KeyF"||code==="KeyJ"?"▬":"•"}</span>` : ""}<span class="kb-finger-tag" style="color:${clevy.fg};">${fMeta.short}</span>`;
           rDiv.appendChild(kDiv);
         }
         kb.appendChild(rDiv);
       }
+
+      // Llegenda de colors del Teclat Clevy
+      const leg = document.createElement("div");
+      leg.style.cssText = "display:flex;justify-content:center;gap:0.75rem;font-size:0.68rem;font-weight:700;margin-top:0.15rem;opacity:0.9;";
+      leg.innerHTML = `
+        <span>🎨 <strong>Teclat Clevy:</strong></span>
+        <span><i style="display:inline-block;width:10px;height:10px;background:#38bdf8;border-radius:2px;vertical-align:middle;"></i> Vocals</span>
+        <span><i style="display:inline-block;width:10px;height:10px;background:#1e3a8a;border-radius:2px;vertical-align:middle;"></i> Consonants</span>
+        <span><i style="display:inline-block;width:10px;height:10px;background:#f97316;border-radius:2px;vertical-align:middle;"></i> Puntuació</span>
+        <span><i style="display:inline-block;width:10px;height:10px;background:#16a34a;border-radius:2px;vertical-align:middle;"></i> Espai</span>
+      `;
+      kb.appendChild(leg);
 
       const dock = document.getElementById("support-dock");
       const handsPanel = document.getElementById("hands-panel");
@@ -2463,12 +2617,12 @@
         title: state.phaseType === "diagnostic"
           ? `⏱️ Prova Inicial enregistrada! (${wpm} PPM · ${Math.round(acc * 100)}%)`
           : state.phaseType === "proverb"
-          ? `📜 Dita Catalana superada! (${b} / 5 Barretines)`
+          ? `📜 Dita Catalana completada! (${b} / 5 Barretines)`
           : `⌨️ Pràctica completada! (${b} / 5 Barretines)`,
         barretines: b,
         msg: b >= 3
-          ? (state.phaseType === "proverb" ? "Has completat totes les fases d'aquest nivell del Pilot!" : "Ja tens desbloquejat el següent pas!")
-          : "Els errors han penalitzat les Barretines (<88% precisió). Torna-ho a provar per obtenir ≥ 3 Barretines!",
+          ? (state.phaseType === "proverb" ? "Has completat totes les fases d'aquest nivell del Pilot!" : "Molt bé! Amb ≥ 3 Barretines ja tens desbloquejat el següent repte!")
+          : "Sense almenys 3 Barretines (88% precisió) no pots passar al següent repte. Repeteix-lo per aconseguir ≥ 3 Barretines!",
         metricsHtml: `
           <span>Precisió: <strong>${Math.round(acc * 100)}%</strong></span>
           <span>Errors comesos: <strong>${errs}</strong></span>
@@ -2484,6 +2638,17 @@
         [1, 2, 3, 4, 5].map(n => renderBarretinaSvg(n <= barretines, 4.5)).join("");
       document.getElementById("res-msg").textContent = msg;
       document.getElementById("res-metrics").innerHTML = metricsHtml;
+
+      // Bloqueig estricte del botó «Següent repte» si no té almenys 3 Barretines!
+      const bestForStep = Math.max(barretines, state.stepBarretines[state.stepId] || 0);
+      const nextBtn = document.getElementById("btn-res-next");
+      if (bestForStep >= 3 || state.freeUnlock) {
+        nextBtn.disabled = false;
+        nextBtn.textContent = "➡️ Següent repte";
+      } else {
+        nextBtn.disabled = true;
+        nextBtn.textContent = "🔒 Calen ≥ 3 Barretines per avançar";
+      }
 
       const thBox = document.getElementById("res-thermometer");
       if (showThermometer && state.proverbHistory.length > 0) {

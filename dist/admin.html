@@ -324,6 +324,15 @@
       </div>
     </header>
 
+    <!-- BANNER EXPLICATIU DE CONNEXIÓ ALUMNE <-> DOCENT -->
+    <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.95rem;font-size:0.83rem;color:#1e3a8a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+      <div>
+        🔗 <strong>Com es connecta amb la Vista de l'Alumne i on es guarden les dades?</strong><br/>
+        • <strong>En mode local (ara al teu navegador):</strong> Tota partida o pràctica feta a <code>student.html</code> es desa automàticament al <code>localStorage</code> compartit del navegador (claus <code>mecano_telemetry_v1</code> i <code>mecano_v4_distinct</code>) i apareix aquí a l'instant.<br/>
+        • <strong>A l'escola (Google Workspace / Fase 4):</strong> Es desa al núvol dins d'un llibre de <strong>Google Sheets</strong> de Google Drive (6 pestanyes automàtiques) + còpia local per si falla la Wi-Fi, o pots descarregar-ho amb <strong>«📥 Exportar CSV»</strong>.
+      </div>
+    </div>
+
     <!-- 5 TARGETES KPI -->
     <section class="kpi-grid">
       <div class="kpi-card">
@@ -843,6 +852,7 @@
       alert("Configuració pedagògica desada correctament!");
     };
 
+    window.addEventListener("storage", () => renderAll());
     renderAll();
   </script>
 </body>
