@@ -36,10 +36,10 @@
     }
     .cards {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.25rem;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem;
     }
-    @media (max-width: 640px) {
+    @media (max-width: 780px) {
       .cards { grid-template-columns: 1fr; }
     }
     .card {
@@ -94,9 +94,16 @@
     <div class="cards">
       <a href="./student.html" id="link-student" class="card">
         <span class="icon">🕹️</span>
-        <h2>Sóc Alumne</h2>
-        <p>Entra a practicar les lletres, esquivar asteroides cap al Pedraforca i aixecar castells.</p>
-        <span class="pill">Començar a jugar →</span>
+        <h2>Alumne · Versió A</h2>
+        <p>Format clàssic per blocs: primer totes les pràctiques i després els jocs d'aventura.</p>
+        <span class="pill">Obrir Versió A →</span>
+      </a>
+
+      <a href="./student-intercalat.html" id="link-student-b" class="card" style="border-color:#a855f7;">
+        <span class="icon">✨</span>
+        <h2>Alumne · Versió B</h2>
+        <p>Format intercalat (P1→J1→P2→J2→P3→J3): alterna pràctica curta amb 3 jocs diferents (Espai, Ocells i Escalada al Pedraforca)!</p>
+        <span class="pill" style="background:#7c3aed;">Provar Versió B →</span>
       </a>
 
       <a href="./admin.html" class="card teacher">
@@ -122,6 +129,7 @@
       // Si l'enllaç porta ?sheet=... redirigeix directament a l'alumne o conserva els paràmetres
       if (window.location.search && window.location.search.includes("sheet=")) {
         document.getElementById("link-student").href = "./student.html" + window.location.search;
+        document.getElementById("link-student-b").href = "./student-intercalat.html" + window.location.search;
       }
     })();
   </script>
