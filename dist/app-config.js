@@ -9,9 +9,8 @@
 window.MECANO_CONFIG = {
   APP_NAME: "DeuDits",
   DEFAULT_DRIVE_FOLDER: "DeuDits",
-  // Enganxa aquí el teu OAuth 2.0 Client ID de Google Cloud Console
-  // (Exemple: "1234567890-abcdefg.apps.googleusercontent.com")
-  GOOGLE_CLIENT_ID: ""
+  // OAuth 2.0 Client ID de Google Cloud Console (públic per a Web Apps)
+  GOOGLE_CLIENT_ID: "550312682163-3entl514uqqhbj7qrpil5q4uf3mds19n.apps.googleusercontent.com"
 };
 
 window.MecanoGoogleAuth = (function () {
