@@ -915,32 +915,58 @@
     document.getElementById("btn-copy-gas-code").onclick = async () => {
       const gasScript = [
         "function onOpen() {",
-        "  SpreadsheetApp.getUi().createMenu('🪄 MECANO ESCOLA')",
-        "    .addItem('🚀 Inicialitzar Pestanyes (1 clic)', 'ensureTabs').addToUi();",
+        "  SpreadsheetApp.getUi().createMenu('MECANO ESCOLA')",
+        "    .addItem('1. Inicialitzar Pestanyes (1 clic)', 'ensureTabs').addToUi();",
         "}",
-        "function doGet() { ensureTabs(); return ContentService.createTextOutput('Mecano Cloud OK'); }",
+        "",
+        "function doGet() {",
+        "  ensureTabs();",
+        "  return ContentService.createTextOutput('Mecano Cloud OK');",
+        "}",
+        "",
         "function doPost(e) {",
         "  ensureTabs();",
+        "  var ss = SpreadsheetApp.getActiveSpreadsheet();",
         "  var b = JSON.parse(e.postData.contents);",
         "  var list = b.action === 'sync_batch' ? b.sessions : [b];",
-        "  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sessions');",
+        "  var sh = ss.getSheetByName('Sessions');",
+        "  var shKeys = ss.getSheetByName('Estadistiques_Tecles');",
+        "  var shAch = ss.getSheetByName('Assoliments');",
         "  for (var i = 0; i < list.length; i++) {",
         "    var s = list[i];",
-        "    sh.appendRow([s.sessionId, s.timestampIso, s.studentName || 'ALU-01', s.levelId, s.phaseType, s.stepId, s.stepLabel, s.wpmNet, s.accuracyPct, s.errors, s.totalPresses, s.barretines, s.durationSec]);",
+        "    var stu = s.studentName || 'ALU-01';",
+        "    sh.appendRow([s.sessionId, s.timestampIso, stu, s.levelId, s.phaseType, s.stepId, s.stepLabel, s.wpmNet, s.accuracyPct, s.errors, s.totalPresses, s.barretines, s.durationSec]);",
+        "    if (shAch) shAch.appendRow([stu, s.stepId, s.levelId, s.barretines, s.wpmNet, s.timestampIso]);",
+        "    if (shKeys && s.keyStats) {",
+        "      var ks = Object.keys(s.keyStats);",
+        "      for (var k = 0; k < ks.length; k++) {",
+        "        var ch = ks[k];",
+        "        shKeys.appendRow([stu, ch, s.keyStats[ch].hits || 0, s.keyStats[ch].errors || 0, s.timestampIso]);",
+        "      }",
+        "    }",
         "  }",
-        "  return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);",
+        "  return ContentService.createTextOutput(JSON.stringify({ok: true})).setMimeType(ContentService.MimeType.JSON);",
         "}",
+        "",
         "function ensureTabs() {",
         "  var ss = SpreadsheetApp.getActiveSpreadsheet();",
         "  if (!ss.getSheetByName('Sessions')) {",
         "    var sh = ss.insertSheet('Sessions');",
         "    sh.appendRow(['session_id','timestamp_iso','student','level_id','phase_type','step_id','step_label','wpm_net','accuracy_pct','errors','total_presses','barretines','duration_sec']);",
         "  }",
+        "  if (!ss.getSheetByName('Estadistiques_Tecles')) {",
+        "    var shK = ss.insertSheet('Estadistiques_Tecles');",
+        "    shK.appendRow(['student','key_char','hits','errors','updated_iso']);",
+        "  }",
+        "  if (!ss.getSheetByName('Assoliments')) {",
+        "    var shA = ss.insertSheet('Assoliments');",
+        "    shA.appendRow(['student','step_id','level_id','barretines','wpm_net','updated_iso']);",
+        "  }",
         "}"
-      ].join("\\n");
+      ].join("\n");
       try {
         await navigator.clipboard.writeText(gasScript);
-        cloudFeedback.textContent = "✅ Codi copiat al porta-retalls! Ara enganxa'l a Extensions → Apps Script del teu Google Sheet i prem Implementa → Aplicació web.";
+        cloudFeedback.textContent = "✅ Codi copiat amb salts de línia correctes! Ara enganxa'l a Extensions → Apps Script del teu Google Sheet i prem Desar.";
       } catch {
         alert("Copia el fitxer dist/Code.gs a Extensions -> Apps Script.");
       }
