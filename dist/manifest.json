@@ -1,6 +1,6 @@
 {
-  "name": "Mecano — Mecanografia en Català",
-  "short_name": "Mecano",
+  "name": "DeuDits — Mecanografia en Català",
+  "short_name": "DeuDits",
   "description": "App gamificada de mecanografia en català per a primària i NESE connectada a Google Drive.",
   "start_url": "./index.html",
   "display": "standalone",

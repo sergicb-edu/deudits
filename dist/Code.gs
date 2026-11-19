@@ -3,7 +3,7 @@
  *
  * Quan decideixis el nom definitiu de l'app, només has de canviar aquesta primera línia:
  */
-var NOM_APP = 'Mecano';
+var NOM_APP = 'DeuDits';
 
 var SHEET_TABS = {
   CONFIG: 'Config',
