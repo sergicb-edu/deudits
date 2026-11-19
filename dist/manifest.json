@@ -1,0 +1,10 @@
+{
+  "name": "Mecano — Mecanografia en Català",
+  "short_name": "Mecano",
+  "description": "App gamificada de mecanografia en català per a primària i NESE connectada a Google Drive.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#1d4ed8",
+  "lang": "ca"
+}

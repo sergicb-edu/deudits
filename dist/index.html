@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mecano — Mecanografia en Català</title>
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(160deg, #eff6ff 0%, #f8fafc 55%, #ecfdf5 100%);
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .wrap {
+      max-width: 780px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 0.4rem;
+      font-size: 2rem;
+      color: #1e3a8a;
+    }
+    .sub {
+      margin: 0 0 2rem;
+      color: #475569;
+      font-size: 1.02rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 640px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #ffffff;
+      border: 2.5px solid #cbd5e1;
+      border-radius: 1.2rem;
+      padding: 1.8rem 1.4rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.7rem;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: #2563eb;
+      box-shadow: 0 14px 30px rgba(37, 99, 235, 0.14);
+    }
+    .card.teacher:hover {
+      border-color: #16a34a;
+      box-shadow: 0 14px 30px rgba(22, 163, 74, 0.14);
+    }
+    .icon { font-size: 3.2rem; }
+    .card h2 { margin: 0; font-size: 1.35rem; }
+    .card p { margin: 0; font-size: 0.92rem; color: #475569; line-height: 1.45; }
+    .pill {
+      margin-top: 0.5rem;
+      padding: 0.5rem 1.2rem;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      color: #ffffff;
+      background: #2563eb;
+    }
+    .card.teacher .pill { background: #16a34a; }
+    .footer-note {
+      margin-top: 1.6rem;
+      font-size: 0.82rem;
+      color: #64748b;
+    }
+  </style>
+  <script src="./app-config.js"></script>
+</head>
+<body>
+  <main class="wrap">
+    <h1 id="app-title">🤖 Mecano — En Bit descobreix Catalunya</h1>
+    <p class="sub">Mecanografia inclusiva en català · 100% integrat amb el teu compte Google escolar</p>
+
+    <div class="cards">
+      <a href="./student.html" id="link-student" class="card">
+        <span class="icon">🕹️</span>
+        <h2>Sóc Alumne</h2>
+        <p>Entra a practicar les lletres, esquivar asteroides cap al Pedraforca i aixecar castells.</p>
+        <span class="pill">Començar a jugar →</span>
+      </a>
+
+      <a href="./admin.html" class="card teacher">
+        <span class="icon">👩‍🏫</span>
+        <h2>Sóc Docent</h2>
+        <p>Inicia sessió amb Google per crear automàticament la teva carpeta al Drive i seguir els alumnes.</p>
+        <span class="pill">Obrir Panell Docent →</span>
+      </a>
+    </div>
+
+    <p class="footer-note">
+      🔒 Les dades dels alumnes es guarden exclusivament al Google Drive del docent. Zero servidors externs.
+    </p>
+  </main>
+
+  <script>
+    (function () {
+      if (window.MecanoGoogleAuth) {
+        const name = window.MecanoGoogleAuth.getAppName();
+        document.title = name + " — Mecanografia en Català";
+        document.getElementById("app-title").textContent = "🤖 " + name + " — En Bit descobreix Catalunya";
+      }
+      // Si l'enllaç porta ?sheet=... redirigeix directament a l'alumne o conserva els paràmetres
+      if (window.location.search && window.location.search.includes("sheet=")) {
+        document.getElementById("link-student").href = "./student.html" + window.location.search;
+      }
+    })();
+  </script>
+</body>
+</html>

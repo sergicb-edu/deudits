@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mecano — En Bit descobreix Catalunya</title>
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="./app-config.js"></script>
   <style>
     :root {
       --font-scale: 1;
@@ -399,6 +403,7 @@
       </div>
 
       <div class="topbar-right">
+        <button type="button" id="btn-student-google" style="display:none;background:#eff6ff;border:2px solid #2563eb;color:#1e3a8a;border-radius:999px;padding:0.22rem 0.65rem;font-weight:800;font-size:0.78rem;cursor:pointer;">🔐 Entrar amb Google</button>
         <span id="header-barretines" style="font-weight:800;font-size:0.9rem;"></span>
         <button type="button" id="btn-settings-toggle" class="icon-btn" title="Configuració i ajudes">⚙️</button>
 
@@ -1064,7 +1069,19 @@
         }
         localStorage.setItem("mecano_telemetry_v1", JSON.stringify(raw));
 
-        if (window.google && window.google.script && window.google.script.run) {
+        if (window.MecanoGoogleAuth && window.MecanoGoogleAuth.getSheetId()) {
+          if (window.MecanoGoogleAuth.hasValidToken()) {
+            window.MecanoGoogleAuth.studentAppendSession(sessionObj, keyStats).catch(() => {
+              const q = JSON.parse(localStorage.getItem("mecano_pending_oauth_sessions") || "[]");
+              q.push({ sessionObj, keyStats });
+              localStorage.setItem("mecano_pending_oauth_sessions", JSON.stringify(q));
+            });
+          } else {
+            const q = JSON.parse(localStorage.getItem("mecano_pending_oauth_sessions") || "[]");
+            q.push({ sessionObj, keyStats });
+            localStorage.setItem("mecano_pending_oauth_sessions", JSON.stringify(q));
+          }
+        } else if (window.google && window.google.script && window.google.script.run) {
           window.google.script.run.apiSaveSession(sessionObj);
         } else {
           const cloudUrl = localStorage.getItem("mecano_cloud_webhook_url") || "";
@@ -1079,6 +1096,48 @@
         }
       } catch {}
     }
+
+    // Connexió Google escolar de l'alumne (només visible si hi ha un Google Sheet vinculat)
+    (function initStudentGoogleButton() {
+      if (!window.MecanoGoogleAuth) return;
+      const appName = window.MecanoGoogleAuth.getAppName();
+      const titleEl = document.querySelector(".topbar-title");
+      if (titleEl && appName) titleEl.textContent = appName + " 8-Bit";
+      document.title = appName + " — En Bit descobreix Catalunya";
+
+      const sheetId = window.MecanoGoogleAuth.getSheetId();
+      const btn = document.getElementById("btn-student-google");
+      if (!btn || !sheetId) return;
+
+      btn.style.display = "inline-flex";
+      const savedUser = window.MecanoGoogleAuth.getSavedUser();
+      if (savedUser && savedUser.givenName) {
+        btn.textContent = `🔐 ${savedUser.givenName} (Connecta)`;
+      }
+
+      btn.onclick = async () => {
+        try {
+          btn.textContent = "⏳ Connectant...";
+          const user = await window.MecanoGoogleAuth.studentSignIn();
+          btn.textContent = `✅ ${user.givenName}`;
+          btn.style.background = "#dcfce7";
+          btn.style.borderColor = "#16a34a";
+          btn.style.color = "#14532d";
+
+          // Envia qualsevol partida feta abans de connectar-se
+          const pending = JSON.parse(localStorage.getItem("mecano_pending_oauth_sessions") || "[]");
+          if (pending.length > 0) {
+            for (const item of pending) {
+              await window.MecanoGoogleAuth.studentAppendSession(item.sessionObj, item.keyStats);
+            }
+            localStorage.removeItem("mecano_pending_oauth_sessions");
+          }
+        } catch (err) {
+          btn.textContent = "🔐 Entrar amb Google";
+          alert("No s'ha pogut iniciar sessió amb Google: " + (err && err.message ? err.message : err));
+        }
+      };
+    })();
 
     // Sons 8-bits
     let audioCtx = null;

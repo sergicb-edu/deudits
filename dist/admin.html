@@ -3,7 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mecano — Panell del Docent (Fase 2)</title>
+  <title>Mecano — Panell del Docent</title>
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="./app-config.js"></script>
   <style>
     :root {
       --bg: #f1f5f9;
@@ -308,58 +312,104 @@
       <div class="brand">
         <span style="font-size:1.6rem;">📊</span>
         <div>
-          <h1>Mecano — Panell del Docent</h1>
+          <h1 id="admin-app-heading">Mecano — Panell del Docent</h1>
           <div style="font-size:0.8rem;color:var(--muted);">
-            Seguiment individual d'alumne · Google Sheets + Sincronització Local
+            Seguiment d'alumnes · Google Drive OAuth 2.0 (1 clic, sense servidors)
           </div>
         </div>
-        <span class="badge" id="student-badge">Alumne: ALU-01</span>
+        <select id="student-filter" title="Filtrar per alumne" style="background:#dbeafe;color:#1e40af;border:1.5px solid #93c5fd;border-radius:999px;padding:0.25rem 0.7rem;font-size:0.8rem;font-weight:800;">
+          <option value="__ALL__">👥 Tots els alumnes (Local)</option>
+        </select>
       </div>
 
       <div class="btn-row">
-        <button type="button" id="btn-toggle-cloud" style="background:#dcfce7;border-color:#16a34a;color:#14532d;">☁️ Connectar amb Google Drive (Assistent)</button>
+        <button type="button" id="btn-toggle-cloud" style="background:#dcfce7;border-color:#16a34a;color:#14532d;">☁️ Google Drive (1 clic)</button>
         <button type="button" id="btn-seed-demo">🧪 Carregar Dades d'Exemple</button>
-        <button type="button" id="btn-export-csv">📥 Exportar CSV (Google Sheets)</button>
+        <button type="button" id="btn-export-csv">📥 Exportar CSV</button>
         <button type="button" id="btn-clear-data" style="color:#b91c1c;">🗑️ Reiniciar dades</button>
-        <a href="./student.html" class="btn-link primary">🕹️ Obrir Vista de l'Alumne</a>
+        <a href="./student.html" id="btn-open-student" class="btn-link primary">🕹️ Obrir Vista de l'Alumne</a>
       </div>
     </header>
 
-    <!-- ASSISTENT VISUAL PER CONNECTAR AMB GOOGLE DRIVE EN 3 CLICS (SENSE SER EXPERT!) -->
-    <div id="cloud-wizard-panel" style="display:none;background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
-        <strong style="font-size:1rem;color:#14532d;">☁️ Assistent ràpid per guardar totes les partides al teu Google Drive (Google Sheets)</strong>
-        <span id="cloud-status-pill" style="font-size:0.78rem;font-weight:800;padding:2px 8px;border-radius:99px;background:#fef3c7;color:#92400e;">No connectat al núvol</span>
+    <!-- PANELL 1-CLIC GOOGLE DRIVE OAUTH 2.0 (SENSE APPS SCRIPT NI PASSOS MANUALS!) -->
+    <div id="cloud-wizard-panel" style="background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem;">
+        <strong style="font-size:1rem;color:#14532d;">☁️ Connexió Automàtica amb el teu Google Drive (Compte Google Escolar)</strong>
+        <span id="cloud-status-pill" style="font-size:0.78rem;font-weight:800;padding:3px 10px;border-radius:99px;background:#fef3c7;color:#92400e;">No connectat al Drive</span>
       </div>
-      <p style="margin:0 0 0.75rem;font-size:0.84rem;color:#166534;">
-        Només cal que una sola persona (el coordinador o el docent) faci aquests 3 passos una vegada per tenir totes les 6 pestanyes de Google Sheets connectades en temps real:
-      </p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:0.8rem;">
-        <div style="background:#ffffff;border:1px solid #86efac;border-radius:8px;padding:0.65rem;">
-          <strong style="font-size:0.82rem;color:#14532d;">Pas 1: Crea el full</strong>
-          <p style="font-size:0.78rem;margin:0.3rem 0 0.5rem;color:#475569;">Obre un full de càlcul nou al teu Google Drive escolar.</p>
-          <a href="https://sheets.new" target="_blank" rel="noopener" class="btn-link" style="width:100%;justify-content:center;background:#eff6ff;border-color:#3b82f6;color:#1d4ed8;">📊 Obrir sheets.new ↗️</a>
+
+      <!-- Bloc principal OAuth 1 clic -->
+      <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;background:#ffffff;border:1.5px solid #86efac;border-radius:10px;padding:0.85rem;">
+        <div style="flex:1;min-width:210px;">
+          <label for="input-drive-folder" style="display:block;font-size:0.78rem;font-weight:800;color:#14532d;margin-bottom:0.25rem;">
+            📁 Nom de la carpeta al teu Google Drive:
+          </label>
+          <input type="text" id="input-drive-folder" value="Mecano" placeholder="Ex: Mecano 3r A" style="width:100%;padding:0.45rem 0.65rem;border:1.5px solid #94a3b8;border-radius:8px;font-size:0.86rem;font-weight:700;" />
         </div>
-        <div style="background:#ffffff;border:1px solid #86efac;border-radius:8px;padding:0.65rem;">
-          <strong style="font-size:0.82rem;color:#14532d;">Pas 2: Enganxa l'script màgic</strong>
-          <p style="font-size:0.78rem;margin:0.3rem 0 0.5rem;color:#475569;">Al full, ves a <em>Extensions → Apps Script</em>, enganxa aquest codi i prem <em>Implementa → Aplicació web</em>.</p>
-          <button type="button" id="btn-copy-gas-code" style="width:100%;justify-content:center;background:#fef3c7;border-color:#f59e0b;color:#78350f;">📋 Copiar Codi Automàtic</button>
+        <button type="button" id="btn-google-oauth-connect" class="primary" style="background:#16a34a;border-color:#15803d;padding:0.55rem 1.1rem;font-size:0.9rem;">
+          🔐 Iniciar sessió amb Google i crear Drive automàticament
+        </button>
+        <button type="button" id="btn-google-refresh" style="display:none;background:#eff6ff;border-color:#3b82f6;color:#1d4ed8;">
+          🔄 Actualitzar dades del Drive
+        </button>
+      </div>
+
+      <!-- Accions ràpides un cop connectat al Google Sheet -->
+      <div id="oauth-connected-actions" style="display:none;margin-top:0.75rem;background:#ecfdf5;border:1.5px solid #34d399;border-radius:10px;padding:0.75rem 0.9rem;">
+        <div style="display:flex;flex-wrap:wrap;gap:0.55rem;align-items:center;justify-content:space-between;">
+          <div style="font-size:0.84rem;color:#065f46;">
+            ✅ <strong id="oauth-teacher-info">Connectat</strong> · Carpeta: <strong id="oauth-folder-label">Mecano</strong>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.45rem;">
+            <a href="#" id="link-open-gsheet" target="_blank" rel="noopener" class="btn-link" style="background:#ffffff;border-color:#16a34a;color:#15803d;">📊 Obrir Google Sheet ↗️</a>
+            <button type="button" id="btn-copy-student-link" class="primary">🔗 Copiar enllaç per als alumnes</button>
+            <a href="#" id="link-share-classroom" target="_blank" rel="noopener" class="btn-link" style="background:#fef3c7;border-color:#f59e0b;color:#92400e;">🎓 Compartir a Classroom ↗️</a>
+          </div>
         </div>
-        <div style="background:#ffffff;border:1px solid #86efac;border-radius:8px;padding:0.65rem;">
-          <strong style="font-size:0.82rem;color:#14532d;">Pas 3: Enganxa l'enllaç aquí</strong>
-          <input type="url" id="input-cloud-url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%;padding:0.38rem 0.5rem;border:1px solid #94a3b8;border-radius:6px;font-size:0.78rem;margin:0.3rem 0 0.45rem;" />
-          <button type="button" id="btn-sync-cloud-now" class="primary" style="width:100%;justify-content:center;">🔄 Connectar i Sincronitzar ara</button>
+        <div style="margin-top:0.5rem;font-size:0.78rem;color:#047857;">
+          Enllaç per als alumnes (ja porta el teu Google Sheet vinculat): <code id="student-share-url-preview" style="background:#ffffff;padding:2px 6px;border-radius:4px;word-break:break-all;"></code>
         </div>
       </div>
-      <div id="cloud-sync-feedback" style="font-size:0.8rem;font-weight:700;color:#15803d;"></div>
+
+      <div id="cloud-sync-feedback" style="margin-top:0.55rem;font-size:0.82rem;font-weight:700;color:#15803d;"></div>
+
+      <!-- Configuració avançada Client ID (col·lapsable perquè els docents no l'hagin de veure quan ja estigui a app-config.js) -->
+      <details id="oauth-clientid-details" style="margin-top:0.65rem;font-size:0.8rem;color:#334155;">
+        <summary style="cursor:pointer;font-weight:800;color:#1e3a8a;">⚙️ Configuració del Client ID de Google Cloud (només 1 cop per centre/pilot)</summary>
+        <div style="margin-top:0.45rem;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;background:#ffffff;padding:0.6rem;border-radius:8px;border:1px solid #cbd5e1;">
+          <input type="text" id="input-google-client-id" placeholder="1234567890-xxxx.apps.googleusercontent.com" style="flex:1;min-width:260px;padding:0.38rem 0.55rem;border:1px solid #94a3b8;border-radius:6px;font-size:0.8rem;" />
+          <button type="button" id="btn-save-client-id">💾 Desar Client ID</button>
+          <span style="font-size:0.75rem;color:#64748b;">(També el pots deixar fix a <code>dist/app-config.js</code> perquè cap docent l'hagi d'escriure.)</span>
+        </div>
+      </details>
+
+      <!-- Alternativa Apps Script amagada per si algun centre la prefereix -->
+      <details style="margin-top:0.45rem;font-size:0.78rem;color:#475569;">
+        <summary style="cursor:pointer;font-weight:700;">🛠️ Alternativa manual sense OAuth (Google Apps Script)</summary>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.65rem;margin-top:0.5rem;">
+          <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:0.55rem;">
+            <strong>Pas 1: Crea el full</strong><br/>
+            <a href="https://sheets.new" target="_blank" rel="noopener" class="btn-link" style="margin-top:0.35rem;width:100%;justify-content:center;">📊 Obrir sheets.new ↗️</a>
+          </div>
+          <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:0.55rem;">
+            <strong>Pas 2: Enganxa l'script</strong><br/>
+            <button type="button" id="btn-copy-gas-code" style="margin-top:0.35rem;width:100%;justify-content:center;">📋 Copiar Codi Automàtic</button>
+          </div>
+          <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:0.55rem;">
+            <strong>Pas 3: URL Apps Script</strong>
+            <input type="url" id="input-cloud-url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%;padding:0.3rem;border:1px solid #94a3b8;border-radius:6px;font-size:0.75rem;margin:0.25rem 0;" />
+            <button type="button" id="btn-sync-cloud-now" style="width:100%;justify-content:center;">🔄 Sincronitzar</button>
+          </div>
+        </div>
+      </details>
     </div>
 
     <!-- BANNER EXPLICATIU DE CONNEXIÓ ALUMNE <-> DOCENT -->
     <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.95rem;font-size:0.83rem;color:#1e3a8a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
       <div>
-        🔗 <strong>Com es connecta amb la Vista de l'Alumne i on es guarden les dades?</strong><br/>
-        • <strong>En mode local (automàtic):</strong> Tota partida feta a <code>student.html</code> es desa a l'instant al navegador i apareix aquí sense configurar res.<br/>
-        • <strong>Al teu Google Drive (Google Sheets):</strong> Fes clic al botó verd <strong>«☁️ Connectar amb Google Drive (Assistent)»</strong> de dalt per enviar totes les partides automàticament a un full de càlcul de Google Sheets, o descarrega-les amb <strong>«📥 Exportar CSV»</strong>.
+        🔒 <strong>100% Google Workspace Escolar (Zero servidors externs):</strong><br/>
+        • <strong>Docent:</strong> Inicia sessió amb Google (1 clic) → l'app crea automàticament la carpeta i el Google Sheet al teu Drive i et genera l'enllaç per als alumnes.<br/>
+        • <strong>Alumnes:</strong> Obren l'enllaç al Chromebook, entren amb el seu compte Google de l'escola i cada partida s'envia directament al teu Google Sheet!
       </div>
     </div>
 
@@ -576,6 +626,7 @@
     ];
 
     let activeFilter = "all";
+    let cloudDriveCache = null;
 
     function renderBarretinaMiniSvg(filled = true) {
       const col = filled ? "#dc2626" : "#cbd5e1";
@@ -583,9 +634,31 @@
     }
 
     function loadDashboardData() {
+      const teacherCfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{\"minAccuracyPct\":88,\"unlockedAllLevels\":false}");
+      const selectedStudent = (document.getElementById("student-filter") && document.getElementById("student-filter").value) || "__ALL__";
+
+      if (cloudDriveCache) {
+        const isAll = selectedStudent === "__ALL__";
+        const sessions = isAll
+          ? cloudDriveCache.sessions
+          : cloudDriveCache.sessions.filter(s => s.studentName === selectedStudent);
+        const keyStats = isAll
+          ? cloudDriveCache.keyStatsAll
+          : (cloudDriveCache.keyStatsByStudent[selectedStudent] || {});
+        const stepBarretines = isAll
+          ? cloudDriveCache.barretinesAll
+          : (cloudDriveCache.barretinesByStudent[selectedStudent] || {});
+        return {
+          sessions,
+          keyStats,
+          stepBarretines,
+          proverbHistory: [],
+          teacherCfg
+        };
+      }
+
       const telemetry = JSON.parse(localStorage.getItem("mecano_telemetry_v1") || "{\"sessions\":[],\"keyStats\":{}}");
       const studentProg = JSON.parse(localStorage.getItem("mecano_pilot_nese_v2") || "{\"stepBarretines\":{},\"proverbHistory\":[]}");
-      const teacherCfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{\"minAccuracyPct\":88,\"unlockedAllLevels\":false}");
 
       return {
         sessions: telemetry.sessions || [],
@@ -623,7 +696,7 @@
       document.getElementById("kpi-barretines").innerHTML = `${totalB} / 75 ${renderBarretinaMiniSvg(true)}`;
 
       // Determina nivell actual del Pilot (Nivells 1 i 2)
-      let currentLvlTitle = "Nivell 1 (Montsec)";
+      let currentLvlTitle = "Nivell 1 (Pedraforca)";
       if ((data.stepBarretines["L01.PROVERB"] || 0) >= 3) {
         currentLvlTitle = (data.stepBarretines["L02.PROVERB"] || 0) >= 3
           ? "Pilot (Nivells 1 i 2) Completat! 🏆"
@@ -885,27 +958,146 @@
     };
 
     // =========================================================================
-    // ASSISTENT DE CONNEXIÓ AMB GOOGLE DRIVE EN 3 CLICS (SENSE SER EXPERT!)
+    // GOOGLE DRIVE OAUTH 2.0 (1 CLIC) + ALTERNATIVA APPS SCRIPT
     // =========================================================================
-    const savedCloudUrl = localStorage.getItem("mecano_cloud_webhook_url") || "";
     const cloudInput = document.getElementById("input-cloud-url");
     const cloudStatusPill = document.getElementById("cloud-status-pill");
     const cloudFeedback = document.getElementById("cloud-sync-feedback");
+    const folderInput = document.getElementById("input-drive-folder");
+    const clientIdInput = document.getElementById("input-google-client-id");
+    const studentFilterEl = document.getElementById("student-filter");
+    const oauthConnectedBox = document.getElementById("oauth-connected-actions");
+    const btnRefreshDrive = document.getElementById("btn-google-refresh");
+
+    if (window.MecanoGoogleAuth) {
+      const appName = window.MecanoGoogleAuth.getAppName();
+      document.title = appName + " — Panell del Docent";
+      const h1 = document.getElementById("admin-app-heading");
+      if (h1) h1.textContent = appName + " — Panell del Docent";
+      folderInput.value = localStorage.getItem("mecano_google_folder_name") || appName;
+      clientIdInput.value = window.MecanoGoogleAuth.getClientId();
+      // Si el Client ID ja està configurat a app-config.js, deixem el bloc plegat; si falta, l'obrim per guiar-te
+      if (!window.MecanoGoogleAuth.getClientId()) {
+        document.getElementById("oauth-clientid-details").open = true;
+      }
+    }
+
+    function populateStudentFilter(students) {
+      const current = studentFilterEl.value;
+      studentFilterEl.innerHTML = `<option value="__ALL__">👥 Tots els alumnes (${students.length})</option>` +
+        students.map(name => `<option value="${name.replace(/"/g, "&quot;")}">🧑‍🎓 ${name}</option>`).join("");
+      if (students.includes(current)) studentFilterEl.value = current;
+    }
+
+    studentFilterEl.onchange = () => renderAll();
+
+    function refreshOAuthConnectedUI() {
+      if (!window.MecanoGoogleAuth) return;
+      const sheetId = window.MecanoGoogleAuth.getSheetId();
+      const sheetUrl = window.MecanoGoogleAuth.getSavedSheetUrl();
+      const user = window.MecanoGoogleAuth.getSavedUser();
+      const shareUrl = window.MecanoGoogleAuth.buildStudentShareLink();
+
+      if (sheetId) {
+        oauthConnectedBox.style.display = "block";
+        btnRefreshDrive.style.display = "inline-flex";
+        document.getElementById("link-open-gsheet").href = sheetUrl;
+        document.getElementById("student-share-url-preview").textContent = shareUrl;
+        document.getElementById("btn-open-student").href = shareUrl;
+        document.getElementById("oauth-folder-label").textContent = localStorage.getItem("mecano_google_folder_name") || window.MecanoGoogleAuth.getAppName();
+        document.getElementById("oauth-teacher-info").textContent = user ? `${user.name} (${user.email})` : "Google Drive vinculat";
+        document.getElementById("link-share-classroom").href =
+          `https://classroom.google.com/share?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(window.MecanoGoogleAuth.getAppName() + " — Pràctica de Mecanografia")}`;
+      }
+    }
 
     function updateCloudBadge() {
       const url = localStorage.getItem("mecano_cloud_webhook_url") || "";
-      cloudInput.value = url;
-      if (url.startsWith("https://script.google.com/")) {
-        cloudStatusPill.textContent = "✅ Connectat a Google Drive";
+      if (cloudInput) cloudInput.value = url;
+      const sheetId = window.MecanoGoogleAuth ? window.MecanoGoogleAuth.getSheetId() : "";
+      if (sheetId) {
+        cloudStatusPill.textContent = "✅ Connectat a Google Drive (OAuth)";
+        cloudStatusPill.style.background = "#bbf7d0";
+        cloudStatusPill.style.color = "#14532d";
+        refreshOAuthConnectedUI();
+      } else if (url.startsWith("https://script.google.com/")) {
+        cloudStatusPill.textContent = "✅ Connectat via Apps Script";
         cloudStatusPill.style.background = "#bbf7d0";
         cloudStatusPill.style.color = "#14532d";
       } else {
-        cloudStatusPill.textContent = "Mode Local (No connectat al núvol)";
+        cloudStatusPill.textContent = "Mode Local (No connectat al Drive)";
         cloudStatusPill.style.background = "#fef3c7";
         cloudStatusPill.style.color = "#92400e";
       }
     }
     updateCloudBadge();
+
+    document.getElementById("btn-save-client-id").onclick = () => {
+      if (!window.MecanoGoogleAuth) return;
+      const cid = clientIdInput.value.trim();
+      window.MecanoGoogleAuth.setClientId(cid);
+      cloudFeedback.style.color = "#15803d";
+      cloudFeedback.textContent = cid
+        ? "✅ Google Client ID desat! Ara ja pots prémer «🔐 Iniciar sessió amb Google»."
+        : "ℹ️ Client ID esborrat.";
+      refreshOAuthConnectedUI();
+    };
+
+    async function loadCloudDataFromGoogleSheets() {
+      if (!window.MecanoGoogleAuth) return;
+      cloudFeedback.style.color = "#1d4ed8";
+      cloudFeedback.textContent = "⏳ Carregant partides dels alumnes des del teu Google Sheet...";
+      const data = await window.MecanoGoogleAuth.teacherFetchDashboardData();
+      cloudDriveCache = data;
+      populateStudentFilter(data.students);
+      renderAll();
+      cloudFeedback.style.color = "#15803d";
+      cloudFeedback.textContent = `✅ Dades actualitzades del Google Drive! (${data.sessions.length} sessions · ${data.students.length} alumnes)`;
+    }
+
+    document.getElementById("btn-google-oauth-connect").onclick = async () => {
+      if (!window.MecanoGoogleAuth) return;
+      if (window.location.protocol === "file:") {
+        cloudFeedback.style.color = "#b91c1c";
+        cloudFeedback.textContent = "⚠️ Google Sign-In requereix obrir l'app des d'una URL web (GitHub Pages o http://localhost), no des de file://. Consulta docs/guia-google-cloud-pwa.md.";
+        return;
+      }
+      try {
+        cloudFeedback.style.color = "#1d4ed8";
+        cloudFeedback.textContent = "⏳ Iniciant sessió amb Google i preparant la carpeta al teu Drive...";
+        const res = await window.MecanoGoogleAuth.teacherConnectAndSetup(folderInput.value.trim());
+        updateCloudBadge();
+        cloudFeedback.style.color = "#15803d";
+        cloudFeedback.textContent = res.createdNew
+          ? `🎉 Fet! Hem creat la carpeta «${res.folderName}» i el Google Sheet al teu Drive automàticament!`
+          : `✅ Connectat al teu Google Sheet existent dins la carpeta «${res.folderName}»!`;
+        await loadCloudDataFromGoogleSheets();
+      } catch (err) {
+        cloudFeedback.style.color = "#b91c1c";
+        cloudFeedback.textContent = "⚠️ " + (err && err.message ? err.message : String(err));
+      }
+    };
+
+    btnRefreshDrive.onclick = async () => {
+      try {
+        await loadCloudDataFromGoogleSheets();
+      } catch (err) {
+        cloudFeedback.style.color = "#b91c1c";
+        cloudFeedback.textContent = "⚠️ " + (err && err.message ? err.message : String(err));
+      }
+    };
+
+    document.getElementById("btn-copy-student-link").onclick = async () => {
+      if (!window.MecanoGoogleAuth) return;
+      const shareUrl = window.MecanoGoogleAuth.buildStudentShareLink();
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        cloudFeedback.style.color = "#15803d";
+        cloudFeedback.textContent = "✅ Enllaç per als alumnes copiat! Envia'l per Classroom o posa'l als marcadors dels Chromebooks.";
+      } catch {
+        prompt("Copia aquest enllaç per als alumnes:", shareUrl);
+      }
+    };
 
     document.getElementById("btn-toggle-cloud").onclick = () => {
       const panel = document.getElementById("cloud-wizard-panel");
