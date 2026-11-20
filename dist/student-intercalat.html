@@ -543,7 +543,10 @@
         <div class="arcade-prompt-strip">
           <span>🎯 Escriu ara: <strong id="arcade-active-word" style="color:#fde047;font-size:1.15rem;">---</strong></span>
           <span id="arcade-hint-text" style="font-size:0.8rem;color:#cbd5e1;"></span>
-          <button type="button" id="btn-restart-arcade">🔄 Reiniciar joc</button>
+          <div style="display:flex;gap:0.4rem;">
+            <button type="button" id="btn-speak-arcade" style="display:none;">🔊 Escoltar</button>
+            <button type="button" id="btn-restart-arcade">🔄 Reiniciar joc</button>
+          </div>
         </div>
       </div>
 
@@ -560,14 +563,13 @@
     <!-- PANTALLA 5: RESULTAT -->
     <section class="view-screen" id="screen-result">
       <div class="result-card">
-        <h2 id="res-title" style="margin:0 0 0.4rem;">Fase completada!</h2>
+        <h2 id="res-title" style="margin:0 0 0.4rem;">Missió superada!</h2>
         <div class="barretines-row" id="res-barretines"></div>
         <p id="res-msg" style="font-weight:700;margin:0.5rem 0;"></p>
         <div id="res-metrics" style="display:flex;justify-content:center;gap:1.1rem;flex-wrap:wrap;margin:0.6rem 0;font-size:0.9rem;"></div>
         <div id="res-thermometer"></div>
         <div style="display:flex;justify-content:center;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
-          <button type="button" id="btn-res-phases">📋 Tornar a les 3 Fases</button>
-          <button type="button" id="btn-res-repeat">🔄 Repetir (Buscar 5 Barretines)</button>
+          <button type="button" id="btn-res-repeat">🔄 Repetir</button>
           <button type="button" id="btn-res-next" class="primary">➡️ Següent repte</button>
         </div>
       </div>
@@ -660,7 +662,7 @@
           { id: "L01.G1", label: "J1: ☄️ Vol Espacial — Esquiva Asteroides (ff jj fj jf)", subMode: "space_asteroids", totalTargets: 8, isExtra: false },
           { id: "L01.G2", label: "J2: 🦅 Descens Vertical — Esquiva Ocells (ffj jjf fjf)", subMode: "atmosphere_birds", totalTargets: 10, isExtra: false },
           { id: "L01.G3", label: "J3: 🏔️ Escalada al Cim del Pedraforca (ffjj jjff fjfj)", subMode: "pedraforca_climb", totalTargets: 10, isExtra: false },
-          { id: "L01.G4", label: "J4: ♻️ Netegem el Pedraforca! (Classifica residus: ffj, jjf, fjf, jfj)", subMode: "pedraforca_recycle", totalTargets: 10, isExtra: false }
+          { id: "L01.G4", label: "⭐ AMPLIACIÓ (J4): ♻️ Netegem el Pedraforca! (Opcional — no bloqueja res)", subMode: "pedraforca_recycle", totalTargets: 10, isExtra: true }
         ]
       },
       {
@@ -1942,31 +1944,31 @@
           container.appendChild(card);
         }
 
-        // Si hi ha jocs addicionals sense pràctica prèvia (com J4: Netegem el Pedraforca!), els mostrem com a etapa final!
+        // Missions d'AMPLIACIÓ opcionals (com J4: Netegem el Pedraforca! — no condicionen avançar de nivell!)
         for (let i = lvl.drills.length; i < lvl.arcades.length; i++) {
           const arc = lvl.arcades[i];
-          if (arc.isExtra) continue;
           const aUnl = isStepUnlocked(lvl, arc.id);
           const aB = state.stepBarretines[arc.id] || 0;
           const card = document.createElement("div");
           card.className = `phase-card ${aUnl ? "" : "locked"}`;
           card.style.padding = "0.85rem 1rem";
+          card.style.borderColor = aUnl ? "#f59e0b" : "";
           card.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.55rem;">
               <div>
-                <span style="background:#dcfce7;color:#14532d;font-size:0.72rem;font-weight:900;padding:2px 8px;border-radius:99px;">♻️ ETAPA ${i + 1} · MISSIÓ ESPECIAL AL PEDRAFORCA</span>
-                <div style="font-size:0.82rem;opacity:0.85;margin-top:0.25rem;">La muntanya està plena d'escombraries! Classifica cada residu al seu contenidor!</div>
+                <span style="background:#fef3c7;color:#92400e;font-size:0.72rem;font-weight:900;padding:2px 8px;border-radius:99px;">✨ LÍNIA D'AMPLIACIÓ (OPCIONAL) · PEDRAFORCA</span>
+                <div style="font-size:0.82rem;opacity:0.85;margin-top:0.25rem;">La muntanya està plena d'escombraries! Classifica cada residu al seu contenidor per guanyar Espurnes d'Explorador!</div>
               </div>
-              <span style="font-size:0.78rem;font-weight:800;color:#475569;">${aB} / 5 Barretines</span>
+              <span style="font-size:0.78rem;font-weight:800;color:#b45309;">${aB >= 3 ? "⚡ Espurna guanyada!" : "Opcional"}</span>
             </div>
           `;
           const btnJ = document.createElement("button");
           btnJ.className = "substep-btn";
           btnJ.style.width = "100%";
-          btnJ.style.background = aUnl ? "#ecfdf5" : "";
-          btnJ.style.borderColor = aUnl ? "#16a34a" : "";
+          btnJ.style.background = aUnl ? "#fef9c3" : "";
+          btnJ.style.borderColor = aUnl ? "#eab308" : "";
           btnJ.disabled = !aUnl;
-          btnJ.innerHTML = `<span>${aUnl ? "♻️" : "🔒"} ${arc.label}</span><span>${aB}/5 ${renderBarretinaSvg(aB >= 3, 2)}</span>`;
+          btnJ.innerHTML = `<span>${aUnl ? "♻️" : "🔒"} ${arc.label}</span><span>${aB >= 3 ? "⚡" : "☆"}</span>`;
           if (aUnl) btnJ.onclick = () => promptIgnitionBeforeStep(lvl.id, "arcade", arc.id);
           card.appendChild(btnJ);
           container.appendChild(card);
@@ -2159,6 +2161,15 @@
       state.climbFromStep = 0;
       state.climbJumpProgress = 1;
       state.recycledFlying = [];
+      state.binFlashTimers = [0, 0, 0, 0];
+      const arcCanvas = document.getElementById("arcade-canvas");
+      if (arcCanvas) {
+        arcCanvas.height = arcDef.subMode === "pedraforca_recycle" ? 340 : 250;
+      }
+      const speakBtn = document.getElementById("btn-speak-arcade");
+      if (speakBtn) {
+        speakBtn.style.display = arcDef.subMode === "pedraforca_recycle" ? "inline-flex" : "none";
+      }
       state.arcadeEntities = [];
       state.dodgedAsteroids = [];
       state.shipDodgeYOffset = 0;
@@ -2205,19 +2216,30 @@
             { icon: "📄", name: "Full arrugat", binIndex: 1, code: "jjf" }
           ];
           const item = RECYCLE_ITEMS[state.arcadeCompleted % RECYCLE_ITEMS.length];
+          const spawnX = 180 + (state.arcadeCompleted % 4) * 165;
           state.arcadeEntities.push({
             id: Date.now() + Math.random(),
             word: item.code,
             typedIndex: 0,
-            x: 180 + (state.arcadeCompleted % 4) * 165,
-            y: 34,
-            speed: 0.27,
+            x: spawnX,
+            y: 36,
+            speed: 0.22,
             isRecycle: true,
             itemIcon: item.icon,
             itemName: item.name,
             binIndex: item.binIndex,
             scale: 4
           });
+          // Llegeix en veu alta el nom del residu en català (ajuda NESE!)
+          if (state.soundEnabled && "speechSynthesis" in window) {
+            try {
+              window.speechSynthesis.cancel();
+              const utt = new SpeechSynthesisUtterance(item.name);
+              utt.lang = "ca-ES";
+              utt.rate = 0.92;
+              window.speechSynthesis.speak(utt);
+            } catch {}
+          }
         } else if (arcDef.subMode === "pedraforca_climb") {
           // J3 (Versió B): ESCALADA AL CIM DEL PEDRAFORCA PAS A PAS (sense pressió de temps, pura escalada!)
           const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
@@ -2458,12 +2480,12 @@
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // El Pedraforca majestuós al fons (cada cop més net!)
-        drawPedraforcaSilhouette(ctx, 120, 210, 640, 175, true);
+        // El Pedraforca majestuós al fons (adaptat a l'alçada ampliada de 340px!)
+        drawPedraforcaSilhouette(ctx, 110, 292, 660, 225, true);
 
         // Prat verd als peus del Pedraforca
         ctx.fillStyle = "#16a34a";
-        ctx.fillRect(0, 198, canvas.width, 52);
+        ctx.fillRect(0, 282, canvas.width, 58);
 
         // 4 Contenidors oficials de reciclatge a sota
         const BINS = [
@@ -2472,22 +2494,27 @@
           { label: "ORGÀNICA", code: "fjf", bg: "#92400e", border: "#451a03", text: "#ffffff", icon: "🟤" },
           { label: "REBUIG", code: "jfj", bg: "#64748b", border: "#334155", text: "#ffffff", icon: "🔘" }
         ];
-        const binW = 160, binH = 60, binY = 184;
+        const binW = 160, binH = 62, binY = 272;
+        state.binFlashTimers = state.binFlashTimers || [0, 0, 0, 0];
         BINS.forEach((b, i) => {
           const bx = 76 + i * 190;
-          ctx.fillStyle = b.bg;
-          ctx.fillRect(bx, binY, binW, binH);
-          ctx.strokeStyle = b.border;
-          ctx.lineWidth = 3;
-          ctx.strokeRect(bx, binY, binW, binH);
-          // Tapa del contenidor
-          ctx.fillStyle = b.border;
-          ctx.fillRect(bx - 4, binY - 6, binW + 8, 8);
+          const flash = state.binFlashTimers[i] || 0;
+          if (flash > 0) state.binFlashTimers[i] = flash - 1;
+          const lidLift = flash > 0 ? 7 : 0;
 
-          ctx.fillStyle = b.text;
+          ctx.fillStyle = flash > 0 ? "#22c55e" : b.bg;
+          ctx.fillRect(bx, binY, binW, binH);
+          ctx.strokeStyle = flash > 0 ? "#14532d" : b.border;
+          ctx.lineWidth = flash > 0 ? 4 : 3;
+          ctx.strokeRect(bx, binY, binW, binH);
+          // Tapa del contenidor (s'aixeca quan hi cau un residu!)
+          ctx.fillStyle = b.border;
+          ctx.fillRect(bx - 4, binY - 6 - lidLift, binW + 8, 8);
+
+          ctx.fillStyle = flash > 0 ? "#ffffff" : b.text;
           ctx.font = "bold 13px sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText(`${b.icon} ${b.label}`, bx + binW / 2, binY + 22);
+          ctx.fillText(flash > 0 ? "✅ +1 BEN CLASSIFICAT!" : `${b.icon} ${b.label}`, bx + binW / 2, binY + 22);
 
           // Codi de 3 lletres ben gran i clar!
           ctx.fillStyle = "#0f172a";
@@ -2498,25 +2525,31 @@
         });
         ctx.textAlign = "left";
 
-        // Residus que volen cap al contenidor correcte un cop classificats!
+        // Residus que volen en arc parabòlic cap a la boca del contenidor exacte!
         const remFlying = [];
         for (const f of (state.recycledFlying || [])) {
-          f.t += 0.08;
-          const fx = f.sx + (f.tx - f.sx) * f.t;
-          const fy = f.sy + (f.ty - f.sy) * f.t - Math.sin(f.t * Math.PI) * 35;
-          ctx.font = "28px sans-serif";
-          ctx.fillText(f.icon, fx - 14, fy);
-          if (f.t < 1) remFlying.push(f);
+          f.t += 0.055;
+          const p = Math.min(1, f.t);
+          const fx = f.sx + (f.tx - f.sx) * p;
+          const fy = f.sy + (f.ty - f.sy) * p - Math.sin(p * Math.PI) * 58;
+          ctx.font = "32px sans-serif";
+          ctx.fillText(f.icon, fx - 16, fy);
+          if (f.t < 1) {
+            remFlying.push(f);
+          } else {
+            state.binFlashTimers[f.binIndex] = 28;
+            spawnParticles(f.tx, f.ty, "#4ade80");
+          }
         }
         state.recycledFlying = remFlying;
 
-        // Residu actiu caient lentament cap al prat
+        // Residu actiu caient lentament amb molt d'espai (de y=36 fins a y=224!)
         if (state.arcadeRunning) {
           for (const it of state.arcadeEntities) {
             it.y += it.speed;
-            if (it.y >= 168) {
+            if (it.y >= 224) {
               penalizeMistakeOrTimeout(100, true);
-              it.y = 34;
+              it.y = 36;
               it.typedIndex = 0;
               updateArcadeHud(lvl);
               break;
@@ -2953,15 +2986,17 @@
 
           if (lvl.gameMode === "meteors") {
             if (ent.isRecycle) {
-              // El residu vola cap al contenidor corresponent!
+              // El residu es llença directament dins la boca del contenidor que toca!
+              const cardX = Math.max(40, Math.min(620, ent.x - 95));
               const targetBinX = 76 + ent.binIndex * 190 + 80;
               state.recycledFlying = state.recycledFlying || [];
               state.recycledFlying.push({
                 icon: ent.itemIcon,
-                sx: ent.x,
-                sy: ent.y + 20,
+                binIndex: ent.binIndex,
+                sx: cardX + 105,
+                sy: ent.y + 22,
                 tx: targetBinX,
-                ty: 186,
+                ty: 274,
                 t: 0
               });
             } else if (ent.isClimb) {
@@ -3075,12 +3110,8 @@
         showThermometer: false
       };
 
-      // Només si supera el joc amb >= 3 Barretines mostrem el Minivídeo (a J1 arribada a la Terra; a J2 aterratge al Pedraforca!)
-      if (survived && earnedB >= 3) {
-        playLandingCutsceneThenResult(lvl, resultPayload);
-      } else {
-        showResultScreen(resultPayload);
-      }
+      // Passem directament a la pantalla «Missió superada! Has guanyat...» sense pas intermedi!
+      showResultScreen(resultPayload);
     }
 
     // =========================================================================
@@ -3513,7 +3544,21 @@
       }
     };
 
-    document.getElementById("btn-res-phases").onclick = () => showScreen("phases");
+    const resPhasesBtn = document.getElementById("btn-res-phases");
+    if (resPhasesBtn) resPhasesBtn.onclick = () => showScreen("phases");
+    const speakArcadeBtn = document.getElementById("btn-speak-arcade");
+    if (speakArcadeBtn) {
+      speakArcadeBtn.onclick = () => {
+        const ent = getPrimaryEntity();
+        if (ent && ent.itemName && "speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+          const utt = new SpeechSynthesisUtterance(ent.itemName);
+          utt.lang = "ca-ES";
+          utt.rate = 0.92;
+          window.speechSynthesis.speak(utt);
+        }
+      };
+    }
     document.getElementById("btn-res-repeat").onclick = () => launchActiveStep();
     document.getElementById("btn-res-next").onclick = () => {
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
