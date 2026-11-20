@@ -4820,9 +4820,11 @@
         }
       } else {
         tongueState.errors++;
+        tongueState.cursor = Math.max(0, tongueState.cursor - 1);
         tongueState.wrongFlash = true;
         sfxErrorHit();
         renderTongueTape();
+        updateTongueShiftHint();
       }
     }
 
