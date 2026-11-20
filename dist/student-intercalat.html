@@ -4490,7 +4490,9 @@
       bitProgress: 0,
       raceTimerId: null,
       countdownTimerId: null,
-      isCountingDown: false
+      isCountingDown: false,
+      streak: 0,
+      lastKeyMs: 0
     };
 
     function stopTongueRaceTimer() {
@@ -4626,6 +4628,8 @@
       tongueState.wrongFlash = false;
       tongueState.startedAtMs = 0;
       tongueState.bitProgress = 0;
+      tongueState.streak = 0;
+      tongueState.lastKeyMs = 0;
 
       document.getElementById("tongue-list-view").style.display = "none";
       document.getElementById("tongue-race-view").style.display = "block";
@@ -4739,15 +4743,39 @@
       const isMatch = ev.key === expected;
 
       if (isMatch) {
+        const nowMs = performance.now();
         tongueState.wrongFlash = false;
         tongueState.cursor++;
-        sfxTone(expected === " " ? 587.33 : 440 + (tongueState.cursor % 5) * 30, 45, "triangle", 0.05);
+
+        // Ratxa de 5 tecles seguides mantenint ritme (< 1.8s entre tecles) sense equivocar-se -> TURBO +1 posició extra!
+        if (tongueState.lastKeyMs > 0 && (nowMs - tongueState.lastKeyMs) <= 1800) {
+          tongueState.streak++;
+        } else {
+          tongueState.streak = 1;
+        }
+        tongueState.lastKeyMs = nowMs;
+
+        if (tongueState.streak >= 5 && tongueState.cursor < it.text.length) {
+          tongueState.streak = 0;
+          tongueState.cursor = Math.min(it.text.length, tongueState.cursor + 1);
+          sfxActionSuccess();
+          const runnerEl = document.getElementById("race-player-runner");
+          if (runnerEl) {
+            runnerEl.textContent = "🧑‍🎓⚡✨";
+            setTimeout(() => { if (runnerEl) runnerEl.textContent = "🧑‍🎓"; }, 550);
+          }
+          const statusEl = document.getElementById("tongue-race-status");
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color:#ca8a04;font-size:0.98rem;">⚡✨ RATXA TURBO (5 seguides)! Avances +1 posició extra!</span>`;
+          }
+        } else {
+          sfxTone(expected === " " ? 587.33 : 440 + (tongueState.cursor % 5) * 30, 45, "triangle", 0.05);
+          updateTongueShiftHint();
+        }
         renderTongueTape();
-        updateTongueShiftHint();
 
         if (tongueState.cursor >= it.text.length) {
           stopTongueRaceTimer();
-          sfxFanfare();
           const durS = Math.max(1, Math.round((performance.now() - tongueState.startedAtMs) / 1000));
           const wpm = Number(((it.text.length / 5) / (durS / 60)).toFixed(1));
           const acc = Math.round((it.text.length / (it.text.length + tongueState.errors)) * 100);
@@ -4760,21 +4788,36 @@
           const statusEl = document.getElementById("tongue-race-status");
 
           if (mode === "prova") {
+            sfxFanfare();
             // Mode Prova: marca com a practicat però NO desbloqueja el següent embarbussament!
             recs[it.id] = Object.assign({}, prev, { practiced: true });
             saveTongueRecords(recs);
-            statusEl.innerHTML = `<span style="color:#0369a1;font-size:0.98rem;">📝 Prova completada! (${durS}s · ${tongueState.errors} fallos). Ara fes la <strong>🐢 Cursa (Principiant)</strong> o <strong>⚡ Turbo</strong> per desbloquejar el següent!</span>`;
+            statusEl.innerHTML = `<span style="color:#0369a1;font-size:0.98rem;">📝 Prova completada! (${durS}s · ${tongueState.errors} fallos). Pots repetir la prova o passar a la Cursa!</span>`;
             actionsEl.style.display = "flex";
             actionsEl.innerHTML = `
+              <button type="button" id="btn-after-repeat-prova" style="background:#e0f2fe;border-color:#0284c7;color:#0369a1;font-weight:900;">🔄 Repetir Prova</button>
               <button type="button" id="btn-after-tortuga" style="background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:900;">🐢 Fer Cursa (Principiant) →</button>
               <button type="button" id="btn-after-turbo" style="background:#fef08a;border-color:#ca8a04;color:#713f12;font-weight:900;">⚡ Fer Cursa Turbo →</button>
             `;
+            document.getElementById("btn-after-repeat-prova").onclick = () => startTongueRace(it, "prova");
             document.getElementById("btn-after-tortuga").onclick = () => startTongueRace(it, "tortuga");
             document.getElementById("btn-after-turbo").onclick = () => startTongueRace(it, "turbo");
+          } else if (!beatBit) {
+            // NO HA GUANYAT LA CURSA -> NO es desbloqueja el següent embarbussament!
+            sfxErrorHit();
+            const badgeStr = mode === "turbo" ? "⚡ Cursa Turbo" : "🐢 Cursa Principiant";
+            statusEl.innerHTML = `<span style="color:#dc2626;font-size:1rem;">😅 En Bit ha arribat abans a la meta! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos). Has de guanyar la ${badgeStr} per obrir el següent!</span>`;
+            actionsEl.style.display = "flex";
+            actionsEl.innerHTML = `
+              <button type="button" id="btn-after-retry-race" class="primary" style="background:#db2777;border-color:#be185d;">🔄 Repetir ${badgeStr}</button>
+              <button type="button" id="btn-after-back-prova" style="background:#e0f2fe;border-color:#0284c7;color:#0369a1;font-weight:800;">📝 Practicar en Mode Prova</button>
+            `;
+            document.getElementById("btn-after-retry-race").onclick = () => startTongueRace(it, mode);
+            document.getElementById("btn-after-back-prova").onclick = () => startTongueRace(it, "prova");
           } else {
-            // Cursa Principiant o Cursa Turbo: registra resultat i desbloqueja el següent!
-            const upgradedToTurbo = mode === "turbo" && (beatBit || prev.bestMode !== "turbo");
-            const newBestMode = (prev.bestMode === "turbo" || (mode === "turbo" && beatBit)) ? "turbo" : "tortuga";
+            // HA GUANYAT LA CURSA! Registra el rècord, fa florir la Flor del Berguedà i desbloqueja el següent!
+            sfxFanfare();
+            const newBestMode = (prev.bestMode === "turbo" || mode === "turbo") ? "turbo" : "tortuga";
             recs[it.id] = {
               practiced: true,
               bestMode: newBestMode,
@@ -4803,9 +4846,7 @@
             });
 
             const badgeStr = mode === "turbo" ? "⚡ Cursa Turbo" : "🐢 Cursa Principiant";
-            statusEl.innerHTML = beatBit
-              ? `<span style="color:#15803d;font-size:1.02rem;">🏆 ${badgeStr} guanyada! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos) · Has fet florir ${it.flower} ${it.flowerName}!</span>`
-              : `<span style="color:#be185d;font-size:0.98rem;">${it.flower} Embarbussament acabat en ${badgeStr}! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos) · Ja tens el següent desbloquejat!</span>`;
+            statusEl.innerHTML = `<span style="color:#15803d;font-size:1.02rem;">🏆 ${badgeStr} guanyada! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos) · Has fet florir ${it.flower} ${it.flowerName}!</span>`;
             actionsEl.style.display = "flex";
             actionsEl.innerHTML = `
               <button type="button" id="btn-after-list" class="primary" style="background:#db2777;border-color:#be185d;">➡️ Tornar al Jardí (Següent embarbussament)</button>
@@ -4820,6 +4861,7 @@
         }
       } else {
         tongueState.errors++;
+        tongueState.streak = 0;
         tongueState.cursor = Math.max(0, tongueState.cursor - 1);
         tongueState.wrongFlash = true;
         sfxErrorHit();
