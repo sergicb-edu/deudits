@@ -388,6 +388,104 @@
       align-items: center;
       font-weight: 700;
     }
+
+    /* MAPA PLA 2D NESE (Univers -> Terra -> Pedraforca) */
+    .flat-map-board {
+      position: relative;
+      width: 100%;
+      height: 410px;
+      border-radius: 1.2rem;
+      overflow: hidden;
+      border: 3px solid #1e293b;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+      background: linear-gradient(90deg, #0b1120 0%, #172554 28%, #0284c7 52%, #7dd3fc 70%, #86efac 100%);
+      user-select: none;
+    }
+    .flat-map-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .map-node-wrap {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      z-index: 5;
+    }
+    .map-node-barretines {
+      min-height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 2px 6px;
+      border-radius: 999px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    }
+    .map-node-btn {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: 4px solid #ffffff;
+      font-size: 1.35rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.28);
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+      padding: 0;
+    }
+    .map-node-btn:hover:not(:disabled) {
+      transform: scale(1.1);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.36);
+    }
+    .map-node-btn.state-done {
+      background: linear-gradient(145deg, #22c55e, #15803d);
+      color: #ffffff;
+    }
+    .map-node-btn.state-open {
+      background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+      color: #ffffff;
+      animation: nodePulse 1.8s infinite;
+    }
+    .map-node-btn.state-locked {
+      background: #cbd5e1;
+      color: #64748b;
+      border-color: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .map-node-btn.node-key.state-open,
+    .map-node-btn.node-key.state-done {
+      background: linear-gradient(145deg, #facc15, #ca8a04);
+      color: #422006;
+    }
+    .map-node-btn.node-extra.state-open,
+    .map-node-btn.node-extra.state-done {
+      background: linear-gradient(145deg, #ec4899, #be185d);
+      color: #ffffff;
+    }
+    .map-node-label {
+      background: rgba(15, 23, 42, 0.85);
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    @keyframes nodePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.65); }
+      50% { box-shadow: 0 0 0 11px rgba(59, 130, 246, 0); }
+    }
   </style>
 </head>
 <body>
@@ -422,6 +520,7 @@
 
       <div class="topbar-right">
         <button type="button" id="btn-student-google" style="display:none;background:#eff6ff;border:2px solid #2563eb;color:#1e3a8a;border-radius:999px;padding:0.22rem 0.65rem;font-weight:800;font-size:0.78rem;cursor:pointer;">🔐 Entrar amb Google</button>
+        <button type="button" id="btn-open-album" style="background:#fdf2f8;border:2px solid #ec4899;color:#9d174d;border-radius:999px;padding:0.2rem 0.65rem;font-weight:800;font-size:0.8rem;cursor:pointer;" title="Àlbum de Flors del Berguedà i Cromos">🌸 <span id="header-flowers">0</span> · 📘 Cromos</button>
         <span id="header-barretines" style="font-weight:800;font-size:0.9rem;"></span>
         <button type="button" id="btn-settings-toggle" class="icon-btn" title="Configuració i ajudes">⚙️</button>
 
@@ -442,38 +541,39 @@
       </div>
     </header>
 
-    <!-- PANTALLA 1: MAPA PRINCIPAL DE NIVELLS (PILOT NIVELLS 1 i 2) -->
+    <!-- PANTALLA 1: MAPA PRINCIPAL DE NIVELLS (NET PER A NESE) -->
     <main class="view-screen active" id="screen-home">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.55rem;background:var(--surface);padding:0.55rem 0.85rem;border-radius:12px;border:2px solid var(--border);">
-        <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
-          <span style="background:#dbeafe;color:#1e40af;font-weight:800;font-size:0.78rem;padding:0.2rem 0.55rem;border-radius:99px;">🧪 VERSIÓ PILOT (Nivells 1 i 2)</span>
-          <span id="badges-strip" style="font-size:0.82rem;font-weight:700;display:flex;gap:0.4rem;flex-wrap:wrap;"></span>
-        </div>
-        <button type="button" id="btn-diagnostic-zero" style="background:#fef3c7;border-color:#f59e0b;color:#78350f;font-size:0.8rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.7rem;">
+        <h2 style="margin:0;font-size:1.25rem;">🗺️ Tria el teu nivell</h2>
+        <button type="button" id="btn-diagnostic-zero" style="background:#fef3c7;border-color:#f59e0b;color:#78350f;font-size:0.85rem;font-weight:800;">
           🎯 Comprova el teu nivell!
         </button>
       </div>
-
-      <h2 style="margin:0.15rem 0 0.45rem;font-size:1.1rem;">
-        Tria la missió d'en Bit a Catalunya (Pilot: Pedraforca i Vilafranca):
-      </h2>
       <div class="levels-grid" id="levels-grid"></div>
     </main>
 
-    <!-- PANTALLA 2: PAS 1 (PRÀCTICA) I PAS 2 (JOC) — SIMPLIFICAT PER A NESE (SENSE MOSTRAR LA FASE 3 COM UNA CAIXA MÉS) -->
+    <!-- PANTALLA 2: MAPA PLA 2D DEL NIVELL (SENSE TEXTOS LLARGS — NESE!) -->
     <section class="view-screen" id="screen-phases">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.4rem;">
-        <div>
-          <h2 id="phases-level-title" style="margin:0;font-size:1.12rem;"></h2>
-          <p id="phases-level-desc" style="margin:0.1rem 0 0;font-size:0.84rem;opacity:0.85;"></p>
-        </div>
-        <button type="button" id="btn-adaptive-drill" style="background:#dcfce7;border-color:#16a34a;color:#14532d;font-size:0.8rem;">
-          💪 Reforç Adaptatiu (Tecles amb més errors)
-        </button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+        <h2 id="phases-level-title" style="margin:0;font-size:1.3rem;">Nivell 1</h2>
       </div>
       <div class="phases-cards" id="phases-cards"></div>
-      <div id="proverb-gate-banner" style="margin-top:0.75rem;"></div>
+      <div id="proverb-gate-banner" style="margin-top:0.5rem;"></div>
     </section>
+
+    <!-- MODAL ÀLBUM DE FLORS DEL BERGUEDÀ I CROMOS -->
+    <div id="album-modal" style="position:fixed;inset:0;background:rgba(15,23,42,0.75);display:none;align-items:center;justify-content:center;z-index:9998;padding:1rem;">
+      <div style="background:#ffffff;border:3px solid #ec4899;border-radius:1.2rem;padding:1.3rem;max-width:620px;width:100%;max-height:86vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.7rem;">
+          <h2 style="margin:0;color:#9d174d;font-size:1.25rem;">🌸 Flors del Berguedà i Àlbum de Cromos</h2>
+          <button type="button" id="btn-close-album" style="font-weight:900;">✖️</button>
+        </div>
+        <p style="margin:0 0 0.8rem;font-size:0.86rem;color:#475569;">
+          Aconsegueix <strong>Flors del Berguedà</strong> fent les missions <strong>🌸 Extra</strong> (opcionals) per col·leccionar els cromos d'en Bit!
+        </p>
+        <div id="album-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem;"></div>
+      </div>
+    </div>
 
     <!-- PANTALLA 3: INTRODUCCIÓ ANIMADA + ENGEGAR MOTORS (NETA I NESE-FRIENDLY) -->
     <section class="view-screen" id="screen-ignition">
@@ -1824,14 +1924,19 @@
 
       document.getElementById("btn-back").style.display = screenName === "home" ? "none" : "inline-block";
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
-      document.getElementById("header-breadcrumb").textContent = screenName === "home" ? "Mapa de Catalunya (Pilot)" : lvl.titleCa;
+      document.getElementById("header-breadcrumb").textContent = screenName === "home" ? "Mapa" : `Nivell ${lvl.order}`;
 
-      const totalB = Object.values(state.stepBarretines).reduce((a, b) => a + b, 0);
+      const totalB = Object.entries(state.stepBarretines)
+        .filter(([k]) => !k.endsWith(".G4") && !k.endsWith(".EXTRA"))
+        .reduce((a, [, b]) => a + b, 0);
       document.getElementById("header-barretines").innerHTML = `${totalB} ${renderBarretinaSvg(true, 2)}`;
+
+      const totalFlowers = getEarnedFlowersCount();
+      const flEl = document.getElementById("header-flowers");
+      if (flEl) flEl.textContent = String(totalFlowers);
 
       if (screenName === "home") {
         state.arcadeRunning = false;
-        renderBadgesStrip();
         renderHomeLevels();
       } else if (screenName === "phases") {
         state.arcadeRunning = false;
@@ -1839,10 +1944,46 @@
       }
     }
 
+    const BERGUEDA_FLOWERS = [
+      { id: "L01.G4", flower: "🌸 Genciana del Pedraforca", stickerIcon: "🏔️🤖", stickerTitle: "En Bit Netejant el Pedraforca", desc: "Flor blava i violeta dels prats alts del Pedraforca!" },
+      { id: "DIAG.ZERO", flower: "🌼 Narcís dels Poetes", stickerIcon: "🎯✨", stickerTitle: "Explorador del Teclat", desc: "Flor blanca dels boscos del Berguedà! (Guanyada a Comprova el teu nivell!)" },
+      { id: "L01.PROVERB", flower: "🌺 Marcòlic Vermell", stickerIcon: "🔑⛰️", stickerTitle: "Clau del Pedraforca", desc: "Lliri salvatge del Berguedà! (Guanyada en obrir la Clau del Nivell 1)" },
+      { id: "L02.PROVERB", flower: "🌷 Orquídia del Berguedà", stickerIcon: "🏰🙌", stickerTitle: "Enxaneta de Vilafranca", desc: "Orquídia de primavera del Berguedà! (Guanyada en completar el Nivell 2)" },
+      { id: "BONUS.5", flower: "🌻 Àrnica de Muntanya", stickerIcon: "⚡🐉", stickerTitle: "Mestre dels Deu Dits", desc: "Flor daurada dels cims del Berguedà! (Aconsegueix 4 flors!)" }
+    ];
+
+    function getEarnedFlowersCount() {
+      let count = 0;
+      for (const f of BERGUEDA_FLOWERS) {
+        if (f.id === "BONUS.5") continue;
+        if ((state.stepBarretines[f.id] || 0) >= 3) count++;
+      }
+      if (count >= 4) count++;
+      return count;
+    }
+
+    function renderAlbumModal() {
+      const grid = document.getElementById("album-grid");
+      if (!grid) return;
+      const baseCount = BERGUEDA_FLOWERS.filter(f => f.id !== "BONUS.5" && (state.stepBarretines[f.id] || 0) >= 3).length;
+      grid.innerHTML = BERGUEDA_FLOWERS.map(f => {
+        const unlocked = f.id === "BONUS.5" ? baseCount >= 4 : (state.stepBarretines[f.id] || 0) >= 3;
+        return `
+          <div style="border:2.5px solid ${unlocked ? "#ec4899" : "#cbd5e1"};background:${unlocked ? "#fdf2f8" : "#f8fafc"};border-radius:12px;padding:0.75rem;text-align:center;opacity:${unlocked ? 1 : 0.65};">
+            <div style="font-size:2.1rem;margin-bottom:0.2rem;">${unlocked ? f.stickerIcon : "🔒"}</div>
+            <div style="font-weight:900;font-size:0.84rem;color:${unlocked ? "#9d174d" : "#64748b"};">${unlocked ? f.flower : "Flor bloquejada"}</div>
+            <div style="font-weight:800;font-size:0.78rem;margin:0.15rem 0;color:#0f172a;">${unlocked ? f.stickerTitle : "???"}</div>
+            <div style="font-size:0.72rem;color:#475569;">${f.desc}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
     function renderHomeLevels() {
       const grid = document.getElementById("levels-grid");
       grid.innerHTML = "";
       for (const lvl of LEVELS) {
+        if (lvl.isPostPilot && !state.freeUnlock) continue;
         const unlocked = isLevelUnlocked(lvl);
         const steps = getOrderedSteps(lvl);
         const earned = steps.reduce((a, s) => a + (state.stepBarretines[s.id] || 0), 0);
@@ -1850,17 +1991,12 @@
 
         const card = document.createElement("div");
         card.className = `level-card ${unlocked ? "" : "locked"}`;
-        const pilotTag = lvl.isPilot
-          ? `<span style="background:#dcfce7;color:#14532d;font-size:0.7rem;padding:1px 6px;border-radius:99px;font-weight:800;margin-left:4px;">ACTIU AL PILOT</span>`
-          : `<span style="background:#e2e8f0;color:#475569;font-size:0.7rem;padding:1px 6px;border-radius:99px;font-weight:800;margin-left:4px;">POST-PILOT</span>`;
         card.innerHTML = `
           <canvas class="level-thumb" width="96" height="84"></canvas>
           <div>
-            <div style="font-weight:800;font-size:1.02rem;">${lvl.titleCa} ${pilotTag}</div>
-            <div style="font-size:0.82rem;font-weight:700;color:#1d4ed8;margin:0.15rem 0;">${lvl.keysLabel}</div>
-            <div style="font-size:0.79rem;opacity:0.85;">${lvl.descCa}</div>
-            <div style="margin-top:0.35rem;font-size:0.8rem;font-weight:800;">
-              ${renderBarretinaSvg(earned > 0, 2)} ${earned} / ${maxB} Barretines (${steps.length} reptes)
+            <div style="font-weight:900;font-size:1.25rem;">Nivell ${lvl.order}</div>
+            <div style="margin-top:0.4rem;font-size:0.88rem;font-weight:800;">
+              ${renderBarretinaSvg(earned > 0, 2.2)} ${earned} / ${maxB}
             </div>
           </div>
           <div class="lock-badge">${unlocked ? "▶️" : "🔒"}</div>
@@ -1878,19 +2014,110 @@
 
     function renderLevelPhases() {
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
-      document.getElementById("phases-level-title").textContent = `${lvl.titleCa} (${lvl.keysLabel})`;
-      document.getElementById("phases-level-desc").textContent = lvl.descCa;
+      document.getElementById("phases-level-title").textContent = `Nivell ${lvl.order}`;
+      const gateBanner = document.getElementById("proverb-gate-banner");
+      if (gateBanner) gateBanner.innerHTML = "";
 
       const container = document.getElementById("phases-cards");
       container.innerHTML = "";
 
       if (lvl.isInterleaved) {
         container.style.gridTemplateColumns = "1fr";
-        const stageTitles = [
-          { badge: "ETAPA 1 · L'ESPAI", icon: "☄️", sub: "Parelles simples (ff, jj, fj, jf) — Practica i esquiva asteroides!" },
-          { badge: "ETAPA 2 · L'ATMOSFERA", icon: "🦅", sub: "Grups de 3 lletres (ffj, jjf, fjf) — Practica i baixa entre els núvols!" },
-          { badge: "ETAPA 3 · EL CIM DEL PEDRAFORCA", icon: "🏔️", sub: "Blocs de 4 lletres (ffjj, jjff, fjfj) — Practica i escala la muntanya fins al cim!" }
+        const board = document.createElement("div");
+        board.className = "flat-map-board";
+
+        // Fons 2D pla: Univers (esquerra) -> Atmosfera / Terra (centre) -> Pedraforca (dreta)
+        board.innerHTML = `
+          <svg class="flat-map-svg" viewBox="0 0 900 410" preserveAspectRatio="none">
+            <!-- Estrelles a l'Univers -->
+            <circle cx="45" cy="45" r="2.2" fill="#e2e8f0"/><circle cx="110" cy="75" r="1.8" fill="#fde047"/>
+            <circle cx="170" cy="38" r="2.5" fill="#ffffff"/><circle cx="70" cy="140" r="1.6" fill="#94a3b8"/>
+            <circle cx="210" cy="115" r="2" fill="#e2e8f0"/><circle cx="135" cy="340" r="2" fill="#fde047"/>
+            <!-- Planeta Terra -->
+            <circle cx="265" cy="215" r="56" fill="#0284c7" stroke="#38bdf8" stroke-width="4"/>
+            <path d="M235 190 Q260 180 278 205 Q265 225 240 218 Z" fill="#22c55e"/>
+            <path d="M272 228 Q295 222 302 245 Q282 258 268 245 Z" fill="#16a34a"/>
+            <!-- Núvols plans de l'Atmosfera -->
+            <rect x="355" y="42" width="90" height="24" rx="12" fill="rgba(255,255,255,0.75)"/>
+            <rect x="465" y="72" width="110" height="26" rx="13" fill="rgba(255,255,255,0.68)"/>
+            <rect x="390" y="335" width="95" height="22" rx="11" fill="rgba(255,255,255,0.55)"/>
+            <!-- Sol al Berguedà -->
+            <circle cx="835" cy="58" r="30" fill="#fde047"/>
+            <!-- Silueta 2D plana del PEDRAFORCA amb la forca característica -->
+            <polygon points="570,410 665,120 715,215 765,135 895,410" fill="#475569"/>
+            <polygon points="642,190 665,120 688,162" fill="#f8fafc"/>
+            <polygon points="742,182 765,135 790,185" fill="#f8fafc"/>
+            <!-- Prat verd del Berguedà -->
+            <path d="M510 410 Q660 330 900 355 L900 410 Z" fill="#22c55e"/>
+
+            <!-- Camí principal 2D (Missió 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> Clau) -->
+            <path d="M90,295 C150,285 150,145 215,135 C285,125 290,285 360,295 C430,305 435,140 505,130 C575,120 575,275 645,275 C705,275 700,145 755,140 C795,138 810,165 835,195"
+                  fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="10" stroke-linecap="round" stroke-dasharray="1 18"/>
+
+            <!-- Branca lateral opcional (J4 Extra: Flors del Berguedà) que NO afecta el camí principal -->
+            <path d="M755,140 C755,245 770,290 795,335"
+                  fill="none" stroke="#f472b6" stroke-width="6" stroke-linecap="round" stroke-dasharray="9 9"/>
+          </svg>
+        `;
+
+        // Nodes del camí principal (només Missió 1..6 + 🔑 Clau) i branca extra (🌸 Extra)
+        const mapNodes = [
+          { id: "L01.D1", phaseType: "drill", label: "Missió 1", icon: "1", x: 10, y: 72 },
+          { id: "L01.G1", phaseType: "arcade", label: "Missió 2", icon: "2", x: 24, y: 33 },
+          { id: "L01.D2", phaseType: "drill", label: "Missió 3", icon: "3", x: 40, y: 72 },
+          { id: "L01.G2", phaseType: "arcade", label: "Missió 4", icon: "4", x: 56, y: 32 },
+          { id: "L01.D3", phaseType: "drill", label: "Missió 5", icon: "5", x: 71.5, y: 67 },
+          { id: "L01.G3", phaseType: "arcade", label: "Missió 6", icon: "6", x: 84, y: 34 },
+          { id: "L01.PROVERB", phaseType: "proverb", label: "🔑", icon: "🔑", x: 93, y: 48, isKey: true },
+          { id: "L01.G4", phaseType: "arcade", label: "🌸 Extra", icon: "🌸", x: 88.5, y: 82, isExtra: true }
         ];
+
+        mapNodes.forEach(node => {
+          const unlocked = isStepUnlocked(lvl, node.id);
+          const b = state.stepBarretines[node.id] || 0;
+          const done = b >= 3;
+
+          const wrap = document.createElement("div");
+          wrap.className = "map-node-wrap";
+          wrap.style.left = node.x + "%";
+          wrap.style.top = node.y + "%";
+
+          // Barretines (o Flor del Berguedà per l'Extra) visibles A SOBRE del node quan està fet!
+          if (b > 0) {
+            const topBadge = document.createElement("div");
+            topBadge.className = "map-node-barretines";
+            if (node.isExtra) {
+              topBadge.innerHTML = `<span style="font-size:0.85rem;">🌸</span>`;
+            } else {
+              topBadge.innerHTML = [1, 2, 3, 4, 5].map(n => renderBarretinaSvg(n <= b, 1.35)).join("");
+            }
+            wrap.appendChild(topBadge);
+          }
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `map-node-btn ${done ? "state-done" : unlocked ? "state-open" : "state-locked"} ${node.isKey ? "node-key" : ""} ${node.isExtra ? "node-extra" : ""}`;
+          btn.disabled = !unlocked;
+          btn.textContent = unlocked ? node.icon : "🔒";
+          if (unlocked) {
+            btn.onclick = () => promptIgnitionBeforeStep(lvl.id, node.phaseType, node.id);
+          }
+          wrap.appendChild(btn);
+
+          const lbl = document.createElement("div");
+          lbl.className = "map-node-label";
+          lbl.textContent = node.label;
+          wrap.appendChild(lbl);
+
+          board.appendChild(wrap);
+        });
+
+        container.appendChild(board);
+        return;
+      }
+
+      if (false) {
+        // bloc antic substituït pel mapa 2D pla
         for (let i = 0; i < lvl.drills.length; i++) {
           const d = lvl.drills[i];
           const arc = lvl.arcades[i];
@@ -3527,11 +3754,27 @@
       launchActiveStep();
     };
 
-    document.getElementById("btn-adaptive-drill").onclick = () => {
-      state.phaseType = "adaptive";
-      state.stepId = `${state.levelId}.ADAPTIVE`;
-      launchActiveStep();
-    };
+    const adaptBtn = document.getElementById("btn-adaptive-drill");
+    if (adaptBtn) {
+      adaptBtn.onclick = () => {
+        state.phaseType = "adaptive";
+        state.stepId = `${state.levelId}.ADAPTIVE`;
+        launchActiveStep();
+      };
+    }
+
+    const openAlbumBtn = document.getElementById("btn-open-album");
+    const closeAlbumBtn = document.getElementById("btn-close-album");
+    const albumModal = document.getElementById("album-modal");
+    if (openAlbumBtn && albumModal) {
+      openAlbumBtn.onclick = () => {
+        renderAlbumModal();
+        albumModal.style.display = "flex";
+      };
+    }
+    if (closeAlbumBtn && albumModal) {
+      closeAlbumBtn.onclick = () => { albumModal.style.display = "none"; };
+    }
 
     document.getElementById("btn-speak-proverb").onclick = () => {
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
