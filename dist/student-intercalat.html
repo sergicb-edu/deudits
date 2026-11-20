@@ -541,10 +541,6 @@
           <button type="button" id="cfg-dyslexia"><span>📏 Lletra espaiada</span><strong id="val-dyslexia">No</strong></button>
           <hr style="width:100%;border:0;border-top:1px solid #cbd5e1;margin:0.2rem 0;" />
           <button type="button" id="cfg-unlock"><span>🔓 Desbloquejar tot (Proves)</span><strong id="val-unlock">No</strong></button>
-          <button type="button" id="cfg-reset-zero" style="color:#b91c1c;"><span>🗑️ Reiniciar progrés a zero</span><strong>Netejar</strong></button>
-          <a href="./admin.html" style="display:flex;justify-content:space-between;align-items:center;padding:0.42rem 0.65rem;border-radius:8px;background:#dbeafe;color:#1e40af;text-decoration:none;font-weight:800;font-size:0.84rem;margin-top:0.2rem;">
-            <span>📊 Panell del Docent</span><span>↗️</span>
-          </a>
         </div>
       </div>
     </header>
@@ -4361,14 +4357,17 @@
       if (state.screen === "home") renderHomeLevels();
       if (state.screen === "phases") renderLevelPhases();
     };
-    document.getElementById("cfg-reset-zero").onclick = () => {
-      if (confirm("Vols reiniciar tot el progrés de l'alumne a zero (només el primer exercici obert)?")) {
-        state.stepBarretines = {};
-        state.proverbHistory = [];
-        localStorage.removeItem("deudits_pilot_intercalat_v1");
-        showScreen("home");
-      }
-    };
+    const resetZeroBtn = document.getElementById("cfg-reset-zero");
+    if (resetZeroBtn) {
+      resetZeroBtn.onclick = () => {
+        if (confirm("Vols reiniciar tot el progrés de l'alumne a zero (només el primer exercici obert)?")) {
+          state.stepBarretines = {};
+          state.proverbHistory = [];
+          localStorage.removeItem("deudits_pilot_intercalat_v1");
+          showScreen("home");
+        }
+      };
+    }
 
     const skipIgnBtn = document.getElementById("btn-skip-ignition");
     if (skipIgnBtn) skipIgnBtn.onclick = () => launchActiveStep();
