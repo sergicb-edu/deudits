@@ -539,6 +539,7 @@
           <button type="button" id="cfg-font"><span>🔠 Mida de lletra</span><strong id="val-font">100%</strong></button>
           <button type="button" id="cfg-contrast"><span>🌓 Alt contrast</span><strong id="val-contrast">No</strong></button>
           <button type="button" id="cfg-dyslexia"><span>📏 Lletra espaiada</span><strong id="val-dyslexia">No</strong></button>
+          <button type="button" id="cfg-difficulty"><span>🎚️ Dificultat dels jocs</span><strong id="val-difficulty">Normal</strong></button>
           <hr style="width:100%;border:0;border-top:1px solid #cbd5e1;margin:0.2rem 0;" />
           <button type="button" id="cfg-unlock"><span>🔓 Desbloquejar tot (Proves)</span><strong id="val-unlock">No</strong></button>
         </div>
@@ -821,8 +822,8 @@
         gameMode: "meteors",
         gameTitle: "🛸 Aventura Intercalada al Pedraforca",
         gameDesc: "3 minijocs diferents connectats amb cada pràctica: Asteroides, Ocells i Escalada al Cim!",
-        proverbCa: "qui dia passa any empeny",
-        proverbMeaningCa: "Anant pas a pas i amb constància cada dia, avancem molt més del que sembla.",
+        proverbCa: "En Jep i en Feliu fan foc fi al joc.",
+        proverbMeaningCa: "Clau del Nivell 1: embarbussament ple de lletres F i J!",
         drills: [
           { id: "L01.D1", label: "P1: Parelles d'Índexs (ff jj fj jf)", stepType: "isolated_pairs", wordsCount: 8, mix: false },
           { id: "L01.D2", label: "P2: Grups de 3 lletres (ffj jjf fjf jfj)", stepType: "isolated_triples", wordsCount: 8, mix: false },
@@ -850,8 +851,8 @@
         gameMode: "castells",
         gameTitle: "🏰 Castellers de Berga",
         gameDesc: "J1: Vol en globus pel Berguedà. J2: Els Grallers. J3: Fem la Pinya. J4: Pugem el Castell!",
-        proverbCa: "cada ovella al seu corral",
-        proverbMeaningCa: "Cada dit té el seu lloc a la fila base del teclat!",
+        proverbCa: "Deu dits, dues mans té en Dídac, el didot Amadeu.",
+        proverbMeaningCa: "Clau del Nivell 2: el famós embarbussament «Deu dits» ple de D!",
         drills: [
           { id: "L02.D1", label: "P1: Parelles D i K (dd kk dk kd)", stepType: "isolated_pairs", wordsCount: 10, mix: false },
           { id: "L02.D2", label: "P2: Grups de 3 D i K (dkd kdk ddk)", stepType: "isolated_triples", wordsCount: 10, mix: false },
@@ -881,8 +882,8 @@
         gameMode: "sardana",
         gameTitle: "🎶 Girona: Compàs de la Sardana",
         gameDesc: "J1: Notes curtes (S i L). J2: Salts llargs amb els 6 dits al ritme de la cobla!",
-        proverbCa: "al maig cada dia un raig",
-        proverbMeaningCa: "Amb una mica de pràctica diària els dits agafen soltesa.",
+        proverbCa: "A la Lali li cal sal i saps que són les set.",
+        proverbMeaningCa: "Clau del Nivell 3: embarbussament ple de S i L!",
         drills: [
           { id: "L03.D1", label: "1A: Només S i L (ss ll sl ls)", stepType: "isolated_pairs", wordsCount: 10, mix: false },
           { id: "L03.D2", label: "1B: Barreja dels 6 dits", stepType: "growing", wordsCount: 12, mix: true }
@@ -907,8 +908,8 @@
         gameMode: "patum",
         gameTitle: "🐉 Berga: La Patum als 4 Cantons",
         gameDesc: "J1: Espurnes amb A i Ç. J2: Paraules catalanes reals als 4 cantons amb música de la Patum!",
-        proverbCa: "al juny la falç al puny",
-        proverbMeaningCa: "Dita tradicional de la sega amb la nostra lletra Ç!",
+        proverbCa: "El pare Gegantàs amb un llaç s'aguanta el nas.",
+        proverbMeaningCa: "Clau del Nivell 4: embarbussament amb la A i la Ç!",
         realWords: ["sal", "laç", "faç", "cal", "all", "dall", "sala", "falç", "cala", "casal"],
         drills: [
           { id: "L04.D1", label: "1A: Només A i Ç (aa çç aç ça)", stepType: "isolated_pairs", wordsCount: 10, mix: false },
@@ -1369,9 +1370,56 @@
         o.stop(audioCtx.currentTime + ms / 1000);
       } catch {}
     }
+    // Configuració pedagògica del docent (llegida de l'enllaç ?diff=...&minb=... o localStorage)
+    const urlParamsCfg = new URLSearchParams(window.location.search);
+    const savedTeacherCfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{}");
+    state.difficulty = urlParamsCfg.get("diff") || savedTeacherCfg.difficulty || "normal"; // "suau" | "normal" | "rapid"
+    state.minBarretinesReq = Math.max(1, Math.min(5, Number(urlParamsCfg.get("minb") || savedTeacherCfg.minBarretines || 3)));
+    if (urlParamsCfg.get("diff") || urlParamsCfg.get("minb")) {
+      try {
+        localStorage.setItem("mecano_teacher_cfg_v1", JSON.stringify({
+          difficulty: state.difficulty,
+          minBarretines: state.minBarretinesReq
+        }));
+      } catch {}
+    }
+
+    function getSpeedMultiplier() {
+      if (state.difficulty === "suau") return 0.85;
+      if (state.difficulty === "rapid") return 2.15;
+      return 1.5; // Normal (primària): ritme alegre i jugable!
+    }
+    function getMinBarretinesRequired() {
+      return state.minBarretinesReq || 3;
+    }
+
+    // Melodia tradicional del Toc de Castells (gralla catalana!) nota a nota
+    const MELODY_TOC_DE_CASTELLS = [
+      392.00, 523.25, 587.33, 659.25, 698.46, 659.25, 587.33, 523.25,
+      587.33, 659.25, 783.99, 698.46, 659.25, 587.33, 523.25, 392.00,
+      523.25, 659.25, 783.99, 880.00, 783.99, 659.25, 587.33, 523.25
+    ];
+
+    function playTocDeCastellsPujada() {
+      // Melodia festiva de la pujada i l'aleta del castell amb so de gralla!
+      const notes = [
+        [523.25, 110], [587.33, 110], [659.25, 110], [783.99, 180],
+        [659.25, 110], [783.99, 160], [880.00, 140], [1046.50, 320]
+      ];
+      let delay = 0;
+      notes.forEach(([freq, dur]) => {
+        setTimeout(() => sfxTone(freq, dur, "sawtooth", 0.055), delay);
+        delay += dur + 35;
+      });
+    }
+
     function playGameNote(gameMode) {
       state.melodyCursor++;
-      if (gameMode === "patum") {
+      if (gameMode === "castells") {
+        // Sona una nota del Toc de Castells cada cop que encertes!
+        const f = MELODY_TOC_DE_CASTELLS[state.melodyCursor % MELODY_TOC_DE_CASTELLS.length];
+        sfxTone(f, 130, "sawtooth", 0.048);
+      } else if (gameMode === "patum") {
         const f = MELODY_PATUM_TIRABOL[state.melodyCursor % MELODY_PATUM_TIRABOL.length];
         sfxTone(f, 95, "square", 0.065);
       } else if (gameMode === "sardana") {
@@ -1398,7 +1446,7 @@
       if (lvl.isPostPilot) return false; // Reservat per a després del Pilot amb alumnes reals
       if (lvl.order === 1) return true;
       const prevLvl = LEVELS.find(l => l.order === lvl.order - 1);
-      return (state.stepBarretines[`${prevLvl.id}.PROVERB`] || 0) >= 3;
+      return (state.stepBarretines[`${prevLvl.id}.PROVERB`] || 0) >= getMinBarretinesRequired();
     }
 
     function getOrderedSteps(lvl) {
@@ -1433,7 +1481,7 @@
       const steps = getOrderedSteps(lvl);
       const idx = steps.findIndex(s => s.id === stepId);
       if (idx <= 0) return true;
-      return (state.stepBarretines[steps[idx - 1].id] || 0) >= 3;
+      return (state.stepBarretines[steps[idx - 1].id] || 0) >= getMinBarretinesRequired();
     }
 
     function createRng(seed) {
@@ -2721,7 +2769,7 @@
           const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
           state._lastArcadeWord = rawW;
           const w1 = rawW + " ";
-          const birdSpeed = isTurboExtra ? (0.50 + state.arcadeCompleted * 0.065) : 0.38;
+          const birdSpeed = (isTurboExtra ? (0.50 + state.arcadeCompleted * 0.065) : 0.42) * getSpeedMultiplier();
           state.arcadeEntities.push({
             id: Date.now() + Math.random(),
             word: w1,
@@ -2734,7 +2782,7 @@
             scale: 3.6
           });
         } else {
-          // J1 (Nivell 1): Esquivar asteroides per l'espai rumb al planeta Terra (velocitat suau 0.38)
+          // J1 (Nivell 1): Esquivar asteroides per l'espai rumb al planeta Terra (velocitat segons dificultat docent!)
           const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
           state._lastArcadeWord = rawW;
           const w1 = rawW + " ";
@@ -2744,7 +2792,7 @@
             typedIndex: 0,
             x: 800,
             y: 45 + (state.arcadeCompleted % 3) * 62,
-            speed: 0.38,
+            speed: 0.62 * getSpeedMultiplier(),
             isBoss: false,
             scale: 4
           });
@@ -2800,7 +2848,7 @@
             subMode: arcDef.subMode,
             x: arcDef.subMode === "bergueda_balloon" ? 760 : arcDef.subMode === "berga_grallers" ? 780 : 420,
             y: arcDef.subMode === "bergueda_balloon" ? (55 + (state.arcadeCompleted % 3) * 32) : 95,
-            speed: arcDef.subMode === "bergueda_balloon" ? 0.36 : arcDef.subMode === "berga_grallers" ? 0.42 : 0,
+            speed: arcDef.subMode === "bergueda_balloon" ? (0.58 * getSpeedMultiplier()) : arcDef.subMode === "berga_grallers" ? (0.52 * getSpeedMultiplier()) : 0,
             progress: 0
           }];
         }
@@ -3943,7 +3991,11 @@
       const arcDef = getActiveArcadeDef(lvl);
       const earnedB = survived ? state.arcadeLives : 0;
       if (survived) {
-        sfxFanfare();
+        if (lvl.gameMode === "castells" && (arcDef.subMode === "berga_grallers" || arcDef.subMode === "dual_climbers")) {
+          playTocDeCastellsPujada();
+        } else {
+          sfxFanfare();
+        }
         const prev = state.stepBarretines[state.stepId] || 0;
         state.stepBarretines[state.stepId] = Math.max(prev, earnedB);
         saveProgress();
@@ -4369,6 +4421,18 @@
       document.body.classList.toggle("dyslexia-font", state.dyslexia);
       document.getElementById("val-dyslexia").textContent = state.dyslexia ? "Sí" : "No";
     };
+    const diffLabels = { suau: "🐢 Suau", normal: "🦊 Normal", rapid: "⚡ Ràpid" };
+    const diffBtn = document.getElementById("cfg-difficulty");
+    const diffVal = document.getElementById("val-difficulty");
+    if (diffVal) diffVal.textContent = diffLabels[state.difficulty] || "🦊 Normal";
+    if (diffBtn) {
+      diffBtn.onclick = () => {
+        const order = ["suau", "normal", "rapid"];
+        state.difficulty = order[(order.indexOf(state.difficulty) + 1) % order.length];
+        if (diffVal) diffVal.textContent = diffLabels[state.difficulty];
+      };
+    }
+
     document.getElementById("cfg-unlock").onclick = () => {
       state.freeUnlock = !state.freeUnlock;
       document.getElementById("val-unlock").textContent = state.freeUnlock ? "Sí" : "No";

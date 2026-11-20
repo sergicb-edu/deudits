@@ -418,10 +418,24 @@
       </div>
 
       <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:0.85rem;margin-bottom:0.9rem;">
-        <strong>🎛️ Ajustos pedagògics i manteniment</strong>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;font-size:0.85rem;">
-          <span>Precisió mínima per 3 Barretines (%)</span>
-          <input type="number" id="cfg-min-acc" min="70" max="98" value="88" style="width:74px;padding:0.25rem 0.4rem;border-radius:6px;border:1px solid #94a3b8;font-weight:700;" />
+        <strong>🎛️ Ajustos pedagògics (s'apliquen automàticament a l'enllaç dels alumnes)</strong>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.65rem;font-size:0.85rem;gap:0.5rem;">
+          <span>🎚️ Dificultat / Velocitat dels jocs</span>
+          <select id="cfg-difficulty" style="padding:0.3rem 0.55rem;border-radius:6px;border:1px solid #94a3b8;font-weight:700;">
+            <option value="suau">🐢 Suau (NESE)</option>
+            <option value="normal" selected>🦊 Normal (Primària)</option>
+            <option value="rapid">⚡ Ràpid (Repte)</option>
+          </select>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.55rem;font-size:0.85rem;gap:0.5rem;">
+          <span>🔴 Barretines mínimes per passar de missió</span>
+          <select id="cfg-min-barretines" style="padding:0.3rem 0.55rem;border-radius:6px;border:1px solid #94a3b8;font-weight:700;">
+            <option value="1">1 Barretina (Molt flexible)</option>
+            <option value="2">2 Barretines (Suau NESE)</option>
+            <option value="3" selected>3 Barretines (Estàndard · 88%)</option>
+            <option value="4">4 Barretines (Exigent · 93%)</option>
+            <option value="5">5 Barretines (Perfecció · 97%)</option>
+          </select>
         </div>
         <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;">
           <button type="button" id="btn-save-cfg" class="primary">💾 Desar ajustos</button>
@@ -898,10 +912,22 @@
       window.MecanoGoogleAuth.setClientId(document.getElementById("input-google-client-id").value.trim());
       document.getElementById("cfg-feedback").textContent = "✅ Client ID desat!";
     };
+    // Carrega ajustos pedagògics desats
+    (function loadSavedTeacherCfg() {
+      try {
+        const cfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{}");
+        if (cfg.difficulty) document.getElementById("cfg-difficulty").value = cfg.difficulty;
+        if (cfg.minBarretines) document.getElementById("cfg-min-barretines").value = String(cfg.minBarretines);
+      } catch {}
+    })();
+
     document.getElementById("btn-save-cfg").onclick = () => {
-      const minAccuracyPct = Number(document.getElementById("cfg-min-acc").value || 88);
-      localStorage.setItem("mecano_teacher_cfg_v1", JSON.stringify({ minAccuracyPct, unlockedAllLevels: false }));
-      document.getElementById("cfg-feedback").textContent = "✅ Ajustos pedagògics desats!";
+      const difficulty = document.getElementById("cfg-difficulty").value || "normal";
+      const minBarretines = Number(document.getElementById("cfg-min-barretines").value || 3);
+      localStorage.setItem("mecano_teacher_cfg_v1", JSON.stringify({ difficulty, minBarretines, unlockedAllLevels: false }));
+      updateConnectionUI();
+      document.getElementById("cfg-feedback").style.color = "#15803d";
+      document.getElementById("cfg-feedback").textContent = "✅ Ajustos desats! L'enllaç dels alumnes ja inclou aquesta dificultat i mínim de Barretines.";
     };
     document.getElementById("btn-clear-data").onclick = () => {
       if (confirm("Vols netejar la memòria cau local d'aquest navegador? (No esborra res del teu Google Sheet)")) {

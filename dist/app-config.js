@@ -445,6 +445,11 @@ window.MecanoGoogleAuth = (function () {
     if (cid && !(window.MECANO_CONFIG && window.MECANO_CONFIG.GOOGLE_CLIENT_ID)) {
       base.searchParams.set("cid", cid);
     }
+    try {
+      const cfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{}");
+      if (cfg.difficulty) base.searchParams.set("diff", cfg.difficulty);
+      if (cfg.minBarretines) base.searchParams.set("minb", String(cfg.minBarretines));
+    } catch {}
     return base.toString();
   }
 
