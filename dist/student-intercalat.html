@@ -3655,14 +3655,207 @@
         return;
       }
 
-      // J3 (berga_pinya) i J4 (dual_climbers): PLAÇA DE SANT PERE DE BERGA — CASTELLERS DE BERGA!
-      ctx.fillStyle = "#172554";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#334155";
-      ctx.fillRect(0, 222, canvas.width, 28);
+      if (arcDef.subMode === "berga_pinya") {
+        // J3: FEM LA PINYA A BERGA! Vista circular real d'una pinya castellera (NO pugen el castell encara!)
+        const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        sky.addColorStop(0, "#1e3a8a");
+        sky.addColorStop(0.55, "#3b82f6");
+        sky.addColorStop(1, "#cbd5e1");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const isDual = ent && (ent.subMode === "dual_climbers" || ent.subMode === "hand_blocks" || ent.subMode === "berga_pinya");
-      const baseX = 425 + shakeX;
+        // Terra empedrat de la Plaça de Sant Pere de Berga
+        ctx.fillStyle = "#e2e8f0";
+        ctx.fillRect(0, 72, canvas.width, 178);
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        for (let gx = 0; gx < canvas.width; gx += 44) {
+          ctx.beginPath(); ctx.moveTo(gx, 72); ctx.lineTo(gx, 250); ctx.stroke();
+        }
+
+        // Banderoles de festa a dalt
+        const flagCols = ["#facc15", "#dc2626", "#1d4ed8", "#ffffff"];
+        for (let i = 0; i < 20; i++) {
+          ctx.fillStyle = flagCols[i % flagCols.length];
+          ctx.beginPath();
+          ctx.moveTo(i * 46, 0); ctx.lineTo(i * 46 + 42, 0); ctx.lineTo(i * 46 + 21, 20);
+          ctx.fill();
+        }
+
+        const cx = 440 + shakeX;
+        const cy = 162;
+
+        // Cercles guia de la pinya castellera (Nucli / Baixos -> 1r cordó -> 2n cordó -> 3r cordó!)
+        [28, 56, 86, 116].forEach((r, idx) => {
+          ctx.strokeStyle = idx === 0 ? "rgba(29,78,216,0.45)" : "rgba(100,116,139,0.28)";
+          ctx.lineWidth = 2;
+          ctx.setLineDash(idx === 0 ? [] : [5, 5]);
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, r * 1.45, r * 0.72, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+
+        // Dibuixa un casteller vist des de dalt / 3/4 (camisa blau fosc Castellers de Berga + mocador + cap!)
+        const drawPinyaPerson = (px, py, isCore = false) => {
+          // Espatlles / camisa blau fosc Castellers de Berga
+          ctx.fillStyle = isCore ? "#1e3a8a" : "#1d4ed8";
+          ctx.beginPath(); ctx.ellipse(px, py + 4, 11, 7, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 1.2; ctx.stroke();
+          // Mocador vermell al coll
+          ctx.fillStyle = "#dc2626";
+          ctx.beginPath(); ctx.arc(px, py + 1, 5.5, 0, Math.PI * 2); ctx.fill();
+          // Cap
+          ctx.fillStyle = "#fde68a";
+          ctx.beginPath(); ctx.arc(px, py - 2, 5.2, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#451a03";
+          ctx.beginPath(); ctx.arc(px, py - 4, 4.2, Math.PI, Math.PI * 2); ctx.fill();
+        };
+
+        // Nucli central (4 baixos sempre al centre)
+        for (let a = 0; a < 4; a++) {
+          const ang = (a / 4) * Math.PI * 2 + 0.4;
+          drawPinyaPerson(cx + Math.cos(ang) * 20, cy + Math.sin(ang) * 11, true);
+        }
+
+        // Castellers que s'han anat sumant a la pinya formant cercles concèntrics!
+        const totalJoiners = Math.min(36, state.arcadeCompleted * 4 + (ent ? ent.typedIndex : 0));
+        const rings = [
+          { count: 10, rx: 64, ry: 32 },
+          { count: 14, rx: 102, ry: 50 },
+          { count: 16, rx: 142, ry: 68 }
+        ];
+        let placed = 0;
+        for (const ring of rings) {
+          for (let i = 0; i < ring.count && placed < totalJoiners; i++) {
+            const ang = (i / ring.count) * Math.PI * 2 + (placed % 2) * 0.08;
+            const pulse = Math.sin(performance.now() * 0.005 + placed) * 1.2;
+            drawPinyaPerson(cx + Math.cos(ang) * ring.rx, cy + Math.sin(ang) * ring.ry + pulse, false);
+            placed++;
+          }
+        }
+
+        // Nous castellers arribant des de l'esquerra (D+F) o la dreta (K+J) cap al cercle!
+        if (ent) {
+          const isLeftHand = lvl.leftKeys.includes(ent.word[0]);
+          const runnerPct = ent.typedIndex / Math.max(1, ent.word.length);
+          const rx = isLeftHand ? (85 + runnerPct * 210) : (795 - runnerPct * 210);
+          const hop = Math.abs(Math.sin(performance.now() * 0.015)) * 5;
+          drawPinyaPerson(rx, cy - hop, false);
+          drawPinyaPerson(rx + (isLeftHand ? -22 : 22), cy + 16 - hop, false);
+          drawWordBox(ctx, ent.word, ent.typedIndex, cx - 44, 34, true);
+
+          ctx.fillStyle = isLeftHand ? "#1d4ed8" : "#15803d";
+          ctx.fillRect(14, 218, 355, 24);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 12px sans-serif";
+          ctx.fillText(
+            isLeftHand
+              ? `👈 Mà Esquerra (D+F): entren castellers per l'esquerra! (${placed + 4} a la pinya)`
+              : `👉 Mà Dreta (K+J): entren castellers per la dreta! (${placed + 4} a la pinya)`,
+            22, 234
+          );
+        }
+        return;
+      }
+
+      // J4 (dual_climbers): GRAN CASTELL DE BERGA (Pinya + Pisos amb Castellers de Berga + Escaladors + Enxaneta!)
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      skyGrad.addColorStop(0, "#0c4a6e");
+      skyGrad.addColorStop(0.7, "#38bdf8");
+      skyGrad.addColorStop(1, "#bae6fd");
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Edificis de la Plaça de Sant Pere de Berga al fons
+      ctx.fillStyle = "#cbd5e1";
+      ctx.fillRect(0, 145, 190, 85);
+      ctx.fillRect(690, 140, 190, 90);
+      ctx.fillStyle = "#b91c1c";
+      ctx.fillRect(0, 138, 195, 9);
+      ctx.fillRect(685, 133, 195, 9);
+      // Terra de la plaça
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillRect(0, 224, canvas.width, 26);
+
+      // Dibuixa un Casteller de Berga detallat (camisa blau fosc, faixa negra, pantaló blanc, braços!)
+      const drawCastellerBerga = (x, y, scale = 1, armsUp = false, isEnxaneta = false) => {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+        // Pantaló blanc
+        ctx.fillStyle = "#f8fafc";
+        ctx.fillRect(-6, 8, 5, 11);
+        ctx.fillRect(1, 8, 5, 11);
+        // Faixa negra
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(-7, 4, 14, 5);
+        // Camisa blau fosc Castellers de Berga
+        ctx.fillStyle = "#1d4ed8";
+        ctx.fillRect(-7, -7, 14, 11);
+        // Braços
+        ctx.strokeStyle = "#1d4ed8";
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        if (armsUp) {
+          ctx.moveTo(-7, -5); ctx.lineTo(-12, -16);
+          ctx.moveTo(7, -5); ctx.lineTo(12, -16);
+        } else {
+          ctx.moveTo(-7, -4); ctx.lineTo(-12, 3);
+          ctx.moveTo(7, -4); ctx.lineTo(12, 3);
+        }
+        ctx.stroke();
+        // Mocador vermell
+        ctx.fillStyle = "#dc2626";
+        ctx.fillRect(-4, -8, 8, 3);
+        // Cap + casc groc si és Enxaneta!
+        ctx.fillStyle = "#fde68a";
+        ctx.beginPath(); ctx.arc(0, -13, 5.5, 0, Math.PI * 2); ctx.fill();
+        if (isEnxaneta) {
+          ctx.fillStyle = "#facc15";
+          ctx.beginPath(); ctx.arc(0, -14.5, 6.2, Math.PI, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+      };
+
+      const baseX = 440 + shakeX;
+      const sway = Math.sin(performance.now() * 0.003) * 2.5;
+
+      // Pinya compacta a la base
+      for (let i = -5; i <= 5; i++) {
+        drawCastellerBerga(baseX + i * 16, 210 + (Math.abs(i) % 2) * 3, 0.85, false, false);
+      }
+
+      // Pisos construïts del Castell (de 1 fins a 5 pisos segons el progrés!)
+      const builtFloors = Math.min(5, Math.floor((state.arcadeCompleted / Math.max(1, state.arcadeTotal)) * 5) + 1);
+      for (let f = 1; f <= builtFloors; f++) {
+        const fy = 205 - f * 31;
+        const fx = baseX + sway * (f * 0.35);
+        if (f < 5) {
+          drawCastellerBerga(fx - 14, fy, 0.92, false, false);
+          drawCastellerBerga(fx + 14, fy, 0.92, false, false);
+        } else {
+          // Enxaneta al cim fent l'aleta!
+          drawCastellerBerga(fx, fy - 4, 0.82, true, true);
+        }
+      }
+
+      // 2 Castellers pujant pels costats (Esquerra = D/F, Dreta = K/J) amb saltironet!
+      if (ent) {
+        const leftClimbY = Math.max(55, 198 - (state.leftClimberStep || 0) * 22);
+        const rightClimbY = Math.max(55, 198 - (state.rightClimberStep || 0) * 22);
+        const climbHop = Math.abs(Math.sin(performance.now() * 0.012)) * 4;
+        drawCastellerBerga(baseX - 52, leftClimbY - climbHop, 0.9, true, false);
+        drawCastellerBerga(baseX + 52, rightClimbY - climbHop, 0.9, true, false);
+        drawWordBox(ctx, ent.word, ent.typedIndex, baseX - 44, 18, true);
+      }
+
+      ctx.fillStyle = "rgba(15,23,42,0.78)";
+      ctx.fillRect(14, 12, 290, 24);
+      ctx.fillStyle = "#fde047";
+      ctx.font = "bold 12px sans-serif";
+      ctx.fillText(`🏰 Castell de Berga · Pis ${builtFloors}/5 (${state.arcadeCompleted}/${state.arcadeTotal})`, 22, 28);
+      return;
 
       drawSprite(ctx, SPRITES.casteller, baseX - 55, 186, 3.2);
       drawSprite(ctx, SPRITES.casteller, baseX + 35, 186, 3.2);
@@ -4308,10 +4501,12 @@
     }
 
     window.addEventListener("keydown", (ev) => {
-      if (ev.repeat || ["Shift","Control","Alt","AltGraph","CapsLock","Tab","Escape","Dead"].includes(ev.key)) return;
+      // Ignora tecles mortes d'accents catalans (´, `, ^, ¨, Dead, Process) perquè els accents (í, à, é, è, ó, ò, ú) funcionin a la perfecció!
+      if (ev.repeat || ev.isComposing || ["Shift","Control","Alt","AltGraph","CapsLock","Tab","Escape","Dead","Process","´","`","^","¨"].includes(ev.key)) return;
       if (ev.key.length !== 1) return;
 
-      const typed = ev.key.toLowerCase();
+      const typedNorm = ev.key.normalize("NFC");
+      const typed = typedNorm.toLowerCase();
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
 
       if (state.screen === "ignition") {
@@ -4354,7 +4549,7 @@
       if (state.cursor >= state.sequence.length) return;
       if (ev.key === " ") ev.preventDefault();
 
-      const expected = state.sequence[state.cursor];
+      const expected = state.sequence[state.cursor].normalize("NFC");
       const expectedLower = expected.toLowerCase();
       const correct = (ev.key === " " ? " " : typed) === expectedLower;
       if (!state.tapeKeyStats[expectedLower]) state.tapeKeyStats[expectedLower] = { hits: 0, errors: 0 };
@@ -4796,15 +4991,16 @@
 
     function handleTongueKey(ev) {
       const it = tongueState.activeItem;
-      if (!it || tongueState.isCountingDown || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      if (!it || tongueState.isCountingDown || ev.ctrlKey || ev.metaKey || ev.altKey || ev.isComposing) return;
+      if (["Dead","Process","´","`","^","¨"].includes(ev.key)) return;
       if (ev.key.length !== 1) return;
       if (ev.key === " ") ev.preventDefault();
 
       if (!tongueState.startedAtMs) tongueState.startedAtMs = performance.now();
 
-      const expected = it.text[tongueState.cursor];
+      const expected = it.text[tongueState.cursor].normalize("NFC");
       if (!expected) return;
-      const isMatch = ev.key === expected;
+      const isMatch = ev.key.normalize("NFC") === expected;
 
       if (isMatch) {
         const nowMs = performance.now();
