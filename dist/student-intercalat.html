@@ -562,11 +562,66 @@
 
     <!-- PANTALLA 2: MAPA PLA 2D DEL NIVELL (SENSE TEXTOS LLARGS — NESE!) -->
     <section class="view-screen" id="screen-phases">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
         <h2 id="phases-level-title" style="margin:0;font-size:1.3rem;">Nivell 1</h2>
+        <button type="button" id="btn-open-tongue-garden" style="background:#fdf2f8;border:2px solid #ec4899;color:#9d174d;border-radius:999px;padding:0.32rem 0.9rem;font-weight:900;font-size:0.86rem;cursor:pointer;">
+          🗣️ Jardí d'Embarbussaments (🌸 Extra)
+        </button>
       </div>
       <div class="phases-cards" id="phases-cards"></div>
       <div id="proverb-gate-banner" style="margin-top:0.5rem;"></div>
+    </section>
+
+    <!-- PANTALLA 2B: JARDÍ D'EMBARBUSSAMENTS + CURSA CONTRA EN BIT (LÍNIA D'AMPLIACIÓ 🌸) -->
+    <section class="view-screen" id="screen-tongue">
+      <div style="background:#ffffff;border:2.5px solid #ec4899;border-radius:1.1rem;padding:1rem 1.15rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.65rem;">
+          <div>
+            <h2 id="tongue-garden-title" style="margin:0;color:#9d174d;font-size:1.2rem;">🗣️ Jardí d'Embarbussaments</h2>
+            <div style="font-size:0.8rem;color:#64748b;">Ampliació opcional · Guanya 🌸 Flors del Berguedà i fes curses contra en Bit!</div>
+          </div>
+          <div id="tongue-garden-flowers" style="display:flex;gap:0.35rem;font-size:1.45rem;background:#fdf2f8;padding:0.3rem 0.7rem;border-radius:999px;border:1.5px solid #fbcfe8;"></div>
+        </div>
+
+        <!-- Selector de mode cursa -->
+        <div style="display:flex;gap:0.45rem;flex-wrap:wrap;align-items:center;margin-bottom:0.8rem;background:#f8fafc;padding:0.55rem 0.75rem;border-radius:10px;border:1px solid #e2e8f0;">
+          <span style="font-size:0.8rem;font-weight:800;color:#334155;">Ritme de la cursa:</span>
+          <button type="button" class="tongue-speed-btn" data-speed="0" style="background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:800;font-size:0.8rem;">🐢 Tranquil (sense pressa)</button>
+          <button type="button" class="tongue-speed-btn" data-speed="10" style="font-weight:800;font-size:0.8rem;">🦊 Cursa amb en Bit (10 PPM)</button>
+          <button type="button" class="tongue-speed-btn" data-speed="18" style="font-weight:800;font-size:0.8rem;">⚡ Cursa Turbo (18 PPM)</button>
+        </div>
+
+        <!-- Llista d'embarbussaments del nivell (quan no hi ha cursa activa) -->
+        <div id="tongue-list-view" style="display:grid;gap:0.55rem;"></div>
+
+        <!-- Pista de cursa activa -->
+        <div id="tongue-race-view" style="display:none;">
+          <!-- 2 carrils visuals: TU vs EN BIT -->
+          <div style="background:linear-gradient(180deg,#dcfce7 0%,#bbf7d0 100%);border:2px solid #16a34a;border-radius:12px;padding:0.65rem 0.9rem;margin-bottom:0.75rem;">
+            <div style="position:relative;height:34px;border-bottom:2px dashed rgba(21,128,61,0.35);margin-bottom:0.35rem;">
+              <span style="position:absolute;left:0;top:6px;font-size:0.74rem;font-weight:900;color:#14532d;">TU</span>
+              <span style="position:absolute;right:2px;top:4px;font-size:1.1rem;">🏁</span>
+              <div id="race-player-runner" style="position:absolute;left:6%;top:2px;font-size:1.45rem;transition:left 0.1s linear;">🧑‍🎓</div>
+            </div>
+            <div style="position:relative;height:34px;">
+              <span style="position:absolute;left:0;top:6px;font-size:0.74rem;font-weight:900;color:#1e40af;">EN BIT</span>
+              <span style="position:absolute;right:2px;top:4px;font-size:1.1rem;">🏁</span>
+              <div id="race-bit-runner" style="position:absolute;left:6%;top:2px;font-size:1.45rem;transition:left 0.15s linear;">🤖</div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.45rem;">
+            <strong id="tongue-active-badge" style="color:#9d174d;font-size:0.9rem;"></strong>
+            <div style="display:flex;gap:0.4rem;">
+              <button type="button" id="btn-tongue-speak">🔊 Escolta'l!</button>
+              <button type="button" id="btn-tongue-back-list">⬅️ Tots els embarbussaments</button>
+            </div>
+          </div>
+
+          <div id="tongue-tape" class="prompt-tape" style="min-height:84px;font-size:1.35rem;line-height:1.8;"></div>
+          <div id="tongue-race-status" style="margin-top:0.55rem;font-size:0.86rem;font-weight:800;color:#475569;text-align:center;"></div>
+        </div>
+      </div>
     </section>
 
     <!-- MODAL ÀLBUM DE FLORS DEL BERGUEDÀ I CROMOS -->
@@ -1959,7 +2014,7 @@
       document.getElementById("header-breadcrumb").textContent = screenName === "home" ? "Mapa" : `Nivell ${lvl.order}`;
 
       const totalB = Object.entries(state.stepBarretines)
-        .filter(([k]) => !k.endsWith(".G4") && !k.endsWith(".EXTRA"))
+        .filter(([k]) => !k.endsWith(".G4") && !k.endsWith(".EXTRA") && !k.startsWith("EMB."))
         .reduce((a, [, b]) => a + b, 0);
       document.getElementById("header-barretines").innerHTML = `${totalB} ${renderBarretinaSvg(true, 2)}`;
 
@@ -1991,6 +2046,10 @@
         if ((state.stepBarretines[f.id] || 0) >= 3) count++;
       }
       if (count >= 4) count++;
+      // Suma també les Flors del Berguedà guanyades al Jardí d'Embarbussaments!
+      for (const [k, v] of Object.entries(state.stepBarretines)) {
+        if (k.startsWith("EMB.") && v >= 3) count++;
+      }
       return count;
     }
 
@@ -3775,6 +3834,11 @@
         return;
       }
 
+      if (state.screen === "tongue") {
+        handleTongueKey(ev);
+        return;
+      }
+
       if (state.screen !== "play") return;
 
       if (state.phaseType === "arcade") {
@@ -3957,6 +4021,238 @@
         showScreen("home");
       }
     };
+
+    // =========================================================================
+    // JARDÍ D'EMBARBUSSAMENTS + CURSA CONTRA EN BIT (LÍNIA D'AMPLIACIÓ 🌸)
+    // =========================================================================
+    const tongueState = {
+      speedWpm: 0, // 0 = Tranquil, 10 = Cursa, 18 = Turbo
+      activeItem: null,
+      cursor: 0,
+      errors: 0,
+      wrongFlash: false,
+      startedAtMs: 0,
+      bitProgress: 0,
+      raceTimerId: null
+    };
+
+    function stopTongueRaceTimer() {
+      if (tongueState.raceTimerId) {
+        clearInterval(tongueState.raceTimerId);
+        tongueState.raceTimerId = null;
+      }
+    }
+
+    function speakCatalanText(txt) {
+      if (!("speechSynthesis" in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(txt);
+        u.lang = "ca-ES";
+        u.rate = 0.92;
+        window.speechSynthesis.speak(u);
+      } catch {}
+    }
+
+    function openTongueGarden() {
+      stopTongueRaceTimer();
+      tongueState.activeItem = null;
+      showScreen("tongue");
+      document.getElementById("tongue-list-view").style.display = "grid";
+      document.getElementById("tongue-race-view").style.display = "none";
+      renderTongueGardenList();
+    }
+
+    function renderTongueGardenList() {
+      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
+      const dbMap = (window.DEUDITS_DB && window.DEUDITS_DB.embarbussamentsPerNivell) || {};
+      const items = dbMap[lvl.id] || dbMap.L01 || [];
+
+      document.getElementById("tongue-garden-title").textContent =
+        `🗣️ Jardí d'Embarbussaments · Nivell ${lvl.order} (${lvl.newKeys.map(k => k.toUpperCase()).join(" i ")})`;
+
+      // Mostra les flors del jardí (🌱 si pendent, flor del Berguedà si completat!)
+      document.getElementById("tongue-garden-flowers").innerHTML = items
+        .map(it => `<span title="${it.flowerName}">${(state.stepBarretines[it.id] || 0) >= 3 ? it.flower : "🌱"}</span>`)
+        .join("");
+
+      const listEl = document.getElementById("tongue-list-view");
+      listEl.innerHTML = "";
+      items.forEach(it => {
+        const done = (state.stepBarretines[it.id] || 0) >= 3;
+        const wonRace = (state.stepBarretines[it.id] || 0) >= 5;
+        const row = document.createElement("div");
+        row.style.cssText = `display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;padding:0.7rem 0.9rem;border-radius:12px;border:2px solid ${done ? "#ec4899" : "#e2e8f0"};background:${done ? "#fdf2f8" : "#f8fafc"};`;
+        row.innerHTML = `
+          <div style="flex:1;min-width:220px;">
+            <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.2rem;">
+              <span style="font-size:0.74rem;font-weight:900;background:#ffffff;border:1px solid #cbd5e1;padding:1px 7px;border-radius:99px;">${it.tier}</span>
+              ${done ? `<span style="font-size:0.76rem;font-weight:900;color:#be185d;">${it.flower} ${it.flowerName}</span>` : ""}
+              ${wonRace ? `<span style="font-size:0.74rem;font-weight:900;color:#b45309;">🏆 Cursa guanyada!</span>` : ""}
+            </div>
+            <div style="font-weight:800;font-size:0.96rem;color:#0f172a;">«${it.text}»</div>
+          </div>
+          <div style="display:flex;gap:0.4rem;">
+            <button type="button" class="btn-listen-emb" style="font-size:0.82rem;">🔊 Escolta'l</button>
+            <button type="button" class="btn-start-emb primary" style="background:#db2777;border-color:#be185d;font-size:0.84rem;">🏁 ${done ? "Repetir" : "Començar"}</button>
+          </div>
+        `;
+        row.querySelector(".btn-listen-emb").onclick = () => speakCatalanText(it.text);
+        row.querySelector(".btn-start-emb").onclick = () => startTongueRace(it);
+        listEl.appendChild(row);
+      });
+    }
+
+    function startTongueRace(item) {
+      stopTongueRaceTimer();
+      tongueState.activeItem = item;
+      tongueState.cursor = 0;
+      tongueState.errors = 0;
+      tongueState.wrongFlash = false;
+      tongueState.startedAtMs = 0;
+      tongueState.bitProgress = 0;
+
+      document.getElementById("tongue-list-view").style.display = "none";
+      document.getElementById("tongue-race-view").style.display = "block";
+      document.getElementById("tongue-active-badge").textContent = `${item.tier} · ${item.flower} ${item.flowerName}`;
+      document.getElementById("race-player-runner").style.left = "6%";
+      document.getElementById("race-bit-runner").style.left = "6%";
+      document.getElementById("tongue-race-status").textContent =
+        tongueState.speedWpm === 0
+          ? "🐢 Mode tranquil: comença a escriure al teu ritme!"
+          : `🏁 Comença a escriure per donar el tret de sortida contra en Bit (${tongueState.speedWpm} PPM)!`;
+
+      renderTongueTape();
+    }
+
+    function renderTongueTape() {
+      const it = tongueState.activeItem;
+      if (!it) return;
+      const focusSet = new Set((it.focus || []).map(c => c.toLowerCase()));
+      const tape = document.getElementById("tongue-tape");
+      const chars = Array.from(it.text);
+
+      tape.innerHTML = chars.map((ch, idx) => {
+        const isFocus = focusSet.has(ch.toLowerCase());
+        const disp = ch === " " ? "&nbsp;" : ch;
+        if (idx < tongueState.cursor) {
+          return `<span style="color:#16a34a;font-weight:900;">${disp}</span>`;
+        }
+        if (idx === tongueState.cursor) {
+          const bg = tongueState.wrongFlash ? "#ef4444" : "#fde047";
+          const col = tongueState.wrongFlash ? "#ffffff" : "#0f172a";
+          return `<span style="background:${bg};color:${col};border-radius:4px;padding:0 2px;font-weight:900;text-decoration:underline;">${disp}</span>`;
+        }
+        if (isFocus) {
+          return `<span style="color:#be185d;background:#fce7f3;border-radius:4px;padding:0 1px;font-weight:900;">${disp}</span>`;
+        }
+        return `<span style="color:#334155;">${disp}</span>`;
+      }).join("");
+
+      const pct = Math.min(1, tongueState.cursor / Math.max(1, chars.length));
+      document.getElementById("race-player-runner").style.left = `${6 + pct * 86}%`;
+      if (tongueState.speedWpm === 0) {
+        // En mode tranquil, en Bit t'acompanya content una mica darrere teu!
+        document.getElementById("race-bit-runner").style.left = `${6 + Math.max(0, pct - 0.08) * 86}%`;
+      }
+    }
+
+    function handleTongueKey(ev) {
+      const it = tongueState.activeItem;
+      if (!it || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      if (ev.key.length !== 1) return;
+      if (ev.key === " ") ev.preventDefault();
+
+      // Arrenca el cronòmetre i en Bit a la primera pulsació!
+      if (!tongueState.startedAtMs) {
+        tongueState.startedAtMs = performance.now();
+        if (tongueState.speedWpm > 0) {
+          const charsPerSec = (tongueState.speedWpm * 5) / 60;
+          tongueState.raceTimerId = setInterval(() => {
+            if (!tongueState.activeItem || state.screen !== "tongue") {
+              stopTongueRaceTimer();
+              return;
+            }
+            const elapsedS = (performance.now() - tongueState.startedAtMs) / 1000;
+            tongueState.bitProgress = Math.min(1, (elapsedS * charsPerSec) / Math.max(1, tongueState.activeItem.text.length));
+            document.getElementById("race-bit-runner").style.left = `${6 + tongueState.bitProgress * 86}%`;
+          }, 100);
+        }
+      }
+
+      const expected = it.text[tongueState.cursor];
+      if (!expected) return;
+      // Permet minúscules per a majúscules inicials pensant en primària/NESE!
+      const isMatch = ev.key === expected || ev.key.toLowerCase() === expected.toLowerCase();
+
+      if (isMatch) {
+        tongueState.wrongFlash = false;
+        tongueState.cursor++;
+        sfxTone(expected === " " ? 587.33 : 440 + (tongueState.cursor % 5) * 30, 45, "triangle", 0.05);
+        renderTongueTape();
+
+        if (tongueState.cursor >= it.text.length) {
+          stopTongueRaceTimer();
+          sfxFanfare();
+          const durS = Math.max(1, (performance.now() - tongueState.startedAtMs) / 1000);
+          const wpm = Number(((it.text.length / 5) / (durS / 60)).toFixed(1));
+          const acc = Math.round((it.text.length / (it.text.length + tongueState.errors)) * 100);
+          const beatBit = tongueState.speedWpm > 0 && tongueState.bitProgress < 1;
+
+          const scoreToSave = beatBit ? 5 : 4;
+          state.stepBarretines[it.id] = Math.max(state.stepBarretines[it.id] || 0, scoreToSave);
+          saveProgress();
+
+          const flEl = document.getElementById("header-flowers");
+          if (flEl) flEl.textContent = String(getEarnedFlowersCount());
+
+          recordTelemetrySession({
+            phaseType: "proverb",
+            stepId: it.id,
+            stepLabel: `🗣️ Embarbussament: «${it.text.slice(0, 28)}…»`,
+            wpmNet: wpm,
+            accuracyPct: acc,
+            errors: tongueState.errors,
+            totalPresses: it.text.length + tongueState.errors,
+            barretines: scoreToSave,
+            keyStats: {}
+          });
+
+          document.getElementById("tongue-race-status").innerHTML =
+            beatBit
+              ? `<span style="color:#15803d;font-size:1.05rem;">🏆 Has guanyat la cursa contra en Bit! (${wpm} PPM · ${acc}%) · Has fet florir: ${it.flower} ${it.flowerName}!</span>`
+              : `<span style="color:#be185d;font-size:1.02rem;">${it.flower} Molt bé! Has fet florir «${it.flowerName}»! (${wpm} PPM · ${acc}%)</span>`;
+          tongueState.activeItem = null;
+        }
+      } else {
+        tongueState.errors++;
+        tongueState.wrongFlash = true;
+        sfxErrorHit();
+        renderTongueTape();
+      }
+    }
+
+    document.querySelectorAll(".tongue-speed-btn").forEach(btn => {
+      btn.onclick = () => {
+        tongueState.speedWpm = Number(btn.dataset.speed || 0);
+        document.querySelectorAll(".tongue-speed-btn").forEach(b => {
+          b.style.background = "";
+          b.style.borderColor = "";
+          b.style.color = "";
+        });
+        btn.style.background = "#dcfce7";
+        btn.style.borderColor = "#16a34a";
+        btn.style.color = "#14532d";
+        if (tongueState.activeItem) startTongueRace(tongueState.activeItem);
+      };
+    });
+
+    const openTongueBtn = document.getElementById("btn-open-tongue-garden");
+    if (openTongueBtn) openTongueBtn.onclick = openTongueGarden;
+    const tongueSpeakBtn = document.getElementById("btn-tongue-speak");
+    if (tongueSpeakBtn) tongueSpeakBtn.onclick = () => { if (tongueState.activeItem) speakCatalanText(tongueState.activeItem.text); };
+    const tongueBackListBtn = document.getElementById("btn-tongue-back-list");
+    if (tongueBackListBtn) tongueBackListBtn.onclick = openTongueGarden;
 
     drawSprite(document.getElementById("logo-canvas").getContext("2d"), SPRITES.spaceship, 2, 2, 2.5);
     showScreen("home");
