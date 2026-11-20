@@ -825,7 +825,7 @@
           { id: "L01.G1", label: "J1: ☄️ Vol Espacial — Esquiva Asteroides (ff jj fj jf)", subMode: "space_asteroids", totalTargets: 8, isExtra: false },
           { id: "L01.G2", label: "J2: 🦅 Descens Vertical — Esquiva Ocells (ffj jjf fjf)", subMode: "atmosphere_birds", totalTargets: 10, isExtra: false },
           { id: "L01.G3", label: "J3: 🏔️ Escalada al Cim del Pedraforca (ffjj jjff fjfj)", subMode: "pedraforca_climb", totalTargets: 10, isExtra: false },
-          { id: "L01.G4", label: "⭐ AMPLIACIÓ (J4): ♻️ Netegem el Pedraforca! (Opcional — no bloqueja res)", subMode: "pedraforca_recycle", totalTargets: 10, isExtra: true }
+          { id: "L01.G4", label: "⭐ AMPLIACIÓ (J4): ♻️ Netegem el Pedraforca! (Opcional — no bloqueja res)", subMode: "pedraforca_recycle", totalTargets: 12, isExtra: true }
         ]
       },
       {
@@ -2038,7 +2038,7 @@
     // =========================================================================
     function showScreen(screenName) {
       state.screen = screenName;
-      ["home", "phases", "ignition", "cutscene", "play", "result"].forEach(s => {
+      ["home", "phases", "tongue", "ignition", "cutscene", "play", "result"].forEach(s => {
         const el = document.getElementById(`screen-${s}`);
         if (el) el.classList.toggle("active", s === screenName);
       });
@@ -2627,21 +2627,38 @@
 
       if (lvl.gameMode === "meteors") {
         if (arcDef.subMode === "pedraforca_recycle") {
-          // J4 (Versió B): NETEGEM EL PEDRAFORCA! Residus caient per classificar als 4 contenidors (codis de 3 lletres f/j)
-          const RECYCLE_ITEMS = [
-            { icon: "🍾", name: "Ampolla de plàstic", binIndex: 0, code: "ffj" },
-            { icon: "📰", name: "Diari vell", binIndex: 1, code: "jjf" },
-            { icon: "🍌", name: "Pela de plàtan", binIndex: 2, code: "fjf" },
-            { icon: "🧻", name: "Tovalló brut", binIndex: 3, code: "jfj" },
-            { icon: "🥫", name: "Llauna", binIndex: 0, code: "ffj" },
-            { icon: "📦", name: "Caixa de cartró", binIndex: 1, code: "jjf" },
-            { icon: "🍎", name: "Cor de poma", binIndex: 2, code: "fjf" },
-            { icon: "🖊️", name: "Bolígraf trencat", binIndex: 3, code: "jfj" },
-            { icon: "🛍️", name: "Bossa de plàstic", binIndex: 0, code: "ffj" },
-            { icon: "📄", name: "Full arrugat", binIndex: 1, code: "jjf" }
-          ];
-          const item = RECYCLE_ITEMS[state.arcadeCompleted % RECYCLE_ITEMS.length];
-          const spawnX = 180 + (state.arcadeCompleted % 4) * 165;
+          // J4: NETEGEM EL PEDRAFORCA! 20 productes variats en ordre i posició 100% ALEATORIS!
+          if (!state.recycleDeck || state.recycleDeck.length === 0 || state.arcadeCompleted === 0) {
+            const ALL_RECYCLE_ITEMS = [
+              { icon: "🍾", name: "Ampolla de plàstic", binIndex: 0, code: "ffj" },
+              { icon: "🥫", name: "Llauna de refresc", binIndex: 0, code: "ffj" },
+              { icon: "🛍️", name: "Bossa de plàstic", binIndex: 0, code: "ffj" },
+              { icon: "🥛", name: "Pot de iogurt", binIndex: 0, code: "ffj" },
+              { icon: "🧃", name: "Bric de suc", binIndex: 0, code: "ffj" },
+              { icon: "📰", name: "Diari vell", binIndex: 1, code: "jjf" },
+              { icon: "📦", name: "Caixa de cartró", binIndex: 1, code: "jjf" },
+              { icon: "📄", name: "Full arrugat", binIndex: 1, code: "jjf" },
+              { icon: "📚", name: "Revista vella", binIndex: 1, code: "jjf" },
+              { icon: "✉️", name: "Sobre de paper", binIndex: 1, code: "jjf" },
+              { icon: "🍌", name: "Pela de plàtan", binIndex: 2, code: "fjf" },
+              { icon: "🍎", name: "Cor de poma", binIndex: 2, code: "fjf" },
+              { icon: "🍊", name: "Pela de taronja", binIndex: 2, code: "fjf" },
+              { icon: "🍞", name: "Crosta de pa", binIndex: 2, code: "fjf" },
+              { icon: "🍂", name: "Fulles seques", binIndex: 2, code: "fjf" },
+              { icon: "🧻", name: "Tovalló brut", binIndex: 3, code: "jfj" },
+              { icon: "🖊️", name: "Bolígraf trencat", binIndex: 3, code: "jfj" },
+              { icon: "🩹", name: "Tireta usada", binIndex: 3, code: "jfj" },
+              { icon: "🪥", name: "Raspall de dents", binIndex: 3, code: "jfj" },
+              { icon: "🧽", name: "Esponja vella", binIndex: 3, code: "jfj" }
+            ];
+            for (let i = ALL_RECYCLE_ITEMS.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [ALL_RECYCLE_ITEMS[i], ALL_RECYCLE_ITEMS[j]] = [ALL_RECYCLE_ITEMS[j], ALL_RECYCLE_ITEMS[i]];
+            }
+            state.recycleDeck = ALL_RECYCLE_ITEMS;
+          }
+          const item = state.recycleDeck[state.arcadeCompleted % state.recycleDeck.length];
+          const spawnX = 160 + Math.floor(Math.random() * 540);
           state.arcadeEntities.push({
             id: Date.now() + Math.random(),
             word: item.code,
