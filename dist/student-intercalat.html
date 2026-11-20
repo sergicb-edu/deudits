@@ -856,15 +856,19 @@
         drills: [
           { id: "L02.D1", label: "P1: Parelles D i K (dd kk dk kd)", stepType: "isolated_pairs", wordsCount: 10, mix: false },
           { id: "L02.D2", label: "P2: Grups de 3 D i K (dkd kdk ddk)", stepType: "isolated_triples", wordsCount: 10, mix: false },
-          { id: "L02.D3", label: "P3: Per Mà (df fd / kj jk)", stepType: "same_hand_pairs", wordsCount: 12, mix: true },
-          { id: "L02.D4", label: "P4: Les 4 Lletres (dkfj fjdk dfkj)", stepType: "cross_four", wordsCount: 12, mix: true }
+          { id: "L02.D3", label: "P3: Només Mà Esquerra (df fd dfd)", stepType: "left_hand_only", wordsCount: 10, mix: true },
+          { id: "L02.D4", label: "P4: Només Mà Dreta (kj jk kjk)", stepType: "right_hand_only", wordsCount: 10, mix: true },
+          { id: "L02.D5", label: "P5: Alternança de Mans (df kj fd jk)", stepType: "same_hand_pairs", wordsCount: 12, mix: true },
+          { id: "L02.D6", label: "P6: Les 4 Lletres Creuades (dkfj fjdk)", stepType: "cross_four", wordsCount: 12, mix: true }
         ],
         arcades: [
-          { id: "L02.G1", label: "J1: 🎈 Vol en Globus pel Berguedà (D i K)", subMode: "bergueda_balloon", totalTargets: 10, isExtra: false },
+          { id: "L02.G1", label: "J1: 🎈 Vol en Globus pel Llobregat (D i K)", subMode: "bergueda_balloon", totalTargets: 10, isExtra: false },
           { id: "L02.G2", label: "J2: 🎺 Els Grallers de Berga (Grups de 3)", subMode: "berga_grallers", totalTargets: 10, isExtra: false },
-          { id: "L02.G3", label: "J3: 🧱 Fem la Pinya a Berga (Per Mans)", subMode: "berga_pinya", totalTargets: 10, isExtra: false },
-          { id: "L02.G4", label: "J4: 🏰 Pugem el Castell de Berga (4 Lletres)", subMode: "dual_climbers", totalTargets: 12, isExtra: false },
-          { id: "L02.G5", label: "⭐ AMPLIACIÓ: 🎒 Equipem els Castellers de Berga!", subMode: "berga_equip", totalTargets: 8, isExtra: true }
+          { id: "L02.G3", label: "J3: 🌉 Creuem el Pont de Pedret (Mà Esq. D+F)", subMode: "pedret_bridge", totalTargets: 10, isExtra: false },
+          { id: "L02.G4", label: "J4: 🍄 Collita de Rovellons al Bosc (Mà Dreta K+J)", subMode: "bergueda_mushrooms", totalTargets: 10, isExtra: false },
+          { id: "L02.G5", label: "J5: 🧱 Fem la Pinya a Berga (Alternança)", subMode: "berga_pinya", totalTargets: 10, isExtra: false },
+          { id: "L02.G6", label: "J6: 🏰 Pugem el Castell de Berga (4 Lletres)", subMode: "dual_climbers", totalTargets: 12, isExtra: false },
+          { id: "L02.EXTRA", label: "⭐ EXTRA: 🧩 El Codi Secret del Berguedà (Sèries lògiques!)", subMode: "bergueda_logic_code", totalTargets: 10, isExtra: true }
         ]
       },
       {
@@ -1532,6 +1536,24 @@
           if (stepIndex < warmup.length) return warmup[stepIndex];
           return randomCombo(4, state._lastArcadeWord);
         }
+        if (subMode === "pedret_bridge") {
+          const L = lvl.leftKeys;
+          const warmup = [`${L[0]}${L[1]}`, `${L[1]}${L[0]}`, `${L[0]}${L[1]}${L[0]}`, `${L[1]}${L[0]}${L[1]}`];
+          if (stepIndex < warmup.length) return warmup[stepIndex];
+          const wLen = stepIndex < 7 ? 3 : 4;
+          let s = "";
+          for (let c = 0; c < wLen; c++) s += L[Math.floor(rng() * L.length)];
+          return s;
+        }
+        if (subMode === "bergueda_mushrooms") {
+          const R = lvl.rightKeys;
+          const warmup = [`${R[0]}${R[1]}`, `${R[1]}${R[0]}`, `${R[0]}${R[1]}${R[0]}`, `${R[1]}${R[0]}${R[1]}`];
+          if (stepIndex < warmup.length) return warmup[stepIndex];
+          const wLen = stepIndex < 7 ? 3 : 4;
+          let s = "";
+          for (let c = 0; c < wLen; c++) s += R[Math.floor(rng() * R.length)];
+          return s;
+        }
         if (subMode === "berga_pinya") {
           const useLeft = stepIndex % 2 === 0;
           const handPool = useLeft ? lvl.leftKeys : lvl.rightKeys;
@@ -1644,7 +1666,41 @@
         return out.join(" ");
       }
 
-      // 1C (Nivell 2): Coordinació per Mà — Mà Esquerra (df, fd, dfd, fdf) i Mà Dreta (kj, jk, kjk, jkj)
+      // P3 (Nivell 2): Només Mà Esquerra (df fd dfd fdf + aleatòries!)
+      if (drill.stepType === "left_hand_only") {
+        const L1 = lvl.leftKeys[0], L2 = lvl.leftKeys[1] || L1;
+        const warmup = [`${L1}${L2}`, `${L2}${L1}`, `${L1}${L2}${L1}`, `${L2}${L1}${L2}`];
+        const out = [];
+        for (let i = 0; i < drill.wordsCount; i++) {
+          if (i < warmup.length) out.push(warmup[i]);
+          else {
+            const wLen = i % 2 === 0 ? 3 : 4;
+            let w = "";
+            for (let c = 0; c < wLen; c++) w += rng() < 0.5 ? L1 : L2;
+            out.push(w);
+          }
+        }
+        return out.join(" ");
+      }
+
+      // P4 (Nivell 2): Només Mà Dreta (kj jk kjk jkj + aleatòries!)
+      if (drill.stepType === "right_hand_only") {
+        const R1 = lvl.rightKeys[0], R2 = lvl.rightKeys[1] || R1;
+        const warmup = [`${R1}${R2}`, `${R2}${R1}`, `${R1}${R2}${R1}`, `${R2}${R1}${R2}`];
+        const out = [];
+        for (let i = 0; i < drill.wordsCount; i++) {
+          if (i < warmup.length) out.push(warmup[i]);
+          else {
+            const wLen = i % 2 === 0 ? 3 : 4;
+            let w = "";
+            for (let c = 0; c < wLen; c++) w += rng() < 0.5 ? R1 : R2;
+            out.push(w);
+          }
+        }
+        return out.join(" ");
+      }
+
+      // P5 (Nivell 2): Alternança per Mà — Mà Esquerra (df, fd, dfd) i Mà Dreta (kj, jk, kjk)
       if (drill.stepType === "same_hand_pairs") {
         const L1 = lvl.leftKeys[0], L2 = lvl.leftKeys[1] || L1;
         const R1 = lvl.rightKeys[0], R2 = lvl.rightKeys[1] || R1;
@@ -1786,15 +1842,19 @@
         }
       } else {
         if (state.stepId === "L02.G1") {
-          cap.textContent = "🎈 Volem en globus pel Berguedà seguint el riu Llobregat fins a Berga!";
+          cap.textContent = "🎈 Volem en globus pel Berguedà seguint el riu Llobregat!";
         } else if (state.stepId === "L02.G2") {
           cap.textContent = "🎺 Ajudem els grallers de Berga a tocar el Toc de Castells!";
         } else if (state.stepId === "L02.G3") {
-          cap.textContent = "🧱 Fem una pinya ben forta amb els Castellers de Berga!";
+          cap.textContent = "🌉 Creuem el Pont Romànic de Pedret saltant pedra a pedra (Mà Esquerra D+F)!";
         } else if (state.stepId === "L02.G4") {
-          cap.textContent = "🏰 Pugem el gran castell a la plaça de Berga!";
+          cap.textContent = "🍄 Collita de rovellons al bosc del Berguedà (Mà Dreta K+J)!";
         } else if (state.stepId === "L02.G5") {
-          cap.textContent = "🎒 Equipem els Castellers de Berga abans d'entrar a plaça!";
+          cap.textContent = "🧱 Fem una pinya ben forta amb els Castellers de Berga!";
+        } else if (state.stepId === "L02.G6") {
+          cap.textContent = "🏰 Pugem el gran castell a la plaça de Berga!";
+        } else if (state.stepId === "L02.EXTRA") {
+          cap.textContent = "🧩 El Codi Secret del Berguedà! Dedueix quines lletres falten a la sèrie!";
         } else {
           cap.textContent = "🎈 En Bit viatja pel Berguedà cap a Berga! Practica les lletres D i K!";
         }
@@ -2122,7 +2182,7 @@
 
     const BERGUEDA_FLOWERS = [
       { id: "L01.G4", flower: "🌸 Genciana del Pedraforca", stickerIcon: "🏔️🤖", stickerTitle: "En Bit Netejant el Pedraforca", desc: "Flor blava i violeta dels prats alts del Pedraforca!" },
-      { id: "L02.G5", flower: "🌼 Narcís dels Poetes", stickerIcon: "🎒🏰", stickerTitle: "Equip dels Castellers de Berga", desc: "Flor blanca dels boscos del Berguedà! (Guanyada a l'Extra del Nivell 2)" },
+      { id: "L02.EXTRA", flower: "🌼 Narcís dels Poetes", stickerIcon: "🧩🔐", stickerTitle: "El Codi Secret del Berguedà", desc: "Flor blanca dels boscos del Berguedà! (Guanyada a l'Extra de Lògica del Nivell 2)" },
       { id: "DIAG.ZERO", flower: "🌷 Orquídia del Berguedà", stickerIcon: "🎯✨", stickerTitle: "Explorador del Teclat", desc: "Orquídia de primavera! (Guanyada a Comprova el teu nivell!)" },
       { id: "L01.PROVERB", flower: "🌺 Marcòlic Vermell", stickerIcon: "🔑⛰️", stickerTitle: "Clau del Pedraforca", desc: "Lliri salvatge del Berguedà! (Guanyada en obrir la Clau del Nivell 1)" },
       { id: "L02.PROVERB", flower: "🌻 Àrnica de Muntanya", stickerIcon: "🏰🙌", stickerTitle: "Enxaneta de Berga", desc: "Flor daurada dels cims del Berguedà! (Guanyada en completar el Nivell 2)" }
@@ -2254,16 +2314,20 @@
             </svg>
           `;
           mapNodes = [
-            { id: "L02.D1", phaseType: "drill", label: "Missió 1", icon: "1", x: 8, y: 72 },
-            { id: "L02.G1", phaseType: "arcade", label: "Missió 2", icon: "2", x: 19.5, y: 34 },
-            { id: "L02.D2", phaseType: "drill", label: "Missió 3", icon: "3", x: 31.5, y: 70 },
-            { id: "L02.G2", phaseType: "arcade", label: "Missió 4", icon: "4", x: 43.5, y: 33 },
-            { id: "L02.D3", phaseType: "drill", label: "Missió 5", icon: "5", x: 56, y: 69 },
-            { id: "L02.G3", phaseType: "arcade", label: "Missió 6", icon: "6", x: 68, y: 33 },
-            { id: "L02.D4", phaseType: "drill", label: "Missió 7", icon: "7", x: 80, y: 66 },
-            { id: "L02.G4", phaseType: "arcade", label: "Missió 8", icon: "8", x: 90, y: 34 },
-            { id: "L02.PROVERB", phaseType: "proverb", label: "🔑", icon: "🔑", x: 95.5, y: 53, isKey: true },
-            { id: "L02.G5", phaseType: "arcade", label: "🌸 Extra", icon: "🌸", x: 90.5, y: 84, isExtra: true }
+            { id: "L02.D1", phaseType: "drill", label: "Missió 1", icon: "1", x: 6, y: 74 },
+            { id: "L02.G1", phaseType: "arcade", label: "Missió 2", icon: "2", x: 13.5, y: 34 },
+            { id: "L02.D2", phaseType: "drill", label: "Missió 3", icon: "3", x: 21, y: 74 },
+            { id: "L02.G2", phaseType: "arcade", label: "Missió 4", icon: "4", x: 29, y: 34 },
+            { id: "L02.D3", phaseType: "drill", label: "Missió 5", icon: "5", x: 37, y: 74 },
+            { id: "L02.G3", phaseType: "arcade", label: "Missió 6", icon: "6", x: 45, y: 34 },
+            { id: "L02.D4", phaseType: "drill", label: "Missió 7", icon: "7", x: 53, y: 74 },
+            { id: "L02.G4", phaseType: "arcade", label: "Missió 8", icon: "8", x: 61, y: 34 },
+            { id: "L02.D5", phaseType: "drill", label: "Missió 9", icon: "9", x: 69, y: 74 },
+            { id: "L02.G5", phaseType: "arcade", label: "Missió 10", icon: "10", x: 76.5, y: 34 },
+            { id: "L02.D6", phaseType: "drill", label: "Missió 11", icon: "11", x: 83.5, y: 68 },
+            { id: "L02.G6", phaseType: "arcade", label: "Missió 12", icon: "12", x: 89.5, y: 32 },
+            { id: "L02.PROVERB", phaseType: "proverb", label: "🔑", icon: "🔑", x: 95.5, y: 52, isKey: true },
+            { id: "L02.EXTRA", phaseType: "arcade", label: "🌸 Extra", icon: "🧩", x: 91, y: 84, isExtra: true }
           ];
         } else {
           // MAPA PLA 2D DEL NIVELL 1: Univers (esquerra) -> Atmosfera / Terra (centre) -> Pedraforca (dreta)
@@ -2798,7 +2862,65 @@
           });
         }
       } else if (lvl.gameMode === "castells") {
-        if (arcDef.subMode === "berga_equip") {
+        if (arcDef.subMode === "bergueda_logic_code") {
+          // EXTRA METACOGNICIÓ (Opció A): El Codi Secret del Berguedà (Sèries lògiques de lletres!)
+          const LOGIC_PUZZLES = [
+            { pattern: "d   f   d   f   d   [ ? ]", answer: "f" },
+            { pattern: "dd   kk   dd   [ ? ]", answer: "kk" },
+            { pattern: "df   kj   df   [ ? ]", answer: "kj" },
+            { pattern: "f   j   d   k   f   j   d   [ ? ]", answer: "k" },
+            { pattern: "k   k   j   k   k   [ ? ]", answer: "j" },
+            { pattern: "ff   dd   ff   [ ? ]", answer: "dd" },
+            { pattern: "fd   jk   fd   [ ? ]", answer: "jk" },
+            { pattern: "dk   dk   fj   dk   dk   [ ? ]", answer: "fj" },
+            { pattern: "d   k   f   j   d   k   f   [ ? ]", answer: "j" },
+            { pattern: "jj   kk   jj   [ ? ]", answer: "kk" }
+          ];
+          const puz = LOGIC_PUZZLES[state.arcadeCompleted % LOGIC_PUZZLES.length];
+          state.arcadeEntities = [{
+            id: Date.now() + Math.random(),
+            word: puz.answer,
+            typedIndex: 0,
+            isLogicCode: true,
+            pattern: puz.pattern,
+            subMode: arcDef.subMode,
+            x: 440,
+            y: 120,
+            speed: 0
+          }];
+        } else if (arcDef.subMode === "bergueda_mushrooms") {
+          // J4: COLLITA DE ROVELLONS AL BOSC DEL BERGUEDÀ (Pop-up aleatori en diferents punts del bosc!)
+          const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
+          state._lastArcadeWord = rawW;
+          const spots = [
+            { x: 130, y: 172 }, { x: 295, y: 150 }, { x: 470, y: 176 },
+            { x: 645, y: 152 }, { x: 745, y: 178 }, { x: 215, y: 184 }, { x: 560, y: 160 }
+          ];
+          const sp = spots[Math.floor(Math.random() * spots.length)];
+          state.arcadeEntities = [{
+            id: Date.now() + Math.random(),
+            word: rawW + " ",
+            typedIndex: 0,
+            subMode: arcDef.subMode,
+            x: sp.x,
+            y: sp.y,
+            lifeTimer: Math.round(420 / getSpeedMultiplier()),
+            maxLife: Math.round(420 / getSpeedMultiplier())
+          }];
+        } else if (arcDef.subMode === "pedret_bridge") {
+          // J3: PONT ROMÀNIC DE PEDRET (Salts pedra a pedra només amb la mà esquerra D+F!)
+          const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
+          state._lastArcadeWord = rawW;
+          state.arcadeEntities = [{
+            id: Date.now() + Math.random(),
+            word: rawW + " ",
+            typedIndex: 0,
+            subMode: arcDef.subMode,
+            x: 110 + (state.arcadeCompleted / Math.max(1, state.arcadeTotal)) * 660,
+            y: 138,
+            speed: 0
+          }];
+        } else if (arcDef.subMode === "berga_equip") {
           const EQUIP_ITEMS = [
             { icon: "👕", name: "Camisa blava", binIndex: 0, code: "ddf" },
             { icon: "🥋", name: "Faixa negra", binIndex: 1, code: "kkj" },
@@ -2899,7 +3021,11 @@
       const hintEl = document.getElementById("arcade-hint-text");
 
       if (ent) {
-        if (ent.isRecycle) {
+        if (ent.isLogicCode) {
+          const done = ent.word.slice(0, ent.typedIndex);
+          wordEl.innerHTML = `🧩 Dedueix què falta al [ ? ] <span style="color:#4ade80;">${done}</span>`;
+          renderSupportKeyboardAndHands(null);
+        } else if (ent.isRecycle) {
           const typed = ent.typedBuffer || "";
           wordEl.innerHTML = `${ent.itemIcon} ${ent.itemName} <span style="color:#fde047;margin-left:6px;">${typed || "___"}</span>`;
           renderSupportKeyboardAndHands(null);
@@ -2911,8 +3037,12 @@
         }
 
         if (lvl.gameMode === "castells") {
-          hintEl.textContent = ent.subMode === "berga_equip"
-            ? "🎒 Classifica l'equip casteller: 🔵 Camisa (ddf) · ⚫ Faixa (kkj) · 🔴 Mocador (dfk) · 🟡 Casc (kjd)"
+          hintEl.textContent = ent.subMode === "bergueda_logic_code"
+            ? "🧩 El Codi Secret del Berguedà! Observa la sèrie lògica, dedueix quines lletres falten al [ ? ] i escriu-les!"
+            : ent.subMode === "pedret_bridge"
+            ? "🌉 Pont de Pedret! Només Mà Esquerra (D + F): cada bloc fa saltar en Bit d'una pedra a la següent!"
+            : ent.subMode === "bergueda_mushrooms"
+            ? "🍄 Collita de Rovellons! Només Mà Dreta (K + J): escriu el codi del rovelló abans que s'amagui al bosc!"
             : ent.subMode === "bergueda_balloon"
             ? "🎈 Vol en globus pel Berguedà seguint el riu Llobregat fins a Berga! Escriu les parelles D i K!"
             : ent.subMode === "berga_grallers"
@@ -3379,6 +3509,168 @@
       const arcDef = getActiveArcadeDef(lvl);
       const ent = getPrimaryEntity();
       const progressRatio = state.arcadeCompleted / Math.max(1, state.arcadeTotal);
+
+      if (arcDef.subMode === "pedret_bridge") {
+        // J3: CREUEM EL PONT ROMÀNIC DE PEDRET (Mà Esquerra D+F — salts pedra a pedra sobre el riu Llobregat!)
+        const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        sky.addColorStop(0, "#0284c7");
+        sky.addColorStop(0.65, "#bae6fd");
+        sky.addColorStop(1, "#e0f2fe");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Turons verds del Berguedà al fons
+        ctx.fillStyle = "#15803d";
+        ctx.beginPath(); ctx.arc(160, 210, 145, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#16a34a";
+        ctx.beginPath(); ctx.arc(700, 215, 165, Math.PI, Math.PI * 2); ctx.fill();
+
+        // Riu Llobregat passant per sota dels arcs del Pont de Pedret!
+        ctx.fillStyle = "#0284c7";
+        ctx.fillRect(0, 200, canvas.width, 50);
+        ctx.fillStyle = "rgba(186,230,253,0.45)";
+        const waveShift = (performance.now() * 0.05) % 90;
+        for (let wx = -90; wx < canvas.width + 90; wx += 90) {
+          ctx.fillRect(wx + waveShift, 214, 42, 4);
+          ctx.fillRect(wx + 35 + waveShift, 232, 36, 4);
+        }
+
+        // Arcs de pedra del Pont Romànic de Pedret
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillRect(40, 148, 800, 24);
+        for (let a = 0; a < 4; a++) {
+          const ax = 150 + a * 195;
+          ctx.fillStyle = "#64748b";
+          ctx.fillRect(ax - 90, 168, 22, 40);
+          ctx.fillStyle = "#0284c7";
+          ctx.beginPath(); ctx.arc(ax, 204, 68, Math.PI, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = "#475569"; ctx.lineWidth = 5; ctx.stroke();
+        }
+
+        // 10 pedres il·luminades al llarg del pont
+        const total = Math.max(1, state.arcadeTotal);
+        for (let i = 0; i <= total; i++) {
+          const sx = 95 + (i / total) * 690;
+          const done = i < state.arcadeCompleted;
+          const cur = i === state.arcadeCompleted;
+          ctx.fillStyle = done ? "#22c55e" : cur ? "#facc15" : "#e2e8f0";
+          ctx.fillRect(sx - 20, 142, 40, 12);
+          ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 1.5; ctx.strokeRect(sx - 20, 142, 40, 12);
+        }
+
+        // En Bit saltant d'una pedra a l'altra!
+        const bitX = 95 + (state.arcadeCompleted / total) * 690 + shakeX;
+        const bob = Math.abs(Math.sin(performance.now() * 0.008)) * 6;
+        drawSprite(ctx, SPRITES.bitRobot, bitX - 14, 102 - bob, 3.4);
+        drawSprite(ctx, SPRITES.barretina, bitX - 10, 90 - bob, 2.1);
+
+        if (ent) {
+          const wx = Math.min(720, Math.max(40, bitX + 22));
+          drawWordBox(ctx, ent.word, ent.typedIndex, wx, 52, true);
+        }
+        ctx.fillStyle = "rgba(15,23,42,0.78)";
+        ctx.fillRect(14, 10, 320, 24);
+        ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
+        ctx.fillText(`🌉 Pont de Pedret (Mà Esq. D+F): pedra ${state.arcadeCompleted}/${total}`, 22, 26);
+        return;
+      }
+
+      if (arcDef.subMode === "bergueda_mushrooms") {
+        // J4: COLLITA DE ROVELLONS AL BOSC DEL BERGUEDÀ (Mà Dreta K+J — estil Pop-up pel bosc!)
+        const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        bg.addColorStop(0, "#14532d");
+        bg.addColorStop(0.55, "#166534");
+        bg.addColorStop(1, "#4d7c0f");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Pins del Berguedà
+        for (let p = 0; p < 7; p++) {
+          const px = 75 + p * 125;
+          ctx.fillStyle = "#78350f";
+          ctx.fillRect(px - 8, 95, 16, 115);
+          ctx.fillStyle = "#15803d";
+          ctx.beginPath(); ctx.moveTo(px - 42, 125); ctx.lineTo(px, 35); ctx.lineTo(px + 42, 125); ctx.fill();
+        }
+        // Terra de molsa del bosc
+        ctx.fillStyle = "#365314";
+        ctx.fillRect(0, 185, canvas.width, 65);
+
+        // Cistell de bolets d'en Bit a baix a l'esquerra
+        drawSprite(ctx, SPRITES.bitRobot, 22, 175, 3.2);
+        ctx.font = "28px sans-serif";
+        ctx.fillText("🧺", 66, 222);
+
+        if (state.arcadeRunning && ent) {
+          ent.lifeTimer = (ent.lifeTimer || 300) - 1;
+          if (ent.lifeTimer <= 0) {
+            penalizeMistakeOrTimeout(100, true);
+            spawnEntitiesForCurrentMode(lvl);
+            return;
+          }
+          // Dibuixa el rovelló sortint de la molsa amb barra de temps!
+          const ratio = Math.max(0, ent.lifeTimer / Math.max(1, ent.maxLife || 300));
+          const popY = ent.y + (ratio < 0.15 ? (0.15 - ratio) * 120 : 0);
+          ctx.font = "36px sans-serif";
+          ctx.fillText("🍄", ent.x - 18, popY);
+          // Barra de temps sobre el bolet
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(ent.x - 24, popY - 62, 54, 7);
+          ctx.fillStyle = ratio > 0.35 ? "#4ade80" : "#ef4444";
+          ctx.fillRect(ent.x - 24, popY - 62, Math.round(54 * ratio), 7);
+          drawWordBox(ctx, ent.word, ent.typedIndex, Math.max(40, Math.min(730, ent.x - 32)), popY - 52, true);
+        }
+
+        ctx.fillStyle = "rgba(15,23,42,0.78)";
+        ctx.fillRect(14, 10, 325, 24);
+        ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
+        ctx.fillText(`🍄 Rovellons al cistell (Mà Dreta K+J): ${state.arcadeCompleted}/${state.arcadeTotal}`, 22, 26);
+        return;
+      }
+
+      if (arcDef.subMode === "bergueda_logic_code") {
+        // EXTRA METACOGNICIÓ (Opció A): EL CODI SECRET DEL BERGUEDÀ (Sèries lògiques!)
+        const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        bg.addColorStop(0, "#1e1b4b");
+        bg.addColorStop(1, "#312e81");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Cofre antic de fusta amb pany daurat
+        ctx.fillStyle = "#78350f";
+        ctx.fillRect(120, 46, 640, 168);
+        ctx.strokeStyle = "#facc15";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(120, 46, 640, 168);
+        ctx.fillStyle = "#fde047";
+        ctx.font = "bold 15px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("🧩 COFRE SECRET DEL BERGUEDÀ — QUINES LLETRES FALTEN A LA SÈRIE?", 440, 78);
+
+        if (ent) {
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(160, 96, 560, 56);
+          ctx.strokeStyle = "#38bdf8";
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(160, 96, 560, 56);
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 26px Consolas, monospace";
+          ctx.fillText(ent.pattern, 440, 134);
+
+          const typedSoFar = ent.word.slice(0, ent.typedIndex);
+          ctx.fillStyle = "#4ade80";
+          ctx.font = "bold 18px Consolas, monospace";
+          ctx.fillText(`La teva resposta: ${typedSoFar || "?"}`, 440, 188);
+        }
+        ctx.textAlign = "left";
+        drawSprite(ctx, SPRITES.bitRobot, 32, 130, 3.6);
+        ctx.fillStyle = "rgba(15,23,42,0.8)";
+        ctx.fillRect(14, 10, 270, 24);
+        ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
+        ctx.fillText(`🔐 Codis secrets resolts: ${state.arcadeCompleted} / ${state.arcadeTotal}`, 22, 26);
+        return;
+      }
 
       if (arcDef.subMode === "bergueda_balloon") {
         // J1: VOL EN GLOBUS PEL BERGUEDÀ (Muntanyes + Riu Llobregat + Pobles passant per sota!)
@@ -4099,7 +4391,11 @@
           state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
 
           if (lvl.gameMode === "meteors") {
-            if (ent.isRecycle) {
+            if (ent.isLogicCode) {
+          const done = ent.word.slice(0, ent.typedIndex);
+          wordEl.innerHTML = `🧩 Dedueix què falta al [ ? ] <span style="color:#4ade80;">${done}</span>`;
+          renderSupportKeyboardAndHands(null);
+        } else if (ent.isRecycle) {
               // El residu es llença directament dins la boca del contenidor que toca!
               const cardX = Math.max(40, Math.min(620, ent.x - 95));
               const targetBinX = 76 + ent.binIndex * 190 + 80;
@@ -4751,7 +5047,8 @@
       countdownTimerId: null,
       isCountingDown: false,
       streak: 0,
-      lastKeyMs: 0
+      lastKeyMs: 0,
+      runnerOffset: 0
     };
 
     function stopTongueRaceTimer() {
@@ -4889,6 +5186,7 @@
       tongueState.bitProgress = 0;
       tongueState.streak = 0;
       tongueState.lastKeyMs = 0;
+      tongueState.runnerOffset = 0;
 
       document.getElementById("tongue-list-view").style.display = "none";
       document.getElementById("tongue-race-view").style.display = "block";
@@ -4985,7 +5283,11 @@
         return `<span style="color:#334155;">${disp}</span>`;
       }).join("");
 
-      const pct = Math.min(1, tongueState.cursor / Math.max(1, chars.length));
+      // Posició visual del corredor a la pista (retrocedeix en fallar i fa turbo en ratxa, sense moure mai el cursor del text!)
+      const effectivePos = tongueState.cursor >= chars.length
+        ? chars.length
+        : Math.max(0, Math.min(chars.length - 0.5, tongueState.cursor + (tongueState.runnerOffset || 0)));
+      const pct = Math.min(1, effectivePos / Math.max(1, chars.length));
       document.getElementById("race-player-runner").style.left = `${6 + pct * 86}%`;
     }
 
@@ -5017,7 +5319,7 @@
 
         if (tongueState.streak >= 5 && tongueState.cursor < it.text.length) {
           tongueState.streak = 0;
-          tongueState.cursor = Math.min(it.text.length, tongueState.cursor + 1);
+          tongueState.runnerOffset = Math.min(4, (tongueState.runnerOffset || 0) + 1.5);
           sfxActionSuccess();
           const runnerEl = document.getElementById("race-player-runner");
           if (runnerEl) {
@@ -5026,7 +5328,7 @@
           }
           const statusEl = document.getElementById("tongue-race-status");
           if (statusEl) {
-            statusEl.innerHTML = `<span style="color:#ca8a04;font-size:0.98rem;">⚡✨ RATXA TURBO (5 seguides)! Avances +1 posició extra!</span>`;
+            statusEl.innerHTML = `<span style="color:#ca8a04;font-size:0.98rem;">⚡✨ RATXA TURBO (5 seguides)! El teu corredor accelera!</span>`;
           }
         } else {
           sfxTone(expected === " " ? 587.33 : 440 + (tongueState.cursor % 5) * 30, 45, "triangle", 0.05);
@@ -5122,7 +5424,8 @@
       } else {
         tongueState.errors++;
         tongueState.streak = 0;
-        tongueState.cursor = Math.max(0, tongueState.cursor - 1);
+        // Retrocedeix el personatge a la pista (NO el cursor del text!)
+        tongueState.runnerOffset = Math.max(-tongueState.cursor, (tongueState.runnerOffset || 0) - 1.5);
         tongueState.wrongFlash = true;
         sfxErrorHit();
         renderTongueTape();
