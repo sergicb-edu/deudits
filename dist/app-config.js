@@ -221,15 +221,12 @@ window.MecanoGoogleAuth = (function () {
       { method: "PATCH" }
     );
 
-    // 3. Permet que els alumnes del domini escolar (o amb l'enllaç en comptes Gmail personals) puguin registrar partides
+    // 3. Permet que els alumnes amb l'enllaç del docent (fins i tot si el docent és @xtec.cat i els alumnes @escola.cat) puguin registrar partides
     try {
-      const permBody = userDomain
-        ? { type: "domain", domain: userDomain, role: "writer" }
-        : { type: "anyone", role: "writer" };
       await apiFetch(`https://www.googleapis.com/drive/v3/files/${sheetId}/permissions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(permBody)
+        body: JSON.stringify({ type: "anyone", role: "writer" })
       });
     } catch {
       // Si el domini restringeix permisos automàtics, el docent el pot compartir manualment des del botó Obrir Sheet
@@ -434,7 +431,7 @@ window.MecanoGoogleAuth = (function () {
   function buildStudentShareLink() {
     const sheetId = getSheetId();
     const cid = getClientId();
-    const base = new URL("./student.html", window.location.href);
+    const base = new URL("./student-intercalat.html", window.location.href);
     if (sheetId) base.searchParams.set("sheet", sheetId);
     if (cid && !(window.MECANO_CONFIG && window.MECANO_CONFIG.GOOGLE_CLIENT_ID)) {
       base.searchParams.set("cid", cid);

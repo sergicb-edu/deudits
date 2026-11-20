@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#1d4ed8" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="./app-config.js"></script>
+  <script src="./dites-db.js"></script>
   <style>
     :root {
       --font-scale: 1;
@@ -390,6 +391,23 @@
   </style>
 </head>
 <body>
+  <!-- MODAL D'IDENTIFICACIÓ AUTOMÀTICA QUAN L'ALUMNE OBRE L'ENLLAÇ DEL DOCENT (?sheet=...) -->
+  <div id="student-google-modal" style="position:fixed;inset:0;background:rgba(15,23,42,0.82);display:none;align-items:center;justify-content:center;z-index:9999;padding:1rem;">
+    <div style="background:#ffffff;border:3px solid #2563eb;border-radius:1.2rem;padding:1.6rem 1.4rem;max-width:430px;width:100%;text-align:center;box-shadow:0 20px 45px rgba(15,23,42,0.3);">
+      <div style="font-size:2.8rem;margin-bottom:0.2rem;">🤖👋</div>
+      <h2 style="margin:0 0 0.4rem;color:#1e3a8a;font-size:1.35rem;">Hola! Connecta el teu compte Google</h2>
+      <p style="margin:0 0 1rem;font-size:0.92rem;color:#475569;line-height:1.45;">
+        Inicia sessió amb el teu compte Google escolar perquè el teu mestre o mestra pugui veure les teves Barretines i el teu progrés!
+      </p>
+      <button type="button" id="btn-modal-google-login" class="primary" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;border-radius:0.75rem;margin-bottom:0.65rem;">
+        🔐 Entrar amb Google (1 clic)
+      </button>
+      <div id="modal-google-err" style="color:#dc2626;font-size:0.82rem;font-weight:700;min-height:1.1rem;margin-bottom:0.35rem;"></div>
+      <button type="button" id="btn-modal-google-skip" style="background:transparent;border:none;color:#64748b;font-size:0.8rem;text-decoration:underline;cursor:pointer;">
+        Continuar sense connectar (només en aquest ordinador)
+      </button>
+    </div>
+  </div>
   <div class="shell">
     <!-- CAPÇALERA COMPACTA -->
     <header class="topbar">
@@ -432,7 +450,7 @@
           <span id="badges-strip" style="font-size:0.82rem;font-weight:700;display:flex;gap:0.4rem;flex-wrap:wrap;"></span>
         </div>
         <button type="button" id="btn-diagnostic-zero" style="background:#fef3c7;border-color:#f59e0b;color:#78350f;font-size:0.8rem;">
-          ⏱️ Prova Inicial (Termòmetre Zero)
+          🎯 Comprova el teu nivell!
         </button>
       </div>
 
@@ -457,24 +475,12 @@
       <div id="proverb-gate-banner" style="margin-top:0.75rem;"></div>
     </section>
 
-    <!-- PANTALLA 3: INTRODUCCIÓ ANIMADA (MINIVÍDEO 8-BITS) + ENGEGAR MOTORS -->
+    <!-- PANTALLA 3: INTRODUCCIÓ ANIMADA + ENGEGAR MOTORS (NETA I NESE-FRIENDLY) -->
     <section class="view-screen" id="screen-ignition">
-      <div class="ignition-screen" style="max-width:680px;margin:0.5rem auto;padding:1rem 1.2rem;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;">
-          <span style="background:#f59e0b;color:#0f172a;font-size:0.74rem;font-weight:900;padding:2px 8px;border-radius:99px;">
-            🎬 MINIVÍDEO DE LA HISTÒRIA
-          </span>
-          <span id="story-caption" style="font-size:0.82rem;color:#fde047;font-weight:700;"></span>
-        </div>
-        <canvas id="story-canvas" width="600" height="145" style="width:100%;max-width:600px;height:auto;border-radius:10px;border:2px solid #475569;background:#060913;image-rendering:pixelated;margin-bottom:0.55rem;"></canvas>
-
-        <h2 id="ignition-title" style="margin:0 0 0.25rem;font-size:1.15rem;">🚀 Engega els motors d'en Bit!</h2>
-        <p id="ignition-desc" style="margin:0;font-size:0.88rem;opacity:0.92;"></p>
-        <div class="ignition-keys" id="ignition-keys" style="margin:0.65rem 0;"></div>
-        <div style="display:flex;justify-content:center;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-          <span style="font-size:0.8rem;opacity:0.8;">Prem físicament les tecles per començar!</span>
-          <button type="button" id="btn-skip-ignition">Saltar i entrar ➡️</button>
-        </div>
+      <div class="ignition-screen" style="max-width:680px;margin:0.5rem auto;padding:1.1rem 1.3rem;">
+        <h2 id="story-caption" style="margin:0 0 0.7rem;font-size:1.35rem;line-height:1.3;color:#fde047;font-weight:900;"></h2>
+        <canvas id="story-canvas" width="600" height="165" style="width:100%;max-width:600px;height:auto;border-radius:10px;border:2px solid #475569;background:#060913;image-rendering:pixelated;margin-bottom:0.75rem;"></canvas>
+        <div class="ignition-keys" id="ignition-keys" style="margin:0.45rem 0 0.1rem;"></div>
       </div>
     </section>
 
@@ -653,7 +659,8 @@
         arcades: [
           { id: "L01.G1", label: "J1: ☄️ Vol Espacial — Esquiva Asteroides (ff jj fj jf)", subMode: "space_asteroids", totalTargets: 8, isExtra: false },
           { id: "L01.G2", label: "J2: 🦅 Descens Vertical — Esquiva Ocells (ffj jjf fjf)", subMode: "atmosphere_birds", totalTargets: 10, isExtra: false },
-          { id: "L01.G3", label: "J3: 🏔️ Escalada al Cim del Pedraforca (ffjj jjff fjfj)", subMode: "pedraforca_climb", totalTargets: 10, isExtra: false }
+          { id: "L01.G3", label: "J3: 🏔️ Escalada al Cim del Pedraforca (ffjj jjff fjfj)", subMode: "pedraforca_climb", totalTargets: 10, isExtra: false },
+          { id: "L01.G4", label: "J4: ♻️ Netegem el Pedraforca! (Classifica residus: ffj, jjf, fjf, jfj)", subMode: "pedraforca_recycle", totalTargets: 10, isExtra: false }
         ]
       },
       {
@@ -1116,14 +1123,22 @@
         btn.textContent = `🔐 ${savedUser.givenName} (Connecta)`;
       }
 
-      btn.onclick = async () => {
+      const modal = document.getElementById("student-google-modal");
+      const modalLoginBtn = document.getElementById("btn-modal-google-login");
+      const modalSkipBtn = document.getElementById("btn-modal-google-skip");
+      const modalErr = document.getElementById("modal-google-err");
+
+      async function doStudentSignIn() {
         try {
           btn.textContent = "⏳ Connectant...";
+          if (modalErr) modalErr.textContent = "";
+          if (modalLoginBtn) modalLoginBtn.textContent = "⏳ Obrint Google...";
           const user = await window.MecanoGoogleAuth.studentSignIn();
           btn.textContent = `✅ ${user.givenName}`;
           btn.style.background = "#dcfce7";
           btn.style.borderColor = "#16a34a";
           btn.style.color = "#14532d";
+          if (modal) modal.style.display = "none";
 
           // Envia qualsevol partida feta abans de connectar-se
           const pending = JSON.parse(localStorage.getItem("mecano_pending_oauth_sessions") || "[]");
@@ -1135,9 +1150,24 @@
           }
         } catch (err) {
           btn.textContent = "🔐 Entrar amb Google";
-          alert("No s'ha pogut iniciar sessió amb Google: " + (err && err.message ? err.message : err));
+          if (modalLoginBtn) modalLoginBtn.textContent = "🔐 Entrar amb Google (1 clic)";
+          const msg = "No s'ha pogut iniciar sessió amb Google: " + (err && err.message ? err.message : err);
+          if (modal && modal.style.display === "flex" && modalErr) {
+            modalErr.textContent = msg;
+          } else {
+            alert(msg);
+          }
         }
-      };
+      }
+
+      btn.onclick = doStudentSignIn;
+      if (modalLoginBtn) modalLoginBtn.onclick = doStudentSignIn;
+      if (modalSkipBtn) modalSkipBtn.onclick = () => { if (modal) modal.style.display = "none"; };
+
+      // Si s'obre l'enllaç del docent (?sheet=...) i encara no té sessió activa, mostra la pantalla gran d'identificació!
+      if (modal && !window.MecanoGoogleAuth.hasValidToken() && window.location.protocol !== "file:") {
+        modal.style.display = "flex";
+      }
     })();
 
     // Sons 8-bits
@@ -1477,22 +1507,69 @@
       let t = 0;
 
       if (lvl.id === "L01") {
-        if (state.stepId === "L01.G2") {
-          cap.textContent = "J2: Entrem verticalment a l'atmosfera! Esquiva els ocells cada cop més ràpids per aterrar al Pedraforca!";
+        if (state.stepId === "L01.G4") {
+          cap.textContent = "♻️ La muntanya està plena d'escombraries! Netegem el Pedraforca!";
+        } else if (state.stepId === "L01.G3") {
+          cap.textContent = "🏔️ Som als peus del Pedraforca! Escalem la muntanya pas a pas fins al cim!";
+        } else if (state.stepId === "L01.G2") {
+          cap.textContent = "🦅 Entrem verticalment a l'atmosfera! Esquiva els ocells per aterrar al Pedraforca!";
         } else if (state.stepId === "L01.G1") {
-          cap.textContent = "J1: Esquiva els asteroides per l'espai fins a arribar a l'òrbita del planeta Terra!";
+          cap.textContent = "☄️ Esquiva els asteroides per l'espai fins a arribar al planeta Terra!";
         } else {
-          cap.textContent = "Hola! Soc en Bit! Entrena els índexs F i J abans d'iniciar el viatge cap a la Terra!";
+          cap.textContent = "🤖 Hola! Soc en Bit! Entrena els índexs F i J per viatjar cap al Pedraforca!";
         }
       } else {
-        cap.textContent = "En Bit arriba des del Pedraforca fins a la plaça de Vilafranca per fer pinya amb els castellers!";
+        cap.textContent = "🏰 En Bit arriba a la plaça de Vilafranca per fer pinya amb els castellers!";
       }
 
       function tickStory() {
         if (state.screen !== "ignition") return;
         t++;
 
-        if (lvl.id === "L01" && state.stepId === "L01.G2") {
+        if (lvl.id === "L01" && state.stepId === "L01.G4") {
+          // Intro J4: El Pedraforca amb escombraries i els 4 contenidors de reciclatge!
+          const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          g.addColorStop(0, "#0284c7");
+          g.addColorStop(1, "#bae6fd");
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          drawPedraforcaSilhouette(ctx, 130, 148, 340, 115, true);
+          ctx.fillStyle = "#16a34a";
+          ctx.fillRect(0, 140, canvas.width, 25);
+          // 4 contenidors mini
+          const bins = ["#eab308", "#2563eb", "#92400e", "#64748b"];
+          bins.forEach((col, i) => {
+            ctx.fillStyle = col;
+            ctx.fillRect(150 + i * 85, 114, 42, 34);
+            ctx.strokeStyle = "#0f172a";
+            ctx.strokeRect(150 + i * 85, 114, 42, 34);
+          });
+          // Residus caient
+          const dropY = 18 + (t * 1.4) % 90;
+          ctx.font = "22px sans-serif";
+          ctx.fillText("🍾", 160, dropY);
+          ctx.fillText("📰", 245, ((dropY + 35) % 95) + 12);
+          ctx.fillText("🍌", 330, ((dropY + 60) % 95) + 12);
+          drawSprite(ctx, SPRITES.bitRobot, 48, 102 - Math.abs(Math.sin(t * 0.12)) * 5, 3.4);
+        } else if (lvl.id === "L01" && state.stepId === "L01.G3") {
+          // Intro J3: En Bit als peus del Pedraforca saltant cap al cim!
+          const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          g.addColorStop(0, "#0284c7");
+          g.addColorStop(1, "#e0f2fe");
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#fde047";
+          ctx.beginPath();
+          ctx.arc(520, 34, 20, 0, Math.PI * 2);
+          ctx.fill();
+          drawPedraforcaSilhouette(ctx, 90, 165, 420, 140, true);
+          const climbT = (t % 120) / 120;
+          const bx = 135 + climbT * 270;
+          const hop = Math.abs(Math.sin(t * 0.18)) * 16;
+          const by = 132 - climbT * 82 - hop;
+          drawSprite(ctx, SPRITES.bitRobot, bx, by, 3.2);
+          drawSprite(ctx, SPRITES.barretina, bx + 4, by - 10, 2);
+        } else if (lvl.id === "L01" && state.stepId === "L01.G2") {
           // Minivídeo d'introducció a la J2: Descens vertical per l'atmosfera esquivant ocells amb el Pedraforca a sota!
           ctx.fillStyle = "#0284c7";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1570,13 +1647,21 @@
 
       const isJ1 = state.stepId === "L01.G1";
       const isJ2 = state.stepId === "L01.G2";
+      const isJ3 = state.stepId === "L01.G3";
+      const isJ4 = state.stepId === "L01.G4";
 
       if (isJ1) {
         titleEl.textContent = "🌍 Has esquivat els asteroides i has arribat a l'òrbita de la Terra!";
-        descEl.textContent = "Ara passa al repte J2 per fer l'entrada vertical a l'atmosfera esquivant els ocells i aterrar al Pedraforca!";
+        descEl.textContent = "Ara passa a la següent etapa per fer l'entrada vertical a l'atmosfera cap al Pedraforca!";
       } else if (isJ2) {
         titleEl.textContent = "⛰️ Descens completat! En Bit aterra al Pedraforca!";
-        descEl.textContent = "Després de superar el J2 travessant l'atmosfera, la nau d'en Bit aterra als peus dels dos cims en forca del Pedraforca!";
+        descEl.textContent = "La nau d'en Bit ha aterrat suaument als peus dels dos cims en forca del Pedraforca!";
+      } else if (isJ3) {
+        titleEl.textContent = "🏔️ En Bit corona el cim del Pedraforca!";
+        descEl.textContent = "Has escalat tots els esglaons fins al Pollegó Superior! En Bit celebra el cim onejant la bandera!";
+      } else if (isJ4) {
+        titleEl.textContent = "🌿 El Pedraforca torna a estar net i brillant!";
+        descEl.textContent = "Gràcies a la teva ajuda classificant els residus, tota la muntanya brilla com mai!";
       } else {
         titleEl.textContent = "🏰 L'Enxaneta fa l'aleta a Vilafranca!";
         descEl.textContent = "Amb la coordinació de les dues mans, en Bit i la colla han coronat el castell!";
@@ -1649,6 +1734,60 @@
               ctx.fillText("2/2 · Aterrant als peus del Pedraforca...", 22, 26);
             }
           }
+        } else if (isJ3) {
+          // Minivídeo de final de J3: En Bit corona el cim del Pedraforca!
+          const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          g.addColorStop(0, "#0284c7");
+          g.addColorStop(1, "#bae6fd");
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#fde047";
+          ctx.beginPath();
+          ctx.arc(530, 42, 26, 0, Math.PI * 2);
+          ctx.fill();
+          drawPedraforcaSilhouette(ctx, 70, 210, 480, 165, true);
+          // Bandera al cim
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(262, 28, 3, 45);
+          ctx.fillStyle = "#facc15";
+          ctx.fillRect(265, 28, 26, 16);
+          ctx.fillStyle = "#dc2626";
+          ctx.fillRect(265, 31, 26, 2);
+          ctx.fillRect(265, 36, 26, 2);
+          ctx.fillRect(265, 41, 26, 2);
+          // En Bit saltant d'alegria al cim!
+          const hop = Math.abs(Math.sin(frame * 0.14)) * 18;
+          drawSprite(ctx, SPRITES.bitRobot, 224, 48 - hop, 3.6);
+          drawSprite(ctx, SPRITES.barretina, 229, 36 - hop, 2.2);
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(14, 12, 330, 24);
+          ctx.fillStyle = "#fde047";
+          ctx.font = "bold 13px sans-serif";
+          ctx.fillText("🏔️ Cim del Pedraforca coronat per en Bit!", 22, 29);
+        } else if (isJ4) {
+          // Minivídeo de final de J4: El Pedraforca net i brillant!
+          const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          g.addColorStop(0, "#0284c7");
+          g.addColorStop(1, "#dcfce7");
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          drawPedraforcaSilhouette(ctx, 100, 195, 420, 145, true);
+          ctx.fillStyle = "#16a34a";
+          ctx.fillRect(0, 182, canvas.width, 28);
+          // Estrelles brillants de neteja
+          ctx.font = "20px sans-serif";
+          const pulse = Math.sin(frame * 0.15) * 4;
+          ctx.fillText("✨", 180, 90 + pulse);
+          ctx.fillText("✨", 390, 82 - pulse);
+          ctx.fillText("🦋", 300 + Math.sin(frame * 0.06) * 45, 70 + Math.cos(frame * 0.1) * 10);
+          const hop = Math.abs(Math.sin(frame * 0.14)) * 10;
+          drawSprite(ctx, SPRITES.bitRobot, 285, 140 - hop, 3.8);
+          drawSprite(ctx, SPRITES.barretina, 290, 127 - hop, 2.3);
+          ctx.fillStyle = "#064e3b";
+          ctx.fillRect(14, 12, 355, 24);
+          ctx.fillStyle = "#86efac";
+          ctx.font = "bold 13px sans-serif";
+          ctx.fillText("♻️ Pedraforca net i reciclat! Gràcies, equip!", 22, 29);
         } else {
           ctx.fillStyle = "#172554";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1802,6 +1941,36 @@
 
           container.appendChild(card);
         }
+
+        // Si hi ha jocs addicionals sense pràctica prèvia (com J4: Netegem el Pedraforca!), els mostrem com a etapa final!
+        for (let i = lvl.drills.length; i < lvl.arcades.length; i++) {
+          const arc = lvl.arcades[i];
+          if (arc.isExtra) continue;
+          const aUnl = isStepUnlocked(lvl, arc.id);
+          const aB = state.stepBarretines[arc.id] || 0;
+          const card = document.createElement("div");
+          card.className = `phase-card ${aUnl ? "" : "locked"}`;
+          card.style.padding = "0.85rem 1rem";
+          card.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.55rem;">
+              <div>
+                <span style="background:#dcfce7;color:#14532d;font-size:0.72rem;font-weight:900;padding:2px 8px;border-radius:99px;">♻️ ETAPA ${i + 1} · MISSIÓ ESPECIAL AL PEDRAFORCA</span>
+                <div style="font-size:0.82rem;opacity:0.85;margin-top:0.25rem;">La muntanya està plena d'escombraries! Classifica cada residu al seu contenidor!</div>
+              </div>
+              <span style="font-size:0.78rem;font-weight:800;color:#475569;">${aB} / 5 Barretines</span>
+            </div>
+          `;
+          const btnJ = document.createElement("button");
+          btnJ.className = "substep-btn";
+          btnJ.style.width = "100%";
+          btnJ.style.background = aUnl ? "#ecfdf5" : "";
+          btnJ.style.borderColor = aUnl ? "#16a34a" : "";
+          btnJ.disabled = !aUnl;
+          btnJ.innerHTML = `<span>${aUnl ? "♻️" : "🔒"} ${arc.label}</span><span>${aB}/5 ${renderBarretinaSvg(aB >= 3, 2)}</span>`;
+          if (aUnl) btnJ.onclick = () => promptIgnitionBeforeStep(lvl.id, "arcade", arc.id);
+          card.appendChild(btnJ);
+          container.appendChild(card);
+        }
       } else {
         container.style.gridTemplateColumns = "";
         // PAS 1: PRÀCTICA DE LLETRES
@@ -1888,16 +2057,6 @@
       state.ignitionPressed = {};
       const lvl = LEVELS.find(l => l.id === levelId) || LEVELS[0];
 
-      const k1 = lvl.newKeys[0].toUpperCase();
-      const k2 = lvl.newKeys[1].toUpperCase();
-      const f1 = FINGERS[resolveChar(lvl.newKeys[0]).finger].labelCa;
-      const f2 = FINGERS[resolveChar(lvl.newKeys[1]).finger].labelCa;
-
-      document.getElementById("ignition-title").textContent = `🚀 Engega els motors (${lvl.titleCa})!`;
-      document.getElementById("ignition-desc").innerHTML =
-        `Col·loca els dits a la fila base (A S D F — J K L Ñ).<br>` +
-        `Prem <strong>${k1}</strong> (${f1}), <strong>${k2}</strong> (${f2}) i <strong>ESPAI</strong> (Polzes):`;
-
       renderIgnitionBoxes(lvl);
       showScreen("ignition");
       startStoryMiniVideo(lvl, phaseType);
@@ -1941,10 +2100,29 @@
           document.getElementById("btn-speak-proverb").style.display = "none";
           state.sequence = adapt.text;
         } else if (state.phaseType === "diagnostic") {
-          document.getElementById("tape-title").textContent = `⏱️ Prova Inicial (Termòmetre Zero): «pas a pas es fa cami»`;
-          document.getElementById("tape-subtitle").textContent = "Punt de partida inicial per comparar el teu progrés durant el Pilot!";
+          const db = window.DEUDITS_DB || {
+            dites: [{ text: "a poc a poc es fa camí" }, { text: "qui dia passa any empeny" }],
+            embarbussaments: [{ text: "una plata plena de pebre negre" }]
+          };
+          const d1 = db.dites[Math.floor(Math.random() * db.dites.length)];
+          const e1 = db.embarbussaments[Math.floor(Math.random() * db.embarbussaments.length)];
+          const d2Pool = db.dites.filter(x => x.text !== d1.text);
+          const d2 = d2Pool.length > 0 ? d2Pool[Math.floor(Math.random() * d2Pool.length)] : d1;
+          state.diagnosticQueue = [
+            { kind: "Dita catalana", text: d1.text },
+            { kind: "Embarbussament", text: e1.text },
+            { kind: "Dita catalana", text: d2.text }
+          ];
+          state.diagnosticIdx = 0;
+          state.diagnosticAccPresses = 0;
+          state.diagnosticAccErrors = 0;
+          state.diagnosticAccChars = 0;
+          state.diagnosticStartMs = performance.now();
+          const curItem = state.diagnosticQueue[0];
+          document.getElementById("tape-title").textContent = `🎯 Comprova el teu nivell! (1/3 · ${curItem.kind})`;
+          document.getElementById("tape-subtitle").textContent = "Escriu amb calma i precisió: al final descobrirem quin és el teu nivell!";
           document.getElementById("btn-speak-proverb").style.display = "none";
-          state.sequence = "pas a pas es fa cami";
+          state.sequence = curItem.text;
         } else {
           document.getElementById("tape-title").textContent = `📜 Dita Catalana: «${lvl.proverbCa}»`;
           document.getElementById("tape-subtitle").textContent = lvl.proverbMeaningCa;
@@ -1978,6 +2156,9 @@
       state.arcadeEnergy = 100;
       state.arcadeCompleted = 0;
       state.arcadeTotal = arcDef.totalTargets || 10;
+      state.climbFromStep = 0;
+      state.climbJumpProgress = 1;
+      state.recycledFlying = [];
       state.arcadeEntities = [];
       state.dodgedAsteroids = [];
       state.shipDodgeYOffset = 0;
@@ -2009,7 +2190,35 @@
       const act = getCurrentActNumber();
 
       if (lvl.gameMode === "meteors") {
-        if (arcDef.subMode === "pedraforca_climb") {
+        if (arcDef.subMode === "pedraforca_recycle") {
+          // J4 (Versió B): NETEGEM EL PEDRAFORCA! Residus caient per classificar als 4 contenidors (codis de 3 lletres f/j)
+          const RECYCLE_ITEMS = [
+            { icon: "🍾", name: "Ampolla de plàstic", binIndex: 0, code: "ffj" },
+            { icon: "📰", name: "Diari vell", binIndex: 1, code: "jjf" },
+            { icon: "🍌", name: "Pela de plàtan", binIndex: 2, code: "fjf" },
+            { icon: "🧻", name: "Tovalló brut", binIndex: 3, code: "jfj" },
+            { icon: "🥫", name: "Llauna", binIndex: 0, code: "ffj" },
+            { icon: "📦", name: "Caixa de cartró", binIndex: 1, code: "jjf" },
+            { icon: "🍎", name: "Cor de poma", binIndex: 2, code: "fjf" },
+            { icon: "🖊️", name: "Bolígraf trencat", binIndex: 3, code: "jfj" },
+            { icon: "🛍️", name: "Bossa de plàstic", binIndex: 0, code: "ffj" },
+            { icon: "📄", name: "Full arrugat", binIndex: 1, code: "jjf" }
+          ];
+          const item = RECYCLE_ITEMS[state.arcadeCompleted % RECYCLE_ITEMS.length];
+          state.arcadeEntities.push({
+            id: Date.now() + Math.random(),
+            word: item.code,
+            typedIndex: 0,
+            x: 180 + (state.arcadeCompleted % 4) * 165,
+            y: 34,
+            speed: 0.27,
+            isRecycle: true,
+            itemIcon: item.icon,
+            itemName: item.name,
+            binIndex: item.binIndex,
+            scale: 4
+          });
+        } else if (arcDef.subMode === "pedraforca_climb") {
           // J3 (Versió B): ESCALADA AL CIM DEL PEDRAFORCA PAS A PAS (sense pressió de temps, pura escalada!)
           const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
           state.arcadeEntities.push({
@@ -2114,10 +2323,17 @@
       const hintEl = document.getElementById("arcade-hint-text");
 
       if (ent) {
-        const done = ent.word.slice(0, ent.typedIndex).replace(" ", "␣");
-        const todo = ent.word.slice(ent.typedIndex).replace(" ", "␣");
-        wordEl.innerHTML = `<span style="color:#4ade80;">${done}</span><span style="color:#fde047;text-decoration:underline;">${todo}</span>`;
-        renderSupportKeyboardAndHands(ent.word[ent.typedIndex]);
+        if (ent.isRecycle) {
+          const done = ent.word.slice(0, ent.typedIndex);
+          wordEl.innerHTML = `${ent.itemIcon} ${ent.itemName} <span style="color:#4ade80;">${done}</span>`;
+          renderSupportKeyboardAndHands(null);
+          hintEl.textContent = "♻️ Mira quin contenidor correspon (🟡 Plàstic: ffj · 🔵 Paper: jjf · 🟤 Orgànica: fjf · 🔘 Rebuig: jfj)!";
+        } else {
+          const done = ent.word.slice(0, ent.typedIndex).replace(" ", "␣");
+          const todo = ent.word.slice(ent.typedIndex).replace(" ", "␣");
+          wordEl.innerHTML = `<span style="color:#4ade80;">${done}</span><span style="color:#fde047;text-decoration:underline;">${todo}</span>`;
+          renderSupportKeyboardAndHands(ent.word[ent.typedIndex]);
+        }
 
         if (lvl.gameMode === "castells") {
           hintEl.textContent = ent.subMode === "dual_climbers"
@@ -2233,7 +2449,117 @@
       const progressRatio = state.arcadeCompleted / Math.max(1, state.arcadeTotal);
       const ent = getPrimaryEntity();
 
-      if (arcDef.subMode === "pedraforca_climb") {
+      if (arcDef.subMode === "pedraforca_recycle") {
+        // J4: NETEGEM EL PEDRAFORCA! (4 contenidors: Plàstic ffj, Paper jjf, Orgànica fjf, Rebuig jfj)
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        skyGrad.addColorStop(0, "#0284c7");
+        skyGrad.addColorStop(0.65, "#7dd3fc");
+        skyGrad.addColorStop(1, "#dcfce7");
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // El Pedraforca majestuós al fons (cada cop més net!)
+        drawPedraforcaSilhouette(ctx, 120, 210, 640, 175, true);
+
+        // Prat verd als peus del Pedraforca
+        ctx.fillStyle = "#16a34a";
+        ctx.fillRect(0, 198, canvas.width, 52);
+
+        // 4 Contenidors oficials de reciclatge a sota
+        const BINS = [
+          { label: "PLÀSTIC", code: "ffj", bg: "#eab308", border: "#a16207", text: "#422006", icon: "🟡" },
+          { label: "PAPER", code: "jjf", bg: "#2563eb", border: "#1e3a8a", text: "#ffffff", icon: "🔵" },
+          { label: "ORGÀNICA", code: "fjf", bg: "#92400e", border: "#451a03", text: "#ffffff", icon: "🟤" },
+          { label: "REBUIG", code: "jfj", bg: "#64748b", border: "#334155", text: "#ffffff", icon: "🔘" }
+        ];
+        const binW = 160, binH = 60, binY = 184;
+        BINS.forEach((b, i) => {
+          const bx = 76 + i * 190;
+          ctx.fillStyle = b.bg;
+          ctx.fillRect(bx, binY, binW, binH);
+          ctx.strokeStyle = b.border;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(bx, binY, binW, binH);
+          // Tapa del contenidor
+          ctx.fillStyle = b.border;
+          ctx.fillRect(bx - 4, binY - 6, binW + 8, 8);
+
+          ctx.fillStyle = b.text;
+          ctx.font = "bold 13px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(`${b.icon} ${b.label}`, bx + binW / 2, binY + 22);
+
+          // Codi de 3 lletres ben gran i clar!
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(bx + 38, binY + 30, 84, 24);
+          ctx.fillStyle = "#fde047";
+          ctx.font = "bold 17px Consolas, monospace";
+          ctx.fillText(b.code, bx + binW / 2, binY + 48);
+        });
+        ctx.textAlign = "left";
+
+        // Residus que volen cap al contenidor correcte un cop classificats!
+        const remFlying = [];
+        for (const f of (state.recycledFlying || [])) {
+          f.t += 0.08;
+          const fx = f.sx + (f.tx - f.sx) * f.t;
+          const fy = f.sy + (f.ty - f.sy) * f.t - Math.sin(f.t * Math.PI) * 35;
+          ctx.font = "28px sans-serif";
+          ctx.fillText(f.icon, fx - 14, fy);
+          if (f.t < 1) remFlying.push(f);
+        }
+        state.recycledFlying = remFlying;
+
+        // Residu actiu caient lentament cap al prat
+        if (state.arcadeRunning) {
+          for (const it of state.arcadeEntities) {
+            it.y += it.speed;
+            if (it.y >= 168) {
+              penalizeMistakeOrTimeout(100, true);
+              it.y = 34;
+              it.typedIndex = 0;
+              updateArcadeHud(lvl);
+              break;
+            }
+          }
+        }
+
+        state.arcadeEntities.forEach((it, idx) => {
+          // Targeta ben clara amb la icona i el nom del residu en català
+          const cardX = Math.max(40, Math.min(620, it.x - 95));
+          const cardY = it.y;
+          ctx.fillStyle = "rgba(255,255,255,0.95)";
+          ctx.fillRect(cardX, cardY, 210, 44);
+          ctx.strokeStyle = "#0f172a";
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(cardX, cardY, 210, 44);
+
+          ctx.font = "26px sans-serif";
+          ctx.fillText(it.itemIcon, cardX + 10, cardY + 32);
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "bold 14px sans-serif";
+          ctx.fillText(it.itemName, cardX + 44, cardY + 27);
+
+          // Mostra les lletres que estàs escrivint per classificar-lo (sense revelar el codi si encara no has començat, o amb guia suau!)
+          const typedPreview = it.typedIndex > 0 ? it.word.slice(0, it.typedIndex) + "·".repeat(it.word.length - it.typedIndex) : "???";
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(cardX + 65, cardY - 24, 80, 22);
+          ctx.strokeStyle = "#fde047";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(cardX + 65, cardY - 24, 80, 22);
+          ctx.fillStyle = it.typedIndex > 0 ? "#4ade80" : "#fde047";
+          ctx.font = "bold 15px Consolas, monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(typedPreview, cardX + 105, cardY - 8);
+          ctx.textAlign = "left";
+        });
+
+        ctx.fillStyle = "rgba(6,78,59,0.85)";
+        ctx.fillRect(14, 10, 315, 24);
+        ctx.fillStyle = "#86efac";
+        ctx.font = "bold 12px sans-serif";
+        ctx.fillText(`♻️ Residus classificats: ${state.arcadeCompleted} / ${state.arcadeTotal} — Netegem el Pedraforca!`, 22, 26);
+      } else if (arcDef.subMode === "pedraforca_climb") {
         // J3 (Versió B): ESCALADA AL CIM DEL PEDRAFORCA — 3a mecànica totalment diferent!
         const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
         skyGrad.addColorStop(0, "#0284c7");
@@ -2293,12 +2619,20 @@
         ctx.fillRect(peakX + 9, peakY - 19, 22, 2);
         ctx.fillRect(peakX + 9, peakY - 15, 22, 2);
 
-        // En Bit escalador (salta suaument a cada esglaó completat!)
-        const curT = state.arcadeCompleted / totalSteps;
-        const bitX = 95 + curT * 575 + shakeX;
-        const bob = Math.sin(performance.now() * 0.008) * 2.5;
-        const bitY = 222 - curT * 142 - 22 + bob;
-        drawSprite(ctx, SPRITES.robotBit || SPRITES.spaceship, bitX - 14, bitY, 3.6);
+        // En Bit escalador amb animació de saltironet parabòlic entre esglaons!
+        if (state.climbJumpProgress < 1) {
+          state.climbJumpProgress = Math.min(1, state.climbJumpProgress + 0.065);
+        }
+        const fromT = (state.climbFromStep || 0) / totalSteps;
+        const toT = state.arcadeCompleted / totalSteps;
+        const p = state.climbJumpProgress;
+        const interpT = fromT + (toT - fromT) * p;
+        const jumpArc = p < 1 ? Math.sin(p * Math.PI) * 34 : 0;
+        const bitX = 95 + interpT * 575 + shakeX;
+        const idleBob = p >= 1 ? Math.sin(performance.now() * 0.008) * 2.5 : 0;
+        const bitY = 222 - interpT * 142 - 24 - jumpArc + idleBob;
+        drawSprite(ctx, SPRITES.bitRobot || SPRITES.spaceship, bitX - 14, bitY, 3.6);
+        drawSprite(ctx, SPRITES.barretina, bitX - 10, bitY - 12, 2.2);
 
         // Caixeta de paraula sobre el següent esglaó!
         state.arcadeEntities.forEach((stepEnt, idx) => {
@@ -2618,7 +2952,23 @@
           state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
 
           if (lvl.gameMode === "meteors") {
-            if (ent.isBird) {
+            if (ent.isRecycle) {
+              // El residu vola cap al contenidor corresponent!
+              const targetBinX = 76 + ent.binIndex * 190 + 80;
+              state.recycledFlying = state.recycledFlying || [];
+              state.recycledFlying.push({
+                icon: ent.itemIcon,
+                sx: ent.x,
+                sy: ent.y + 20,
+                tx: targetBinX,
+                ty: 186,
+                t: 0
+              });
+            } else if (ent.isClimb) {
+              // Dispara el saltironet parabòlic d'en Bit cap al següent esglaó!
+              state.climbFromStep = state.arcadeCompleted;
+              state.climbJumpProgress = 0;
+            } else if (ent.isBird) {
               // Esquivada lateral d'ocell a la J2 (entrada vertical a l'atmosfera)!
               state.shipDodgeYOffset = ent.x >= 415 ? -75 : 75;
               state.dodgedAsteroids.push({
@@ -2860,13 +3210,49 @@
 
     function finishTapePhase() {
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
-      const correctCount = state.sequence.length;
-      const errs = state.tapeTotalErrors;
-      const totalAttempts = correctCount + errs;
+      let correctCount = state.sequence.length;
+      let errs = state.tapeTotalErrors;
+      let totalAttempts = correctCount + errs;
+
+      // Si estem a «🎯 Comprova el teu nivell!», encadenem les 3 frases (dites i embarbussaments)
+      if (state.phaseType === "diagnostic" && state.diagnosticQueue) {
+        state.diagnosticAccChars += correctCount;
+        state.diagnosticAccErrors += errs;
+        state.diagnosticAccPresses += totalAttempts;
+        state.diagnosticIdx++;
+
+        if (state.diagnosticIdx < state.diagnosticQueue.length) {
+          sfxActionSuccess();
+          const nextItem = state.diagnosticQueue[state.diagnosticIdx];
+          document.getElementById("tape-title").textContent =
+            `🎯 Comprova el teu nivell! (${state.diagnosticIdx + 1}/${state.diagnosticQueue.length} · ${nextItem.kind})`;
+          state.sequence = nextItem.text;
+          state.cursor = 0;
+          state.evaluations = [];
+          state.charHadError = {};
+          state.currentCharWrongFlash = false;
+          state.tapeTotalErrors = 0;
+          renderTapeView();
+          return;
+        }
+
+        // Acabades les 3 frases: calculem mètriques globals i assignem 1 dels 5 nivells il·lustratius!
+        correctCount = state.diagnosticAccChars;
+        errs = state.diagnosticAccErrors;
+        totalAttempts = state.diagnosticAccPresses;
+      }
+
       const acc = totalAttempts > 0 ? correctCount / totalAttempts : 1;
-      const durS = Math.max(1, Math.round((performance.now() - state.startedAtMs) / 1000));
+      const startRef = (state.phaseType === "diagnostic" && state.diagnosticStartMs) ? state.diagnosticStartMs : state.startedAtMs;
+      const durS = Math.max(1, Math.round((performance.now() - startRef) / 1000));
       const wpm = Number(((correctCount / 5) / (durS / 60)).toFixed(1));
       const b = computeBarretines(acc);
+
+      // Puntuació i Nivell (1 a 5) per a «Comprova el teu nivell!»
+      const diagScore = Math.max(0, Math.min(100, Math.round(acc * 60 + Math.min(40, wpm * 1.15))));
+      const diagLevels = (window.DEUDITS_DB && window.DEUDITS_DB.diagnosticLevels) || [];
+      const diagIdx = diagScore >= 86 ? 4 : diagScore >= 72 ? 3 : diagScore >= 58 ? 2 : diagScore >= 42 ? 1 : 0;
+      const assignedDiag = diagLevels[diagIdx] || { icon: "🐣", name: "Nivell 1 — Pollet Explorador", desc: "Estàs descobrint el teclat!" };
 
       sfxFanfare();
       const prev = state.stepBarretines[state.stepId] || 0;
@@ -2874,7 +3260,7 @@
 
       if (state.phaseType === "proverb" || state.phaseType === "diagnostic") {
         state.proverbHistory.push({
-          title: state.phaseType === "diagnostic" ? "⏱️ Prova Inicial (Termòmetre Zero)" : lvl.titleCa,
+          title: state.phaseType === "diagnostic" ? `🎯 ${assignedDiag.name}` : lvl.titleCa,
           wpm,
           acc: Math.round(acc * 100)
         });
@@ -2883,7 +3269,7 @@
 
       const drillObj = lvl.drills.find(d => d.id === state.stepId);
       const stepLabel = state.phaseType === "diagnostic"
-        ? "⏱️ Prova Inicial (Termòmetre Zero)"
+        ? `🎯 Comprova el teu nivell (${assignedDiag.name} · ${diagScore}/100)`
         : state.phaseType === "adaptive"
         ? `💪 Reforç Adaptatiu (${lvl.id})`
         : state.phaseType === "proverb"
@@ -2904,15 +3290,18 @@
 
       showResultScreen({
         title: state.phaseType === "diagnostic"
-          ? `⏱️ Prova Inicial enregistrada! (${wpm} PPM · ${Math.round(acc * 100)}%)`
+          ? `${assignedDiag.icon} ${assignedDiag.name}!`
           : state.phaseType === "proverb"
           ? `📜 Dita Catalana completada! (${b} / 5 Barretines)`
           : `⌨️ Pràctica completada! (${b} / 5 Barretines)`,
         barretines: b,
-        msg: b >= 3
+        msg: state.phaseType === "diagnostic"
+          ? `Puntuació: ${diagScore} / 100 punts · ${assignedDiag.desc}`
+          : b >= 3
           ? (state.phaseType === "proverb" ? "Has completat totes les fases d'aquest nivell del Pilot!" : "Molt bé! Amb ≥ 3 Barretines ja tens desbloquejat el següent repte!")
           : "Sense almenys 3 Barretines (88% precisió) no pots passar al següent repte. Repeteix-lo per aconseguir ≥ 3 Barretines!",
         metricsHtml: `
+          ${state.phaseType === "diagnostic" ? `<span>Puntuació: <strong>${diagScore} / 100</strong></span>` : ""}
           <span>Precisió: <strong>${Math.round(acc * 100)}%</strong></span>
           <span>Errors comesos: <strong>${errs}</strong></span>
           <span>Velocitat: <strong>${wpm} paraules/min</strong></span>
@@ -3085,7 +3474,8 @@
       }
     };
 
-    document.getElementById("btn-skip-ignition").onclick = () => launchActiveStep();
+    const skipIgnBtn = document.getElementById("btn-skip-ignition");
+    if (skipIgnBtn) skipIgnBtn.onclick = () => launchActiveStep();
     document.getElementById("btn-restart-tape").onclick = () => launchActiveStep();
     document.getElementById("btn-restart-arcade").onclick = () => launchActiveStep();
 
