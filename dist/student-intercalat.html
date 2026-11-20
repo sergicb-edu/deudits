@@ -2630,10 +2630,9 @@
 
       if (ent) {
         if (ent.isRecycle) {
-          const done = ent.word.slice(0, ent.typedIndex);
-          wordEl.innerHTML = `${ent.itemIcon} ${ent.itemName} <span style="color:#4ade80;">${done}</span>`;
+          const typed = ent.typedBuffer || "";
+          wordEl.innerHTML = `${ent.itemIcon} ${ent.itemName} <span style="color:#fde047;margin-left:6px;">${typed || "___"}</span>`;
           renderSupportKeyboardAndHands(null);
-          hintEl.textContent = "♻️ Mira quin contenidor correspon (🟡 Plàstic: ffj · 🔵 Paper: jjf · 🟤 Orgànica: fjf · 🔘 Rebuig: jfj)!";
         } else {
           const done = ent.word.slice(0, ent.typedIndex).replace(" ", "␣");
           const todo = ent.word.slice(ent.typedIndex).replace(" ", "␣");
@@ -2651,12 +2650,16 @@
           hintEl.textContent = "🎵 Segueix la melodia de la cobla i completa les notes dins del Cercle Daurat!";
         } else if (lvl.gameMode === "patum") {
           hintEl.textContent = `🔥 Sona la música de la Patum! Apaga el fuet del cantó ${ent.dir}!`;
+        } else if (ent.isRecycle) {
+          hintEl.textContent = "♻️ Classifica el residu al seu contenidor: 🟡 Plàstic (ffj) · 🔵 Paper (jjf) · 🟤 Orgànica (fjf) · 🔘 Rebuig (jfj)";
+        } else if (ent.isClimb) {
+          hintEl.textContent = "🏔️ Escala el Pedraforca pas a pas! Cada bloc completat fa saltar en Bit al següent esglaó!";
+        } else if (ent.isBird) {
+          hintEl.textContent = ent.isTurboExtra
+            ? `⭐ JOC EXTRA TURBO (Velocitat x${(1 + state.arcadeCompleted * 0.12).toFixed(1)}): No condiciona passar de nivell!`
+            : "🦅 Descens vertical per l'atmosfera! Esquiva els ocells fins a aterrar al Pedraforca!";
         } else {
-          hintEl.textContent = ent.isBird
-            ? (ent.isTurboExtra
-                ? `⭐ JOC EXTRA TURBO (Velocitat x${(1 + state.arcadeCompleted * 0.12).toFixed(1)}): No condiciona passar de nivell!`
-                : `🦅 J2 (Velocitat suau): Descens vertical per l'atmosfera! Les paraules es fan més llargues!`)
-            : `🛸 J1: Esquiva els asteroides per arribar al planeta Terra!`;
+          hintEl.textContent = "🛸 Esquiva els asteroides per l'espai fins a arribar al planeta Terra!";
         }
       } else {
         wordEl.textContent = "---";
@@ -2832,8 +2835,10 @@
           for (const it of state.arcadeEntities) {
             it.y += it.speed;
             if (it.y >= 224) {
+              state.recycleWrongTimer = 55;
               penalizeMistakeOrTimeout(100, true);
               it.y = 36;
+              it.typedBuffer = "";
               it.typedIndex = 0;
               updateArcadeHud(lvl);
               break;
@@ -2857,19 +2862,35 @@
           ctx.font = "bold 14px sans-serif";
           ctx.fillText(it.itemName, cardX + 44, cardY + 27);
 
-          // Mostra les lletres que estàs escrivint per classificar-lo (sense revelar el codi si encara no has començat, o amb guia suau!)
-          const typedPreview = it.typedIndex > 0 ? it.word.slice(0, it.typedIndex) + "·".repeat(it.word.length - it.typedIndex) : "???";
+          // Mostra les lletres que estàs escrivint per classificar-lo (buffer lliure de 3 lletres!)
+          const buf = it.typedBuffer || "";
+          const typedPreview = buf.length > 0 ? buf + "·".repeat(Math.max(0, 3 - buf.length)) : "???";
           ctx.fillStyle = "#0f172a";
           ctx.fillRect(cardX + 65, cardY - 24, 80, 22);
           ctx.strokeStyle = "#fde047";
           ctx.lineWidth = 2;
           ctx.strokeRect(cardX + 65, cardY - 24, 80, 22);
-          ctx.fillStyle = it.typedIndex > 0 ? "#4ade80" : "#fde047";
+          ctx.fillStyle = buf.length > 0 ? "#4ade80" : "#fde047";
           ctx.font = "bold 15px Consolas, monospace";
           ctx.textAlign = "center";
           ctx.fillText(typedPreview, cardX + 105, cardY - 8);
           ctx.textAlign = "left";
         });
+
+        // Avís visual gran de ❌ INCORRECTE quan es posa al contenidor equivocat!
+        if (state.recycleWrongTimer && state.recycleWrongTimer > 0) {
+          state.recycleWrongTimer--;
+          ctx.fillStyle = "rgba(220, 38, 38, 0.94)";
+          ctx.fillRect(260, 108, 360, 56);
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(260, 108, 360, 56);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 19px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("❌ Contenidor incorrecte! Torna-ho a provar", 440, 142);
+          ctx.textAlign = "left";
+        }
 
         ctx.fillStyle = "rgba(6,78,59,0.85)";
         ctx.fillRect(14, 10, 315, 24);
@@ -3247,6 +3268,63 @@
       const ent = getPrimaryEntity();
       if (!state.arcadeRunning || !ent) return;
 
+      // LÒGICA ESPECÍFICA DE J4 (RECICLATGE): l'alumne escriu el codi de 3 lletres del contenidor que triï!
+      if (ent.isRecycle) {
+        state.arcadeTotalPresses++;
+        if (typedChar !== "f" && typedChar !== "j") {
+          // Tecla no vàlida: el residu baixa una mica cap avall (mai cap a l'esquerra!)
+          state.arcadeErrors++;
+          ent.y = Math.min(220, ent.y + 14);
+          sfxError();
+          updateArcadeHud(lvl);
+          return;
+        }
+        ent.typedBuffer = (ent.typedBuffer || "") + typedChar;
+        if (!state.arcadeKeyErrors[typedChar]) state.arcadeKeyErrors[typedChar] = { hits: 0, errors: 0 };
+        state.arcadeKeyErrors[typedChar].hits++;
+        playGameNote(lvl.gameMode);
+
+        if (ent.typedBuffer.length >= 3) {
+          if (ent.typedBuffer === ent.word) {
+            // CONTENIDOR CORRECTE! El residu vola directament dins la boca del contenidor!
+            sfxActionSuccess();
+            const cardX = Math.max(40, Math.min(620, ent.x - 95));
+            const targetBinX = 76 + ent.binIndex * 190 + 80;
+            state.recycledFlying = state.recycledFlying || [];
+            state.recycledFlying.push({
+              icon: ent.itemIcon,
+              binIndex: ent.binIndex,
+              sx: cardX + 105,
+              sy: ent.y + 22,
+              tx: targetBinX,
+              ty: 274,
+              t: 0
+            });
+            state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
+            state.arcadeEntities.shift();
+            state.arcadeCompleted++;
+            if (state.arcadeCompleted >= state.arcadeTotal) {
+              state.arcadeRunning = false;
+              setTimeout(() => endArcadeGame(true), 500);
+            } else {
+              spawnEntitiesForCurrentMode(lvl);
+            }
+          } else {
+            // CONTENIDOR EQUIVOCAT! Perd 1 Barretina, surt el símbol ❌ i torna a començar AQUEST producte des de dalt!
+            state.arcadeErrors++;
+            state.recycleWrongTimer = 65;
+            penalizeMistakeOrTimeout(100, true);
+            ent.typedBuffer = "";
+            ent.typedIndex = 0;
+            ent.y = 36;
+            updateArcadeHud(lvl);
+          }
+        } else {
+          updateArcadeHud(lvl);
+        }
+        return;
+      }
+
       state.arcadeTotalPresses++;
       const expected = ent.word[ent.typedIndex].toLowerCase();
       if (!state.arcadeKeyErrors[expected]) state.arcadeKeyErrors[expected] = { hits: 0, errors: 0 };
@@ -3338,7 +3416,8 @@
         }
         if (lvl.gameMode === "meteors") {
           if (ent.isBird) ent.y -= 18;
-          else ent.x -= 28;
+          else if (ent.isRecycle) ent.y += 14;
+          else if (!ent.isClimb) ent.x -= 28;
         }
         if (lvl.gameMode === "sardana") ent.y += 18;
         if (lvl.gameMode === "patum") ent.dist -= 0.1;
