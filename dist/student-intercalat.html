@@ -448,11 +448,11 @@
       box-shadow: 0 8px 18px rgba(15, 23, 42, 0.36);
     }
     .map-node-btn.state-done {
-      background: linear-gradient(145deg, #22c55e, #15803d);
+      background: linear-gradient(145deg, #16a34a, #15803d);
       color: #ffffff;
     }
     .map-node-btn.state-open {
-      background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+      background: linear-gradient(145deg, #22c55e, #16a34a);
       color: #ffffff;
       animation: nodePulse 1.8s infinite;
     }
@@ -483,8 +483,16 @@
       white-space: nowrap;
     }
     @keyframes nodePulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.65); }
-      50% { box-shadow: 0 0 0 11px rgba(59, 130, 246, 0); }
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+      50% { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); }
+    }
+    @keyframes popCelebrate {
+      0% { transform: scale(0.4); opacity: 0; }
+      60% { transform: scale(1.25); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .anim-pop {
+      animation: popCelebrate 0.55s ease-out both;
     }
   </style>
 </head>
@@ -1378,20 +1386,32 @@
         return lvl.realWords[stepIndex % lvl.realWords.length];
       }
 
-      // VERSIÓ B INTERCALADA (Nivell 1): cada joc usa EXACTAMENT les mateixes combinacions que la seva pràctica!
+      // VERSIÓ B INTERCALADA (Nivell 1): primers 4 blocs d'escalfament, i després combinacions 100% aleatòries!
       if (lvl.isInterleaved) {
         const k1 = lvl.newKeys[0], k2 = lvl.newKeys[1];
+        const randomCombo = (targetLen, avoidWord) => {
+          for (let tries = 0; tries < 12; tries++) {
+            let s = "";
+            for (let c = 0; c < targetLen; c++) s += rng() < 0.5 ? k1 : k2;
+            const allSame = targetLen >= 3 && (s === k1.repeat(targetLen) || s === k2.repeat(targetLen));
+            if (!allSame && s !== avoidWord) return s;
+          }
+          return `${k1}${k2}`.repeat(Math.ceil(targetLen / 2)).slice(0, targetLen);
+        };
         if (subMode === "space_asteroids") {
-          const pairs = [`${k1}${k1}`, `${k2}${k2}`, `${k1}${k2}`, `${k2}${k1}`];
-          return pairs[stepIndex % pairs.length];
+          const warmup = [`${k1}${k1}`, `${k2}${k2}`, `${k1}${k2}`, `${k2}${k1}`];
+          if (stepIndex < warmup.length) return warmup[stepIndex];
+          return randomCombo(2, state._lastArcadeWord);
         }
         if (subMode === "atmosphere_birds") {
-          const triples = [`${k1}${k1}${k2}`, `${k2}${k2}${k1}`, `${k1}${k2}${k1}`, `${k2}${k1}${k2}`, `${k1}${k2}${k2}`, `${k2}${k1}${k1}`];
-          return triples[stepIndex % triples.length];
+          const warmup = [`${k1}${k1}${k2}`, `${k2}${k2}${k1}`, `${k1}${k2}${k1}`, `${k2}${k1}${k2}`];
+          if (stepIndex < warmup.length) return warmup[stepIndex];
+          return randomCombo(3, state._lastArcadeWord);
         }
         if (subMode === "pedraforca_climb") {
-          const quads = [`${k1}${k1}${k2}${k2}`, `${k2}${k2}${k1}${k1}`, `${k1}${k2}${k1}${k2}`, `${k2}${k1}${k2}${k1}`, `${k1}${k2}${k2}${k1}`, `${k2}${k1}${k1}${k2}`];
-          return quads[stepIndex % quads.length];
+          const warmup = [`${k1}${k1}${k2}${k2}`, `${k2}${k2}${k1}${k1}`, `${k1}${k2}${k1}${k2}`, `${k2}${k1}${k2}${k1}`];
+          if (stepIndex < warmup.length) return warmup[stepIndex];
+          return randomCombo(4, state._lastArcadeWord);
         }
       }
 
@@ -1437,34 +1457,39 @@
       const rng = createRng(seed);
       const k1 = lvl.newKeys[0], k2 = lvl.newKeys[1];
 
-      // 1A: Parelles aïllades de les 2 tecles noves (ff jj fj jf / dd kk dk kd)
+      const buildWarmupThenRandom = (warmup, wordLen, count) => {
+        const out = [];
+        for (let i = 0; i < count; i++) {
+          if (i < warmup.length) {
+            out.push(warmup[i]);
+          } else {
+            const prev = out[i - 1] || "";
+            let w = "";
+            for (let tries = 0; tries < 15; tries++) {
+              w = "";
+              for (let c = 0; c < wordLen; c++) w += rng() < 0.5 ? k1 : k2;
+              const allSame = wordLen >= 3 && (w === k1.repeat(wordLen) || w === k2.repeat(wordLen));
+              if (!allSame && w !== prev) break;
+            }
+            out.push(w);
+          }
+        }
+        return out.join(" ");
+      };
+
+      // 1A: Parelles aïllades (primer escalfament ff jj fj jf, i després aleatòries!)
       if (drill.stepType === "isolated_pairs") {
-        const pairs = [`${k1}${k1}`, `${k2}${k2}`, `${k1}${k2}`, `${k2}${k1}`];
-        const out = [];
-        for (let i = 0; i < drill.wordsCount; i++) {
-          out.push(pairs[i % pairs.length]);
-        }
-        return out.join(" ");
+        return buildWarmupThenRandom([`${k1}${k1}`, `${k2}${k2}`, `${k1}${k2}`, `${k2}${k1}`], 2, drill.wordsCount);
       }
 
-      // P2 (Versió B): Grups exactes de 3 lletres (ffj jjf fjf jfj fjj jff)
+      // P2 (Versió B): Grups de 3 lletres (primer escalfament, després aleatòries!)
       if (drill.stepType === "isolated_triples") {
-        const triples = [`${k1}${k1}${k2}`, `${k2}${k2}${k1}`, `${k1}${k2}${k1}`, `${k2}${k1}${k2}`, `${k1}${k2}${k2}`, `${k2}${k1}${k1}`];
-        const out = [];
-        for (let i = 0; i < drill.wordsCount; i++) {
-          out.push(triples[i % triples.length]);
-        }
-        return out.join(" ");
+        return buildWarmupThenRandom([`${k1}${k1}${k2}`, `${k2}${k2}${k1}`, `${k1}${k2}${k1}`, `${k2}${k1}${k2}`], 3, drill.wordsCount);
       }
 
-      // P3 (Versió B): Blocs exactes de 4 lletres (ffjj jjff fjfj jfjf fjjf jffj)
+      // P3 (Versió B): Blocs de 4 lletres (primer escalfament jjff ffjj jfjf fjfj, i després aleatòries!)
       if (drill.stepType === "isolated_quads") {
-        const quads = [`${k1}${k1}${k2}${k2}`, `${k2}${k2}${k1}${k1}`, `${k1}${k2}${k1}${k2}`, `${k2}${k1}${k2}${k1}`, `${k1}${k2}${k2}${k1}`, `${k2}${k1}${k1}${k2}`];
-        const out = [];
-        for (let i = 0; i < drill.wordsCount; i++) {
-          out.push(quads[i % quads.length]);
-        }
-        return out.join(" ");
+        return buildWarmupThenRandom([`${k2}${k2}${k1}${k1}`, `${k1}${k1}${k2}${k2}`, `${k2}${k1}${k2}${k1}`, `${k1}${k2}${k1}${k2}`], 4, drill.wordsCount);
       }
 
       // 1B: Grups de 3 i 4 lletres només amb les 2 tecles noves (dkd kdk dkkd kddk)
@@ -2072,20 +2097,26 @@
           { id: "L01.G4", phaseType: "arcade", label: "🌸 Extra", icon: "🌸", x: 88.5, y: 82, isExtra: true }
         ];
 
+        const justDoneId = state.justCompletedStepId || null;
+        const justUnlockedId = state.justUnlockedStepId || null;
+        state.justCompletedStepId = null;
+        state.justUnlockedStepId = null;
+
         mapNodes.forEach(node => {
           const unlocked = isStepUnlocked(lvl, node.id);
           const b = state.stepBarretines[node.id] || 0;
           const done = b >= 3;
+          const isDelayedUnlock = Boolean(justUnlockedId && node.id === justUnlockedId && unlocked && !done);
 
           const wrap = document.createElement("div");
           wrap.className = "map-node-wrap";
           wrap.style.left = node.x + "%";
           wrap.style.top = node.y + "%";
 
-          // Barretines (o Flor del Berguedà per l'Extra) visibles A SOBRE del node quan està fet!
+          // 1r pas: Barretines (o Flor del Berguedà) visibles A SOBRE del node amb animació pop quan acabes!
           if (b > 0) {
             const topBadge = document.createElement("div");
-            topBadge.className = "map-node-barretines";
+            topBadge.className = `map-node-barretines ${node.id === justDoneId ? "anim-pop" : ""}`;
             if (node.isExtra) {
               topBadge.innerHTML = `<span style="font-size:0.85rem;">🌸</span>`;
             } else {
@@ -2096,11 +2127,25 @@
 
           const btn = document.createElement("button");
           btn.type = "button";
-          btn.className = `map-node-btn ${done ? "state-done" : unlocked ? "state-open" : "state-locked"} ${node.isKey ? "node-key" : ""} ${node.isExtra ? "node-extra" : ""}`;
-          btn.disabled = !unlocked;
-          btn.textContent = unlocked ? node.icon : "🔒";
-          if (unlocked) {
-            btn.onclick = () => promptIgnitionBeforeStep(lvl.id, node.phaseType, node.id);
+          if (isDelayedUnlock) {
+            // Comença tancat amb candau gris i al cap de 650ms s'obre en VERD!
+            btn.className = `map-node-btn state-locked ${node.isKey ? "node-key" : ""} ${node.isExtra ? "node-extra" : ""}`;
+            btn.disabled = true;
+            btn.textContent = "🔒";
+            setTimeout(() => {
+              btn.className = `map-node-btn state-open anim-pop ${node.isKey ? "node-key" : ""} ${node.isExtra ? "node-extra" : ""}`;
+              btn.disabled = false;
+              btn.textContent = node.icon;
+              btn.onclick = () => promptIgnitionBeforeStep(lvl.id, node.phaseType, node.id);
+              sfxActionSuccess();
+            }, 650);
+          } else {
+            btn.className = `map-node-btn ${done ? "state-done" : unlocked ? "state-open" : "state-locked"} ${node.isKey ? "node-key" : ""} ${node.isExtra ? "node-extra" : ""}`;
+            btn.disabled = !unlocked;
+            btn.textContent = unlocked ? node.icon : "🔒";
+            if (unlocked) {
+              btn.onclick = () => promptIgnitionBeforeStep(lvl.id, node.phaseType, node.id);
+            }
           }
           wrap.appendChild(btn);
 
@@ -2468,7 +2513,9 @@
           }
         } else if (arcDef.subMode === "pedraforca_climb") {
           // J3 (Versió B): ESCALADA AL CIM DEL PEDRAFORCA PAS A PAS (sense pressió de temps, pura escalada!)
-          const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
+          const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
+          state._lastArcadeWord = rawW;
+          const w1 = rawW + " ";
           state.arcadeEntities.push({
             id: Date.now() + Math.random(),
             word: w1,
@@ -2486,7 +2533,9 @@
           const isTurboExtra = arcDef.subMode === "atmosphere_birds_turbo";
           const lanesX = [235, 415, 595];
           const laneX = lanesX[state.arcadeCompleted % lanesX.length];
-          const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
+          const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
+          state._lastArcadeWord = rawW;
+          const w1 = rawW + " ";
           const birdSpeed = isTurboExtra ? (0.50 + state.arcadeCompleted * 0.065) : 0.38;
           state.arcadeEntities.push({
             id: Date.now() + Math.random(),
@@ -2501,7 +2550,9 @@
           });
         } else {
           // J1 (Nivell 1): Esquivar asteroides per l'espai rumb al planeta Terra (velocitat suau 0.38)
-          const w1 = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode) + " ";
+          const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
+          state._lastArcadeWord = rawW;
+          const w1 = rawW + " ";
           state.arcadeEntities.push({
             id: Date.now() + Math.random(),
             word: w1,
@@ -3806,6 +3857,13 @@
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
       const steps = getOrderedSteps(lvl);
       const idx = steps.findIndex(s => s.id === state.stepId);
+      if (lvl.isInterleaved) {
+        // Tornem al mapa 2D: 1r apareixen les Barretines, 2n s'obre el candau de la següent missió perquè l'alumne hi faci clic!
+        state.justCompletedStepId = state.stepId;
+        state.justUnlockedStepId = (idx >= 0 && idx < steps.length - 1) ? steps[idx + 1].id : null;
+        showScreen("phases");
+        return;
+      }
       if (idx >= 0 && idx < steps.length - 1) {
         const nextS = steps[idx + 1];
         promptIgnitionBeforeStep(lvl.id, nextS.phaseType, nextS.id);
