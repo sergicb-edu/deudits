@@ -7,8 +7,8 @@
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#1d4ed8" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="./app-config.js"></script>
-  <script src="./dites-db.js"></script>
+  <script src="./app-config.js?v=20261120"></script>
+  <script src="./dites-db.js?v=20261120"></script>
   <style>
     :root {
       --font-scale: 1;
@@ -4502,8 +4502,22 @@
 
     function renderTongueGardenList() {
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
-      const dbMap = (window.DEUDITS_DB && window.DEUDITS_DB.embarbussamentsPerNivell) || {};
-      const items = dbMap[lvl.id] || dbMap.L01 || [];
+      const FALLBACK_EMB = {
+        L01: [
+          { id: "EMB.L01.1", tier: "🌱 Curt", flower: "🌸", flowerName: "Genciana del Pedraforca", focus: ["f", "j"], text: "Quin fum fa? Fa un fum fi." },
+          { id: "EMB.L01.2", tier: "🌱 Curt", flower: "🌼", flowerName: "Narcís dels Poetes", focus: ["f", "j"], text: "Al joc juguem en Jep i jo." },
+          { id: "EMB.L01.3", tier: "🌿 Mitjà", flower: "🌺", flowerName: "Marcòlic Vermell", focus: ["f", "j"], text: "Fan flam a la fira del Garraf." },
+          { id: "EMB.L01.4", tier: "🌿 Mitjà", flower: "🌷", flowerName: "Orquídia del Berguedà", focus: ["f", "j"], text: "La figuera d'en Feliu fa figues fines." },
+          { id: "EMB.L01.5", tier: "🔥 Reptador", flower: "🌻", flowerName: "Àrnica de Muntanya", focus: ["f", "j"], text: "Setze jutges d'un jutjat mengen fetge d'un penjat." }
+        ],
+        L02: [
+          { id: "EMB.L02.1", tier: "🌱 Curt", flower: "🌸", flowerName: "Genciana del Pedraforca", focus: ["d"], text: "Digues dues dames i dues dagues." },
+          { id: "EMB.L02.2", tier: "🌿 Mitjà", flower: "🌼", flowerName: "Narcís dels Poetes", focus: ["d"], text: "Diu dos, diu deu; ni dos ni deu. No deu res." },
+          { id: "EMB.L02.3", tier: "🌿 Mitjà", flower: "🌺", flowerName: "Marcòlic Vermell", focus: ["d"], text: "Deu dits, dues mans té en Dídac, el didot Amadeu." }
+        ]
+      };
+      const dbMap = (window.DEUDITS_DB && window.DEUDITS_DB.embarbussamentsPerNivell) || FALLBACK_EMB;
+      const items = dbMap[lvl.id] || dbMap.L01 || FALLBACK_EMB.L01;
 
       document.getElementById("tongue-garden-title").textContent =
         `🗣️ Jardí d'Embarbussaments · Nivell ${lvl.order} (${lvl.newKeys.map(k => k.toUpperCase()).join(" i ")})`;
