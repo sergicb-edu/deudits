@@ -560,9 +560,11 @@
       accBadge.className = `level-pill ${accBand.cls}`;
       accBadge.textContent = accBand.label;
 
-      const bVals = Object.entries(ds.stepBarretines).filter(([k]) => !k.endsWith(".G4")).map(([, v]) => v);
+      const bVals = Object.entries(ds.stepBarretines).filter(([k]) => !k.endsWith(".G4") && !k.endsWith(".G5") && !k.startsWith("EMB.")).map(([, v]) => v);
       const avgB = bVals.length > 0 ? (bVals.reduce((a, b) => a + b, 0) / bVals.length).toFixed(1) : "0.0";
-      const flowersCount = ["L01.G4", "DIAG.ZERO", "L01.PROVERB", "L02.PROVERB"].filter(id => (ds.stepBarretines[id] || 0) >= 3).length;
+      const baseFlowers = ["L01.G4", "L02.G5", "DIAG.ZERO", "L01.PROVERB", "L02.PROVERB"].filter(id => (ds.stepBarretines[id] || 0) >= 3).length;
+      const embFlowers = Object.entries(ds.stepBarretines).filter(([k, v]) => k.startsWith("EMB.") && v >= 3).length;
+      const flowersCount = baseFlowers + embFlowers;
       document.getElementById("kpi-barretines").innerHTML = `${avgB}/5 ${renderBarretinaMiniSvg(true)} · ${flowersCount} 🌸`;
 
       renderStudentsMatrix(ds);
@@ -630,6 +632,31 @@
           </tr>
         `);
       }
+
+      // Fila del Jardí d'Embarbussaments (Ampliació 🌸) per cada alumne
+      rowsHtml.push(`
+        <tr style="background:#fdf2f8;">
+          <td><strong>🗣️ Jardí d'Embarbussaments</strong><br/><span style="font-size:0.75rem;color:#9d174d;">Ampliació opcional (🌸 Flors)</span></td>
+          ${students.map(stu => {
+            const map = ds.barretinesByStudent[stu] || {};
+            const embEntries = Object.entries(map).filter(([k, v]) => k.startsWith("EMB.") && v >= 3);
+            const turboCount = embEntries.filter(([, v]) => v >= 5).length;
+            const turtleCount = embEntries.filter(([, v]) => v >= 3 && v < 5).length;
+            const embSess = ds.allSessions.filter(s => s.studentName === stu && (s.stepId || "").startsWith("EMB."));
+            const bestW = embSess.length > 0 ? Math.max(...embSess.map(s => s.wpmNet || 0)) : 0;
+            const avgErr = embSess.length > 0 ? (embSess.reduce((a, s) => a + (s.errors || 0), 0) / embSess.length).toFixed(1) : "—";
+            return `
+              <td>
+                <div style="font-weight:800;font-size:0.82rem;color:#9d174d;">🌸 ${embEntries.length} superats</div>
+                <div style="font-size:0.76rem;font-weight:700;margin-top:0.2rem;">
+                  <span style="color:#a16207;">⚡ ${turboCount} Turbo</span> · <span style="color:#15803d;">🐢 ${turtleCount} Principiant</span>
+                </div>
+                ${embSess.length > 0 ? `<div style="font-size:0.73rem;color:#475569;margin-top:0.15rem;">Màx: <strong>${bestW} PPM</strong> · Mitj. fallos: <strong>${avgErr}</strong></div>` : `<div style="font-size:0.73rem;color:#94a3b8;">Sense curses encara</div>`}
+              </td>
+            `;
+          }).join("")}
+        </tr>
+      `);
 
       // Fila resum global per cada alumne (Velocitat + Precisió amb la mateixa escala!)
       rowsHtml.push(`
