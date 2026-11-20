@@ -560,12 +560,24 @@
     <section class="view-screen" id="screen-phases">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
         <h2 id="phases-level-title" style="margin:0;font-size:1.3rem;">Nivell 1</h2>
-        <button type="button" id="btn-open-tongue-garden" style="background:#fdf2f8;border:2px solid #ec4899;color:#9d174d;border-radius:999px;padding:0.32rem 0.9rem;font-weight:900;font-size:0.86rem;cursor:pointer;">
-          🗣️ Jardí d'Embarbussaments (🌸 Extra)
-        </button>
       </div>
       <div class="phases-cards" id="phases-cards"></div>
       <div id="proverb-gate-banner" style="margin-top:0.5rem;"></div>
+
+      <!-- TARGETA CRIDANERA DEL JARDÍ D'EMBARBUSSAMENTS (AMPLIACIÓ OPCIONAL) -->
+      <div id="btn-open-tongue-garden" role="button" tabindex="0" style="margin-top:0.8rem;background:linear-gradient(120deg,#fdf2f8 0%,#fce7f3 50%,#ecfdf5 100%);border:3px solid #ec4899;border-radius:1.1rem;padding:0.85rem 1.15rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;cursor:pointer;box-shadow:0 8px 20px rgba(236,72,153,0.18);transition:transform 0.14s ease;">
+        <div style="display:flex;align-items:center;gap:0.8rem;">
+          <div style="font-size:2.3rem;line-height:1;">🌸🏁</div>
+          <div>
+            <div style="font-size:1.08rem;font-weight:900;color:#9d174d;">Jardí d'Embarbussaments · Cursa contra en Bit!</div>
+            <div style="font-size:0.82rem;font-weight:700;color:#831843;">Guanya Flors del Berguedà i repta en Bit a una cursa! (Opcional)</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <span id="phases-garden-preview" style="font-size:1.25rem;background:#ffffff;padding:0.25rem 0.6rem;border-radius:999px;border:1.5px solid #fbcfe8;">🌱🌸🌼</span>
+          <span style="background:#db2777;color:#ffffff;padding:0.5rem 1.05rem;border-radius:999px;font-weight:900;font-size:0.9rem;">Entrar al Jardí →</span>
+        </div>
+      </div>
     </section>
 
     <!-- PANTALLA 2B: JARDÍ D'EMBARBUSSAMENTS + CURSA CONTRA EN BIT (LÍNIA D'AMPLIACIÓ 🌸) -->
@@ -591,7 +603,12 @@
         <div id="tongue-list-view" style="display:grid;gap:0.55rem;"></div>
 
         <!-- Pista de cursa activa -->
-        <div id="tongue-race-view" style="display:none;">
+        <div id="tongue-race-view" style="display:none;position:relative;">
+          <!-- Compte enrere 3 - 2 - 1 - JA! -->
+          <div id="tongue-countdown-overlay" style="display:none;position:absolute;inset:0;background:rgba(15,23,42,0.72);border-radius:12px;z-index:20;align-items:center;justify-content:center;flex-direction:column;color:#fde047;">
+            <div style="font-size:1rem;font-weight:800;color:#ffffff;margin-bottom:0.2rem;">Preparats per a la cursa...</div>
+            <div id="tongue-countdown-num" style="font-size:4.2rem;font-weight:900;line-height:1;text-shadow:0 4px 16px rgba(0,0,0,0.45);">3</div>
+          </div>
           <!-- 2 carrils visuals: TU vs EN BIT -->
           <div style="background:linear-gradient(180deg,#dcfce7 0%,#bbf7d0 100%);border:2px solid #16a34a;border-radius:12px;padding:0.65rem 0.9rem;margin-bottom:0.75rem;">
             <div style="position:relative;height:34px;border-bottom:2px dashed rgba(21,128,61,0.35);margin-bottom:0.35rem;">
@@ -2138,6 +2155,13 @@
       document.getElementById("phases-level-title").textContent = `Nivell ${lvl.order}`;
       const gateBanner = document.getElementById("proverb-gate-banner");
       if (gateBanner) gateBanner.innerHTML = "";
+
+      const prevEl = document.getElementById("phases-garden-preview");
+      if (prevEl) {
+        const dbMap = (window.DEUDITS_DB && window.DEUDITS_DB.embarbussamentsPerNivell) || {};
+        const list = dbMap[lvl.id] || dbMap.L01 || [];
+        prevEl.innerHTML = list.slice(0, 6).map(it => (state.stepBarretines[it.id] || 0) >= 3 ? it.flower : "🌱").join("");
+      }
 
       const container = document.getElementById("phases-cards");
       container.innerHTML = "";
@@ -4470,7 +4494,9 @@
       wrongFlash: false,
       startedAtMs: 0,
       bitProgress: 0,
-      raceTimerId: null
+      raceTimerId: null,
+      countdownTimerId: null,
+      isCountingDown: false
     };
 
     function stopTongueRaceTimer() {
@@ -4478,6 +4504,13 @@
         clearInterval(tongueState.raceTimerId);
         tongueState.raceTimerId = null;
       }
+      if (tongueState.countdownTimerId) {
+        clearInterval(tongueState.countdownTimerId);
+        tongueState.countdownTimerId = null;
+      }
+      tongueState.isCountingDown = false;
+      const ov = document.getElementById("tongue-countdown-overlay");
+      if (ov) ov.style.display = "none";
     }
 
     function speakCatalanText(txt) {
@@ -4568,12 +4601,59 @@
       document.getElementById("tongue-active-badge").textContent = `${item.tier} · ${item.flower} ${item.flowerName}`;
       document.getElementById("race-player-runner").style.left = "6%";
       document.getElementById("race-bit-runner").style.left = "6%";
-      document.getElementById("tongue-race-status").textContent =
-        tongueState.speedWpm === 0
-          ? "🐢 Mode tranquil: comença a escriure al teu ritme!"
-          : `🏁 Comença a escriure per donar el tret de sortida contra en Bit (${tongueState.speedWpm} PPM)!`;
-
       renderTongueTape();
+
+      // Compte enrere 3 - 2 - 1 - JA! per sortir tots junts amb en Bit!
+      const ov = document.getElementById("tongue-countdown-overlay");
+      const numEl = document.getElementById("tongue-countdown-num");
+      tongueState.isCountingDown = true;
+      let count = 3;
+      ov.style.display = "flex";
+      numEl.textContent = "3";
+      sfxTone(440, 120, "square", 0.06);
+
+      tongueState.countdownTimerId = setInterval(() => {
+        count--;
+        if (count > 0) {
+          numEl.textContent = String(count);
+          sfxTone(440, 120, "square", 0.06);
+        } else if (count === 0) {
+          numEl.textContent = "🏁 JA!";
+          sfxTone(880, 220, "square", 0.08);
+          tongueState.isCountingDown = false;
+          tongueState.startedAtMs = performance.now();
+          if (tongueState.speedWpm > 0) {
+            const charsPerSec = (tongueState.speedWpm * 5) / 60;
+            tongueState.raceTimerId = setInterval(() => {
+              if (!tongueState.activeItem || state.screen !== "tongue") {
+                stopTongueRaceTimer();
+                return;
+              }
+              const elapsedS = (performance.now() - tongueState.startedAtMs) / 1000;
+              tongueState.bitProgress = Math.min(1, (elapsedS * charsPerSec) / Math.max(1, tongueState.activeItem.text.length));
+              document.getElementById("race-bit-runner").style.left = `${6 + tongueState.bitProgress * 86}%`;
+            }, 100);
+          }
+          setTimeout(() => { ov.style.display = "none"; }, 420);
+          clearInterval(tongueState.countdownTimerId);
+          tongueState.countdownTimerId = null;
+          updateTongueShiftHint();
+        }
+      }, 750);
+    }
+
+    function updateTongueShiftHint() {
+      const it = tongueState.activeItem;
+      const statusEl = document.getElementById("tongue-race-status");
+      if (!it || !statusEl) return;
+      const expected = it.text[tongueState.cursor];
+      if (expected && expected !== expected.toLowerCase() && expected === expected.toUpperCase()) {
+        statusEl.innerHTML = `⬆️ Compte! La següent lletra és <strong>MAJÚSCULA</strong> (prem <code>Shift</code> + <strong>${expected}</strong>)!`;
+      } else {
+        statusEl.textContent = tongueState.speedWpm === 0
+          ? "🐢 Mode tranquil · Respecta les majúscules i els accents!"
+          : `🏁 Cursa en marxa contra en Bit (${tongueState.speedWpm} PPM) · Respecta les majúscules!`;
+      }
     }
 
     function renderTongueTape() {
@@ -4610,37 +4690,23 @@
 
     function handleTongueKey(ev) {
       const it = tongueState.activeItem;
-      if (!it || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      if (!it || tongueState.isCountingDown || ev.ctrlKey || ev.metaKey || ev.altKey) return;
       if (ev.key.length !== 1) return;
       if (ev.key === " ") ev.preventDefault();
 
-      // Arrenca el cronòmetre i en Bit a la primera pulsació!
-      if (!tongueState.startedAtMs) {
-        tongueState.startedAtMs = performance.now();
-        if (tongueState.speedWpm > 0) {
-          const charsPerSec = (tongueState.speedWpm * 5) / 60;
-          tongueState.raceTimerId = setInterval(() => {
-            if (!tongueState.activeItem || state.screen !== "tongue") {
-              stopTongueRaceTimer();
-              return;
-            }
-            const elapsedS = (performance.now() - tongueState.startedAtMs) / 1000;
-            tongueState.bitProgress = Math.min(1, (elapsedS * charsPerSec) / Math.max(1, tongueState.activeItem.text.length));
-            document.getElementById("race-bit-runner").style.left = `${6 + tongueState.bitProgress * 86}%`;
-          }, 100);
-        }
-      }
+      if (!tongueState.startedAtMs) tongueState.startedAtMs = performance.now();
 
       const expected = it.text[tongueState.cursor];
       if (!expected) return;
-      // Permet minúscules per a majúscules inicials pensant en primària/NESE!
-      const isMatch = ev.key === expected || ev.key.toLowerCase() === expected.toLowerCase();
+      // Respecta estrictament les MAJÚSCULES i els accents!
+      const isMatch = ev.key === expected;
 
       if (isMatch) {
         tongueState.wrongFlash = false;
         tongueState.cursor++;
         sfxTone(expected === " " ? 587.33 : 440 + (tongueState.cursor % 5) * 30, 45, "triangle", 0.05);
         renderTongueTape();
+        updateTongueShiftHint();
 
         if (tongueState.cursor >= it.text.length) {
           stopTongueRaceTimer();
