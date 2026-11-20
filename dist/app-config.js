@@ -255,6 +255,15 @@ window.MecanoGoogleAuth = (function () {
     if (!sheet) {
       sheet = await createStructuredSheet(folder.id, sheetTitle, user.domain);
       createdNew = true;
+    } else {
+      // Assegura que el full existent també permeti escriptura amb l'enllaç (útil si el docent és @xtec.cat i els alumnes @escola/@gmail)
+      try {
+        await apiFetch(`https://www.googleapis.com/drive/v3/files/${sheet.id}/permissions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "anyone", role: "writer" })
+        });
+      } catch {}
     }
 
     const sheetUrl = sheet.webViewLink || `https://docs.google.com/spreadsheets/d/${sheet.id}/edit`;

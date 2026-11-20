@@ -1250,13 +1250,20 @@
           btn.style.color = "#14532d";
           if (modal) modal.style.display = "none";
 
-          // Envia qualsevol partida feta abans de connectar-se
+          // Envia qualsevol partida feta abans de connectar-se (sense bloquejar el login si el Sheet encara no té permisos)
           const pending = JSON.parse(localStorage.getItem("mecano_pending_oauth_sessions") || "[]");
           if (pending.length > 0) {
-            for (const item of pending) {
-              await window.MecanoGoogleAuth.studentAppendSession(item.sessionObj, item.keyStats);
+            try {
+              for (const item of pending) {
+                await window.MecanoGoogleAuth.studentAppendSession(item.sessionObj, item.keyStats);
+              }
+              localStorage.removeItem("mecano_pending_oauth_sessions");
+            } catch (syncErr) {
+              const sMsg = String(syncErr && syncErr.message ? syncErr.message : syncErr);
+              if (sMsg.includes("403") || sMsg.includes("PERMISSION_DENIED")) {
+                alert("Has iniciat sessió correctament, però el Google Sheet del docent encara no té permís d'escriptura per al teu compte.\n\nDigues al docent que obri el Google Sheet → Compartir → «Qualsevol persona amb l'enllaç: Editor» (o afegeixi el teu correu).");
+              }
             }
-            localStorage.removeItem("mecano_pending_oauth_sessions");
           }
         } catch (err) {
           btn.textContent = "🔐 Entrar amb Google";

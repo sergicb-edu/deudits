@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mecano — Panell del Docent</title>
+  <title>DeuDits — Panell del Docent</title>
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#1d4ed8" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -16,25 +16,18 @@
       --muted: #475569;
       --border: #cbd5e1;
       --primary: #1d4ed8;
-      --ok: #15803d;
-      --warn: #b45309;
-      --err: #b91c1c;
     }
-
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-    }
-
-    .shell {
-      max-width: 1180px;
-      margin: 0 auto;
       padding: 1rem 1.25rem 2.5rem;
     }
+    .shell { max-width: 1180px; margin: 0 auto; }
 
+    /* Capçalera neta */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -42,108 +35,72 @@
       flex-wrap: wrap;
       gap: 0.75rem;
       background: var(--surface);
-      padding: 0.85rem 1.15rem;
-      border-radius: 14px;
       border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 0.75rem 1.1rem;
       margin-bottom: 1rem;
     }
+    .brand { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
+    .brand h1 { margin: 0; font-size: 1.2rem; color: #1e3a8a; }
+    .btn-row { display: flex; gap: 0.45rem; flex-wrap: wrap; align-items: center; }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-    }
-    .brand h1 {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 800;
-    }
-    .badge {
-      background: #dbeafe;
-      color: #1e40af;
-      font-size: 0.78rem;
-      font-weight: 800;
-      padding: 0.22rem 0.6rem;
-      border-radius: 99px;
-    }
-
-    .btn-row {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
     button, .btn-link {
       font: inherit;
       font-size: 0.84rem;
       font-weight: 700;
-      padding: 0.45rem 0.85rem;
       border-radius: 8px;
       border: 1.5px solid var(--border);
-      background: #ffffff;
+      background: #f8fafc;
       color: var(--text);
+      padding: 0.44rem 0.78rem;
       cursor: pointer;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
     }
-    button:hover, .btn-link:hover { background: #f8fafc; border-color: #64748b; }
-    button.primary, .btn-link.primary {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-    }
+    button:hover, .btn-link:hover { background: #e2e8f0; }
+    button.primary, .btn-link.primary { background: var(--primary); color: #ffffff; border-color: var(--primary); }
     button.primary:hover, .btn-link.primary:hover { background: #1e40af; }
+    button.green { background: #16a34a; color: #ffffff; border-color: #15803d; }
+    button.green:hover { background: #15803d; }
 
-    /* KPIs */
+    /* Pills d'escala pedagògica (compartides entre KPIs i Evolució) */
+    .level-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .lvl-init { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+    .lvl-proc { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+    .lvl-ok   { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .lvl-exc  { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+    .lvl-warn { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* Targetes KPI */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0.8rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.85rem;
       margin-bottom: 1rem;
     }
-    @media (max-width: 900px) {
-      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (max-width: 820px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
     .kpi-card {
       background: var(--surface);
       border: 2px solid var(--border);
       border-radius: 12px;
       padding: 0.85rem 1rem;
     }
-    .kpi-label {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .kpi-val {
-      font-size: 1.65rem;
-      font-weight: 900;
-      margin-top: 0.2rem;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-    .kpi-sub {
-      font-size: 0.76rem;
-      color: var(--muted);
-      margin-top: 0.15rem;
-    }
+    .kpi-label { font-size: 0.74rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+    .kpi-val { font-size: 1.55rem; font-weight: 900; margin: 0.2rem 0 0.25rem; display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+    .kpi-sub { font-size: 0.76rem; color: var(--muted); }
 
-    /* Grid de 2 columnes */
-    .two-col {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-    @media (max-width: 960px) {
-      .two-col { grid-template-columns: 1fr; }
-    }
-
+    /* Panells */
     .panel {
       background: var(--surface);
       border: 2px solid var(--border);
@@ -152,80 +109,80 @@
       margin-bottom: 1rem;
     }
     .panel h2 {
-      margin: 0 0 0.3rem;
-      font-size: 1.05rem;
+      margin: 0 0 0.35rem;
+      font-size: 1.02rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
-    .panel p.sub {
-      margin: 0 0 0.85rem;
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
+    .panel .sub { margin: 0 0 0.8rem; font-size: 0.82rem; color: var(--muted); }
 
-    /* Taula Matriu de Barretines */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.84rem;
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
     }
-    th, td {
-      padding: 0.55rem 0.6rem;
-      border-bottom: 1px solid #e2e8f0;
-      text-align: left;
-    }
-    th {
-      background: #f8fafc;
+    @media (max-width: 920px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* Taula Progrés per Alumne (columnes = alumnes, files = nivells) */
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    th, td { padding: 0.65rem 0.7rem; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
+    th { background: #f8fafc; font-weight: 800; color: #334155; font-size: 0.8rem; }
+    .stu-col-btn {
+      background: #eff6ff;
+      border: 1.5px solid #93c5fd;
+      color: #1e40af;
+      border-radius: 999px;
+      padding: 0.22rem 0.65rem;
+      font-size: 0.8rem;
       font-weight: 800;
-      color: #334155;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-    }
-    .step-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 6px;
-      font-weight: 800;
-      font-size: 0.78rem;
-      border: 1px solid #cbd5e1;
-      background: #f8fafc;
       cursor: pointer;
     }
-    .step-pill.passed {
-      background: #dcfce7;
-      border-color: #16a34a;
-      color: #14532d;
-    }
-
-    /* Termòmetre Dites */
-    .proverb-row {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      margin: 0.45rem 0;
-      font-size: 0.84rem;
-    }
-    .proverb-bar-bg {
-      flex: 1;
-      height: 24px;
+    .stu-col-btn.active { background: #1d4ed8; color: #ffffff; border-color: #1d4ed8; }
+    .prog-bar-bg {
+      width: 100%;
+      min-width: 110px;
+      height: 12px;
       background: #e2e8f0;
-      border-radius: 99px;
+      border-radius: 999px;
       overflow: hidden;
+      margin: 0.25rem 0;
     }
-    .proverb-bar-fill {
+    .prog-bar-fill {
       height: 100%;
       background: linear-gradient(90deg, #2563eb, #16a34a);
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 0.76rem;
-      display: flex;
-      align-items: center;
-      padding-left: 10px;
-      white-space: nowrap;
+      border-radius: 999px;
     }
+
+    /* Escala visual d'Evolució */
+    .scale-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin: 0.5rem 0 0.8rem;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-align: center;
+    }
+    .scale-band { padding: 0.35rem 0.25rem; border-radius: 6px; }
+    .evo-compare {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.65rem;
+      margin-bottom: 0.8rem;
+    }
+    .evo-box {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.65rem 0.75rem;
+      text-align: center;
+    }
+    .evo-box .lbl { font-size: 0.72rem; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+    .evo-box .val { font-size: 1.18rem; font-weight: 900; margin: 0.2rem 0; }
 
     /* Mapa de Calor del Teclat */
     .heatmap-kb {
@@ -238,75 +195,55 @@
       border-radius: 12px;
       border: 1px solid var(--border);
     }
-    .hm-row {
-      display: flex;
-      gap: 5px;
-    }
+    .hm-row { display: flex; gap: 5px; }
     .hm-key {
-      width: 44px;
-      height: 42px;
+      width: 40px; height: 38px;
       border-radius: 7px;
       border: 1.5px solid #94a3b8;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.85rem;
-      background: #e2e8f0;
-      color: #1e293b;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.82rem;
+      background: #e2e8f0; color: #1e293b;
     }
-    .hm-key.space { width: 220px; height: 34px; }
-    .hm-key small { font-size: 0.62rem; font-weight: 700; opacity: 0.9; }
+    .hm-key.space { width: 200px; height: 32px; }
+    .hm-key small { font-size: 0.6rem; font-weight: 700; opacity: 0.9; }
     .hm-ok { background: #bbf7d0; border-color: #16a34a; color: #14532d; }
     .hm-warn { background: #fef08a; border-color: #ca8a04; color: #713f12; }
     .hm-err { background: #fecaca; border-color: #dc2626; color: #7f1d1d; }
 
-    .legend-row {
-      display: flex;
+    /* Modals nets (Configuració i Instruccions) */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      display: none;
+      align-items: center;
       justify-content: center;
-      gap: 1rem;
-      margin-top: 0.6rem;
-      font-size: 0.78rem;
-      font-weight: 700;
+      padding: 1rem;
+      z-index: 9000;
     }
-    .dot {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-      vertical-align: middle;
-      margin-right: 4px;
+    .modal-bg.open { display: flex; }
+    .modal-card {
+      background: #ffffff;
+      border: 2.5px solid #1d4ed8;
+      border-radius: 14px;
+      padding: 1.25rem 1.4rem;
+      max-width: 640px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
     }
-
-    /* Configuració pedagògica */
-    .cfg-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.75rem;
-    }
-    .cfg-item {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      padding: 0.65rem 0.8rem;
-      border-radius: 8px;
+    .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.84rem;
-      font-weight: 700;
-    }
-    select, input[type="number"] {
-      font: inherit;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      border: 1px solid #94a3b8;
-      font-weight: 700;
+      margin-bottom: 0.8rem;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <!-- BLOQUEIG CONTRASENYA DOCENT ("DeuDits") SI S'ENTRA DIRECTAMENT A admin.html -->
+  <!-- BLOQUEIG CONTRASENYA DOCENT ("DeuDits") -->
   <div id="admin-pwd-gate" style="position:fixed;inset:0;background:rgba(15,23,42,0.88);display:none;align-items:center;justify-content:center;z-index:9999;padding:1rem;">
     <div style="background:#ffffff;border:3px solid #16a34a;border-radius:1rem;padding:1.5rem;max-width:380px;width:100%;text-align:center;">
       <div style="font-size:2.2rem;">🔒</div>
@@ -316,7 +253,7 @@
       <div id="admin-gate-err" style="color:#dc2626;font-size:0.82rem;font-weight:700;min-height:1.2rem;margin-bottom:0.4rem;"></div>
       <div style="display:flex;gap:0.5rem;justify-content:center;">
         <a href="./index.html" class="btn-link">⬅️ Tornar</a>
-        <button type="button" id="admin-gate-btn" class="primary" style="background:#16a34a;border-color:#15803d;">Entrar →</button>
+        <button type="button" id="admin-gate-btn" class="green">Entrar →</button>
       </div>
     </div>
   </div>
@@ -342,319 +279,205 @@
       }
     })();
   </script>
+
   <div class="shell">
-    <!-- BARRA SUPERIOR -->
+    <!-- BARRA SUPERIOR NETA -->
     <header class="top-bar">
       <div class="brand">
-        <span style="font-size:1.6rem;">📊</span>
-        <div>
-          <h1 id="admin-app-heading">Mecano — Panell del Docent</h1>
-          <div style="font-size:0.8rem;color:var(--muted);">
-            Seguiment d'alumnes · Google Drive OAuth 2.0 (1 clic, sense servidors)
-          </div>
-        </div>
-        <select id="student-filter" title="Filtrar per alumne" style="background:#dbeafe;color:#1e40af;border:1.5px solid #93c5fd;border-radius:999px;padding:0.25rem 0.7rem;font-size:0.8rem;font-weight:800;">
-          <option value="__ALL__">👥 Tots els alumnes (Local)</option>
+        <span style="font-size:1.5rem;">📊</span>
+        <h1 id="admin-app-heading">DeuDits — Panell del Docent</h1>
+        <select id="student-filter" title="Filtrar per alumne" style="background:#dbeafe;color:#1e40af;border:1.5px solid #93c5fd;border-radius:999px;padding:0.25rem 0.7rem;font-size:0.82rem;font-weight:800;">
+          <option value="__ALL__">👥 Tots els alumnes</option>
         </select>
+        <span id="cloud-status-pill" style="font-size:0.75rem;font-weight:800;padding:3px 9px;border-radius:999px;background:#fef3c7;color:#92400e;">No connectat</span>
       </div>
 
       <div class="btn-row">
-        <button type="button" id="btn-toggle-cloud" style="background:#dcfce7;border-color:#16a34a;color:#14532d;">☁️ Google Drive (1 clic)</button>
-        <button type="button" id="btn-seed-demo">🧪 Carregar Dades d'Exemple</button>
-        <button type="button" id="btn-export-csv">📥 Exportar CSV</button>
-        <button type="button" id="btn-clear-data" style="color:#b91c1c;">🗑️ Reiniciar dades</button>
-        <a href="./student-intercalat.html" id="btn-open-student" class="btn-link primary">🕹️ Obrir Vista de l'Alumne</a>
+        <button type="button" id="btn-top-refresh" style="display:none;background:#eff6ff;border-color:#3b82f6;color:#1d4ed8;">🔄 Actualitzar Drive</button>
+        <button type="button" id="btn-top-copy-link" style="display:none;" class="green">🔗 Enllaç Alumnes</button>
+        <button type="button" id="btn-open-help">📖 Instruccions</button>
+        <button type="button" id="btn-open-settings">⚙️ Configuració</button>
+        <a href="./student-intercalat.html" id="btn-open-student" class="btn-link primary">🕹️ Vista Alumne</a>
       </div>
     </header>
 
-    <!-- PANELL 1-CLIC GOOGLE DRIVE OAUTH 2.0 (SENSE APPS SCRIPT NI PASSOS MANUALS!) -->
-    <div id="cloud-wizard-panel" style="background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem;">
-        <strong style="font-size:1rem;color:#14532d;">☁️ Connexió Automàtica amb el teu Google Drive (Compte Google Escolar)</strong>
-        <span id="cloud-status-pill" style="font-size:0.78rem;font-weight:800;padding:3px 10px;border-radius:99px;background:#fef3c7;color:#92400e;">No connectat al Drive</span>
-      </div>
-
-      <!-- Bloc principal OAuth 1 clic -->
-      <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;background:#ffffff;border:1.5px solid #86efac;border-radius:10px;padding:0.85rem;">
-        <div style="flex:1;min-width:210px;">
-          <label for="input-drive-folder" style="display:block;font-size:0.78rem;font-weight:800;color:#14532d;margin-bottom:0.25rem;">
-            📁 Nom de la carpeta al teu Google Drive:
-          </label>
-          <input type="text" id="input-drive-folder" value="Mecano" placeholder="Ex: Mecano 3r A" style="width:100%;padding:0.45rem 0.65rem;border:1.5px solid #94a3b8;border-radius:8px;font-size:0.86rem;font-weight:700;" />
-        </div>
-        <button type="button" id="btn-google-oauth-connect" class="primary" style="background:#16a34a;border-color:#15803d;padding:0.55rem 1.1rem;font-size:0.9rem;">
-          🔐 Iniciar sessió amb Google i crear Drive automàticament
-        </button>
-        <button type="button" id="btn-google-refresh" style="display:none;background:#eff6ff;border-color:#3b82f6;color:#1d4ed8;">
-          🔄 Actualitzar dades del Drive
+    <!-- BANNER DE CONNEXIÓ AUTOMÀTICA: NOMÉS SURT SI ENCARA NO ESTÀ CONNECTAT! -->
+    <div id="first-connect-banner" style="background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;">
+      <strong style="font-size:1rem;color:#14532d;">☁️ Connecta el teu Google Drive en 1 clic</strong>
+      <p style="margin:0.3rem 0 0.7rem;font-size:0.84rem;color:#166534;">
+        L'app crearà automàticament una carpeta i el Google Sheet al teu Drive per guardar el progrés de tots els alumnes. Un cop connectat, aquesta opció passarà a <strong>⚙️ Configuració</strong>.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;">
+        <input type="text" id="input-drive-folder-banner" value="DeuDits" placeholder="Nom de la carpeta (ex: DeuDits 3r A)" style="padding:0.48rem 0.7rem;border:1.5px solid #94a3b8;border-radius:8px;font-size:0.88rem;font-weight:700;min-width:210px;" />
+        <button type="button" id="btn-google-connect-banner" class="green" style="padding:0.52rem 1.1rem;font-size:0.9rem;">
+          🔐 Iniciar sessió amb Google i crear Drive
         </button>
       </div>
-
-      <!-- Accions ràpides un cop connectat al Google Sheet -->
-      <div id="oauth-connected-actions" style="display:none;margin-top:0.75rem;background:#ecfdf5;border:1.5px solid #34d399;border-radius:10px;padding:0.75rem 0.9rem;">
-        <div style="display:flex;flex-wrap:wrap;gap:0.55rem;align-items:center;justify-content:space-between;">
-          <div style="font-size:0.84rem;color:#065f46;">
-            ✅ <strong id="oauth-teacher-info">Connectat</strong> · Carpeta: <strong id="oauth-folder-label">Mecano</strong>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:0.45rem;">
-            <a href="#" id="link-open-gsheet" target="_blank" rel="noopener" class="btn-link" style="background:#ffffff;border-color:#16a34a;color:#15803d;">📊 Obrir Google Sheet ↗️</a>
-            <button type="button" id="btn-copy-student-link" class="primary">🔗 Copiar enllaç per als alumnes</button>
-            <a href="#" id="link-share-classroom" target="_blank" rel="noopener" class="btn-link" style="background:#fef3c7;border-color:#f59e0b;color:#92400e;">🎓 Compartir a Classroom ↗️</a>
-          </div>
-        </div>
-        <div style="margin-top:0.5rem;font-size:0.78rem;color:#047857;">
-          Enllaç per als alumnes (ja porta el teu Google Sheet vinculat): <code id="student-share-url-preview" style="background:#ffffff;padding:2px 6px;border-radius:4px;word-break:break-all;"></code>
-        </div>
-      </div>
-
-      <div id="cloud-sync-feedback" style="margin-top:0.55rem;font-size:0.82rem;font-weight:700;color:#15803d;"></div>
-
-      <!-- Configuració avançada Client ID (col·lapsable perquè els docents no l'hagin de veure quan ja estigui a app-config.js) -->
-      <details id="oauth-clientid-details" style="margin-top:0.65rem;font-size:0.8rem;color:#334155;">
-        <summary style="cursor:pointer;font-weight:800;color:#1e3a8a;">⚙️ Configuració del Client ID de Google Cloud (només 1 cop per centre/pilot)</summary>
-        <div style="margin-top:0.45rem;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;background:#ffffff;padding:0.6rem;border-radius:8px;border:1px solid #cbd5e1;">
-          <input type="text" id="input-google-client-id" placeholder="1234567890-xxxx.apps.googleusercontent.com" style="flex:1;min-width:260px;padding:0.38rem 0.55rem;border:1px solid #94a3b8;border-radius:6px;font-size:0.8rem;" />
-          <button type="button" id="btn-save-client-id">💾 Desar Client ID</button>
-          <span style="font-size:0.75rem;color:#64748b;">(També el pots deixar fix a <code>dist/app-config.js</code> perquè cap docent l'hagi d'escriure.)</span>
-        </div>
-      </details>
-
-      <!-- Alternativa Apps Script amagada per si algun centre la prefereix -->
-      <details style="margin-top:0.45rem;font-size:0.78rem;color:#475569;">
-        <summary style="cursor:pointer;font-weight:700;">🛠️ Alternativa manual sense OAuth (Google Apps Script)</summary>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.65rem;margin-top:0.5rem;">
-          <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:0.55rem;">
-            <strong>Pas 1: Crea el full</strong><br/>
-            <a href="https://sheets.new" target="_blank" rel="noopener" class="btn-link" style="margin-top:0.35rem;width:100%;justify-content:center;">📊 Obrir sheets.new ↗️</a>
-          </div>
-          <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:0.55rem;">
-            <strong>Pas 2: Enganxa l'script</strong><br/>
-            <button type="button" id="btn-copy-gas-code" style="margin-top:0.35rem;width:100%;justify-content:center;">📋 Copiar Codi Automàtic</button>
-          </div>
-          <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:0.55rem;">
-            <strong>Pas 3: URL Apps Script</strong>
-            <input type="url" id="input-cloud-url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%;padding:0.3rem;border:1px solid #94a3b8;border-radius:6px;font-size:0.75rem;margin:0.25rem 0;" />
-            <button type="button" id="btn-sync-cloud-now" style="width:100%;justify-content:center;">🔄 Sincronitzar</button>
-          </div>
-        </div>
-      </details>
+      <div id="banner-feedback" style="margin-top:0.45rem;font-size:0.82rem;font-weight:700;color:#15803d;"></div>
     </div>
 
-    <!-- BANNER EXPLICATIU DE CONNEXIÓ ALUMNE <-> DOCENT -->
-    <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.95rem;font-size:0.83rem;color:#1e3a8a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
-      <div>
-        🔒 <strong>100% Google Workspace Escolar (Zero servidors externs):</strong><br/>
-        • <strong>Docent:</strong> Inicia sessió amb Google (1 clic) → l'app crea automàticament la carpeta i el Google Sheet al teu Drive i et genera l'enllaç per als alumnes.<br/>
-        • <strong>Alumnes:</strong> Obren l'enllaç al Chromebook, entren amb el seu compte Google de l'escola i cada partida s'envia directament al teu Google Sheet!
-      </div>
-    </div>
-
-    <!-- 5 TARGETES KPI -->
+    <!-- 4 TARGETES KPI AMB INDICADOR PEDAGÒGIC CLAR -->
     <section class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">Sessions Completades</div>
+        <div class="kpi-label">Sessions</div>
         <div class="kpi-val" id="kpi-sessions">0</div>
         <div class="kpi-sub" id="kpi-time">0 minuts de pràctica</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Velocitat Mitjana</div>
-        <div class="kpi-val" id="kpi-wpm">0 PPM</div>
-        <div class="kpi-sub">Paraules per minut netes</div>
+        <div class="kpi-val"><span id="kpi-wpm">0 PPM</span> <span id="kpi-wpm-badge" class="level-pill lvl-init">🟠 En inici</span></div>
+        <div class="kpi-sub">Ref. primària: &lt;8 inici · 8–15 procés · 15–25 assolit</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Precisió Mitjana</div>
-        <div class="kpi-val" id="kpi-acc">100%</div>
-        <div class="kpi-sub">Objectiu mínim: 88% (3 Barretines)</div>
+        <div class="kpi-val"><span id="kpi-acc">100%</span> <span id="kpi-acc-badge" class="level-pill lvl-exc">🔵 Excel·lent</span></div>
+        <div class="kpi-sub">Objectiu mínim escolar: ≥ 88% (3 Barretines)</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Barretines del Pilot</div>
-        <div class="kpi-val" id="kpi-barretines">0 / 75</div>
-        <div class="kpi-sub">Nivell 1 (30) + Nivell 2 Extens (45)</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Nivell Actual</div>
-        <div class="kpi-val" id="kpi-level" style="font-size:1.25rem;">Nivell 1 (Montsec)</div>
-        <div class="kpi-sub" id="kpi-weak-keys">Tecles a reforçar: Cap</div>
+        <div class="kpi-label">Assoliment i Extres</div>
+        <div class="kpi-val" id="kpi-barretines">0 ★ · 0 🌸</div>
+        <div class="kpi-sub">Mitjana Barretines i Flors del Berguedà</div>
       </div>
     </section>
 
-    <!-- MATRIU DE BARRETINES PER NIVELL I FASE -->
+    <!-- TAULA DE PROGRÉS: COLUMNES = ALUMNES, FILES = NIVELLS AMB BARRA + MITJANA + EXTRES -->
     <section class="panel">
       <h2>
-        <span>🗺️ Progrés per Nivell i les 3 Fases («En Bit descobreix Catalunya»)</span>
-        <span style="font-size:0.78rem;font-weight:600;color:var(--muted);">
-          💡 Pots fer clic a qualsevol pas per atorgar 3 Barretines (desbloquejar) o posar-lo a 0
-        </span>
+        <span>🗺️ Progrés per Alumne i Nivell</span>
+        <span style="font-size:0.78rem;font-weight:600;color:var(--muted);">Fes clic sobre el nom d'un alumne per veure la seva evolució i mapa de calor</span>
       </h2>
-      <p class="sub">
-        Cada nivell consta de Fase 1 (Pràctica 1A i 1B), Fase 2 (Joc 8-Bits J1 i J2) i Fase 3 (Repte de la Dita Catalana). Calen ≥ 3 Barretines per avançar.
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Nivell i Tradició</th>
-            <th>Tecles</th>
-            <th>Fase 1: Pràctica (1A / 1B)</th>
-            <th>Fase 2: Joc 8-Bits (J1 / J2)</th>
-            <th>Fase 3: Dita Catalana</th>
-            <th>Total Nivell</th>
-          </tr>
-        </thead>
-        <tbody id="matrix-body"></tbody>
-      </table>
+      <div class="table-scroll">
+        <table>
+          <thead id="students-matrix-head"></thead>
+          <tbody id="students-matrix-body"></tbody>
+        </table>
+      </div>
     </section>
 
-    <!-- 2 COLUMNES: MAPA DE CALOR DEL TECLAT + TERMÒMETRE DE LES DITES -->
-    <div class="two-col">
-      <section class="panel" style="margin-bottom:0;">
-        <h2>🔥 Mapa de Calor del Teclat per Precisió</h2>
-        <p class="sub">
-          Identifica quines tecles i dits concentren més errors durant les pràctiques, els jocs i les dites.
-        </p>
-        <div class="heatmap-kb" id="heatmap-kb"></div>
-        <div class="legend-row">
-          <span><i class="dot" style="background:#bbf7d0;border:1px solid #16a34a;"></i>Òptim (&lt;5% errors)</span>
-          <span><i class="dot" style="background:#fef08a;border:1px solid #ca8a04;"></i>Atenció (5–12% errors)</span>
-          <span><i class="dot" style="background:#fecaca;border:1px solid #dc2626;"></i>Cal reforç (&gt;12% errors)</span>
-          <span><i class="dot" style="background:#e2e8f0;border:1px solid #94a3b8;"></i>Sense dades</span>
+    <!-- EVOLUCIÓ AMB ESCALA PEDAGÒGICA + MAPA DE CALOR -->
+    <div class="grid-2">
+      <section class="panel">
+        <h2>📈 Evolució de l'Alumne (Escala de Nivell)</h2>
+        <p class="sub">Mateixa escala de referència per saber a cop d'ull si el ritme és inicial, en procés, assolit o excel·lent.</p>
+
+        <!-- Llegenda de l'escala compartida -->
+        <div class="scale-strip">
+          <div class="scale-band lvl-init">🟠 En inici<br/>&lt; 8 PPM</div>
+          <div class="scale-band lvl-proc">🟡 En procés<br/>8 – 15 PPM</div>
+          <div class="scale-band lvl-ok">🟢 Assolit<br/>15 – 25 PPM</div>
+          <div class="scale-band lvl-exc">🔵 Excel·lent<br/>&gt; 25 PPM</div>
         </div>
-        <div id="finger-diagnosis" style="margin-top:0.75rem;padding:0.65rem 0.85rem;background:#f8fafc;border-radius:8px;border:1px solid var(--border);font-size:0.83rem;"></div>
+
+        <div class="evo-compare" id="evo-compare"></div>
+        <div id="evo-recent-list"></div>
       </section>
 
-      <section class="panel" style="margin-bottom:0;">
-        <h2>📜 Termòmetre d'Evolució — Dites Catalanes (Fase 3)</h2>
-        <p class="sub">
-          Comparativa de velocitat (PPM) i precisió (%) amb tot el teclat al final de cada nivell.
-        </p>
-        <div id="proverb-chart"></div>
-
-        <hr style="border:none;border-top:1px solid #e2e8f0;margin:1rem 0;" />
-
-        <h2 style="margin-bottom:0.5rem;">⚙️ Configuració Pedagògica per a l'Alumne</h2>
-        <div class="cfg-grid">
-          <div class="cfg-item">
-            <span>Precisió per a 3 Barretines:</span>
-            <select id="cfg-min-acc">
-              <option value="85">85% (Adaptat)</option>
-              <option value="88" selected>88% (Estàndard)</option>
-              <option value="92">92% (Exigent)</option>
-            </select>
-          </div>
-          <div class="cfg-item">
-            <span>Desbloquejar tots els nivells:</span>
-            <input type="checkbox" id="cfg-unlock-all" style="width:18px;height:18px;" />
-          </div>
+      <section class="panel">
+        <h2>⌨️ Mapa de Calor del Teclat</h2>
+        <p class="sub">Detecta automàticament quines tecles o dits costen més.</p>
+        <div class="heatmap-kb" id="heatmap-kb"></div>
+        <div style="display:flex;justify-content:center;gap:0.9rem;margin-top:0.55rem;font-size:0.76rem;font-weight:700;">
+          <span>🟢 ≥ 90%</span>
+          <span>🟡 80%–89%</span>
+          <span>🔴 &lt; 80%</span>
+          <span>⬜ Sense dades</span>
         </div>
-        <div style="margin-top:0.65rem;text-align:right;">
-          <button type="button" id="btn-save-cfg" class="primary">💾 Desar configuració per a l'alumne</button>
-        </div>
+        <div id="finger-diagnosis" style="margin-top:0.7rem;font-size:0.82rem;background:#f8fafc;padding:0.6rem 0.75rem;border-radius:8px;border:1px solid var(--border);"></div>
       </section>
     </div>
 
-    <!-- HISTORIAL DE SESSIONS -->
-    <section class="panel">
-      <h2>
-        <span>🕒 Historial Detallat de Sessions</span>
-        <div class="btn-row">
-          <button type="button" class="filter-btn primary" data-filter="all">Totes</button>
-          <button type="button" class="filter-btn" data-filter="drill">⌨️ Fase 1 (Pràctica)</button>
-          <button type="button" class="filter-btn" data-filter="arcade">🕹️ Fase 2 (Joc 8-Bits)</button>
-          <button type="button" class="filter-btn" data-filter="proverb">📜 Fase 3 (Dita)</button>
+    <!-- HISTORIAL DETALLAT PLEGABLE (NO CARREGA LA PANTALLA) -->
+    <details class="panel" style="cursor:pointer;">
+      <summary style="font-weight:800;font-size:0.95rem;">📋 Veure historial detallat de sessions (<span id="hist-count">0</span>)</summary>
+      <div class="table-scroll" style="margin-top:0.75rem;">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Alumne</th>
+              <th>Activitat</th>
+              <th>Velocitat</th>
+              <th>Precisió</th>
+              <th>Errors</th>
+              <th>Barretines</th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <!-- MODAL: INSTRUCCIONS -->
+  <div class="modal-bg" id="modal-help">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 style="margin:0;font-size:1.15rem;color:#1e3a8a;">📖 Com funciona DeuDits (Guia ràpida)</h2>
+        <button type="button" class="btn-close-modal">✖️</button>
+      </div>
+      <ol style="font-size:0.88rem;line-height:1.55;padding-left:1.25rem;margin:0 0 0.8rem;">
+        <li><strong>Connecta el teu Google Drive:</strong> Prem <em>Iniciar sessió amb Google</em> (des del banner inicial o des de <strong>⚙️ Configuració</strong>). Es crearà automàticament una carpeta i el Google Sheet al teu Drive.</li>
+        <li><strong>Comparteix l'enllaç als alumnes:</strong> Clica <strong>🔗 Enllaç Alumnes</strong> (o comparteix-lo a Classroom). Quan cada alumne l'obri al Chromebook i entri amb el seu compte Google, les seves partides es guardaran soles al teu full.</li>
+        <li><strong>Si un alumne d'un altre domini (ex. @gmail vs @xtec) veu error de permís (403):</strong> Obre el teu Google Sheet des de <strong>⚙️ Configuració → 📊 Obrir Google Sheet</strong>, clica <em>Compartir</em> i posa <strong>Accés general: Qualsevol persona amb l'enllaç → Editor</strong> (o afegeix els correus dels alumnes).</li>
+        <li><strong>Actualitzar les dades:</strong> Clica <strong>🔄 Actualitzar Drive</strong> per carregar les últimes partides dels alumnes i veure cada alumne en la seva columna!</li>
+        <li><strong>Com interpretar les mètriques:</strong>
+          <ul>
+            <li><strong>Barretines (1–5):</strong> Calen ≥ 3 Barretines (≥ 88% precisió) per obrir la missió següent.</li>
+            <li><strong>🌸 Flors del Berguedà:</strong> Són de la línia d'ampliació opcional (no bloquegen mai els alumnes NESE!).</li>
+            <li><strong>Escala de Velocitat (primària/NESE):</strong> 🟠 En inici (&lt; 8 PPM) · 🟡 En procés (8–15 PPM) · 🟢 Assolit (15–25 PPM) · 🔵 Excel·lent (&gt; 25 PPM).</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIGURACIÓ (CONNEXIÓ DRIVE + ENLLAÇOS + PEDAGOGIA) -->
+  <div class="modal-bg" id="modal-settings">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 style="margin:0;font-size:1.15rem;color:#14532d;">⚙️ Configuració i Google Drive</h2>
+        <button type="button" class="btn-close-modal">✖️</button>
+      </div>
+
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:0.85rem;margin-bottom:0.9rem;">
+        <strong style="color:#14532d;">☁️ Connexió amb Google Drive</strong>
+        <div id="cfg-drive-status" style="font-size:0.82rem;color:#166534;margin:0.3rem 0 0.6rem;"></div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:0.6rem;">
+          <input type="text" id="input-drive-folder-cfg" value="DeuDits" style="flex:1;min-width:160px;padding:0.4rem 0.6rem;border:1px solid #94a3b8;border-radius:6px;font-weight:700;" />
+          <button type="button" id="btn-google-connect-cfg" class="green">🔐 Connectar / Canviar compte Google</button>
         </div>
-      </h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Data / Hora</th>
-            <th>Nivell</th>
-            <th>Fase</th>
-            <th>Activitat</th>
-            <th>Velocitat (PPM)</th>
-            <th>Precisió</th>
-            <th>Errors</th>
-            <th>Barretines</th>
-          </tr>
-        </thead>
-        <tbody id="sessions-body"></tbody>
-      </table>
-    </section>
+        <div id="cfg-connected-links" style="display:none;flex-wrap:wrap;gap:0.45rem;">
+          <a href="#" id="link-open-gsheet" target="_blank" rel="noopener" class="btn-link">📊 Obrir Google Sheet ↗️</a>
+          <button type="button" id="btn-cfg-copy-link" class="primary">🔗 Copiar enllaç alumnes</button>
+          <a href="#" id="link-share-classroom" target="_blank" rel="noopener" class="btn-link">🎓 Compartir a Classroom ↗️</a>
+        </div>
+        <div id="cfg-feedback" style="margin-top:0.45rem;font-size:0.8rem;font-weight:700;color:#15803d;"></div>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:0.85rem;margin-bottom:0.9rem;">
+        <strong>🎛️ Ajustos pedagògics i manteniment</strong>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;font-size:0.85rem;">
+          <span>Precisió mínima per 3 Barretines (%)</span>
+          <input type="number" id="cfg-min-acc" min="70" max="98" value="88" style="width:74px;padding:0.25rem 0.4rem;border-radius:6px;border:1px solid #94a3b8;font-weight:700;" />
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;">
+          <button type="button" id="btn-save-cfg" class="primary">💾 Desar ajustos</button>
+          <button type="button" id="btn-clear-data" style="color:#b91c1c;">🗑️ Netejar memòria cau local</button>
+        </div>
+      </div>
+
+      <details style="font-size:0.8rem;color:#475569;">
+        <summary style="cursor:pointer;font-weight:700;">🔑 Client ID de Google Cloud (avançat)</summary>
+        <div style="display:flex;gap:0.45rem;margin-top:0.45rem;">
+          <input type="text" id="input-google-client-id" style="flex:1;padding:0.35rem 0.5rem;border:1px solid #94a3b8;border-radius:6px;font-size:0.78rem;" />
+          <button type="button" id="btn-save-client-id">💾 Desar</button>
+        </div>
+      </details>
+    </div>
   </div>
 
   <script>
-    const LEVELS_META = [
-      {
-        id: "L01",
-        isPilot: true,
-        title: "Nivell 1 (Pilot): Pedraforca (Esquivar Asteroides)",
-        keys: "F, J + Espai (2 lletres)",
-        drills: [
-          { id: "L01.D1", short: "1A" },
-          { id: "L01.D2", short: "1B" },
-          { id: "L01.D3", short: "1C" }
-        ],
-        arcades: [
-          { id: "L01.G1", short: "J1 (Espai)" },
-          { id: "L01.G2", short: "J2 (Atmosfera)" },
-          { id: "L01.G3", short: "J3 (Escalada)" },
-          { id: "L01.G4", short: "J4 (Reciclatge)" }
-        ],
-        proverb: "L01.PROVERB",
-        proverbText: "«qui dia passa any empeny»"
-      },
-      {
-        id: "L02",
-        isPilot: true,
-        title: "Nivell 2 (Pilot Extens): Vilafranca (Castells)",
-        keys: "D, K + F, J + Espai (4 lletres)",
-        drills: [
-          { id: "L02.D1", short: "1A (D+K)" },
-          { id: "L02.D2", short: "1B (Grups DK)" },
-          { id: "L02.D3", short: "1C (Per Mà)" },
-          { id: "L02.D4", short: "1D (Creuat)" },
-          { id: "L02.D5", short: "1E (Domini 4)" }
-        ],
-        arcades: [
-          { id: "L02.G1", short: "J1 (D+K)" },
-          { id: "L02.G2", short: "J2 (Per Mans)" },
-          { id: "L02.G3", short: "J3 (2 Castellers)" }
-        ],
-        proverb: "L02.PROVERB",
-        proverbText: "«cada ovella al seu corral»"
-      },
-      {
-        id: "L03",
-        isPilot: false,
-        title: "Nivell 3 (Post-Pilot): Girona (Sardana)",
-        keys: "S, L + Espai (Reservat Post-Pilot)",
-        drills: [
-          { id: "L03.D1", short: "1A" },
-          { id: "L03.D2", short: "1B" }
-        ],
-        arcades: [
-          { id: "L03.G1", short: "J1" },
-          { id: "L03.G2", short: "J2" }
-        ],
-        proverb: "L03.PROVERB",
-        proverbText: "«al maig cada dia un raig»"
-      },
-      {
-        id: "L04",
-        isPilot: false,
-        title: "Nivell 4 (Post-Pilot): Berga (La Patum)",
-        keys: "A, Ç + Espai (Reservat Post-Pilot)",
-        drills: [
-          { id: "L04.D1", short: "1A" },
-          { id: "L04.D2", short: "1B" }
-        ],
-        arcades: [
-          { id: "L04.G1", short: "J1" },
-          { id: "L04.G2", short: "J2" }
-        ],
-        proverb: "L04.PROVERB",
-        proverbText: "«al juny la falç al puny»"
-      }
-    ];
-
+    const CLOUD_CACHE_KEY = "deudits_cloud_cache_v1";
     const KB_ROWS = [
       ["q","w","e","r","t","y","u","i","o","p"],
       ["a","s","d","f","g","h","j","k","l","ñ","ç"],
@@ -662,362 +485,46 @@
       [" "]
     ];
 
-    let activeFilter = "all";
-    let cloudDriveCache = null;
+    const LEVEL_STEPS = {
+      L01: {
+        name: "Nivell 1 · El Pedraforca",
+        mandatory: ["L01.D1", "L01.G1", "L01.D2", "L01.G2", "L01.D3", "L01.G3", "L01.PROVERB"],
+        extras: ["L01.G4"]
+      },
+      L02: {
+        name: "Nivell 2 · Castells a Vilafranca",
+        mandatory: ["L02.D1", "L02.D2", "L02.D3", "L02.D4", "L02.D5", "L02.G1", "L02.G2", "L02.G3", "L02.PROVERB"],
+        extras: []
+      }
+    };
+
+    // Escala pedagògica compartida (KPIs + Taula + Evolució)
+    function getSpeedBand(wpm) {
+      if (wpm >= 25) return { cls: "lvl-exc", label: "🔵 Excel·lent" };
+      if (wpm >= 15) return { cls: "lvl-ok",  label: "🟢 Assolit" };
+      if (wpm >= 8)  return { cls: "lvl-proc", label: "🟡 En procés" };
+      return { cls: "lvl-init", label: "🟠 En inici" };
+    }
+    function getAccBand(acc) {
+      if (acc >= 95) return { cls: "lvl-exc", label: "🔵 Excel·lent" };
+      if (acc >= 88) return { cls: "lvl-ok",  label: "🟢 Assolit" };
+      if (acc >= 80) return { cls: "lvl-proc", label: "🟡 En procés" };
+      return { cls: "lvl-warn", label: "🔴 Cal reforç" };
+    }
 
     function renderBarretinaMiniSvg(filled = true) {
       const col = filled ? "#dc2626" : "#cbd5e1";
-      return `<svg width="14" height="10" viewBox="0 0 10 6" style="vertical-align:middle;"><rect x="2" y="0" width="6" height="4" fill="${col}"/><rect x="0" y="4" width="8" height="2" fill="#0f172a"/></svg>`;
+      return `<svg width="13" height="9" viewBox="0 0 10 6" style="vertical-align:middle;"><rect x="2" y="0" width="6" height="4" fill="${col}"/><rect x="0" y="4" width="8" height="2" fill="#0f172a"/></svg>`;
     }
 
-    function loadDashboardData() {
-      const teacherCfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{\"minAccuracyPct\":88,\"unlockedAllLevels\":false}");
-      const selectedStudent = (document.getElementById("student-filter") && document.getElementById("student-filter").value) || "__ALL__";
+    // Carrega la darrera còpia del núvol si existeix perquè els alumnes surtin a l'instant!
+    let cloudDriveCache = null;
+    try {
+      const cached = localStorage.getItem(CLOUD_CACHE_KEY);
+      if (cached) cloudDriveCache = JSON.parse(cached);
+    } catch {}
 
-      if (cloudDriveCache) {
-        const isAll = selectedStudent === "__ALL__";
-        const sessions = isAll
-          ? cloudDriveCache.sessions
-          : cloudDriveCache.sessions.filter(s => s.studentName === selectedStudent);
-        const keyStats = isAll
-          ? cloudDriveCache.keyStatsAll
-          : (cloudDriveCache.keyStatsByStudent[selectedStudent] || {});
-        const stepBarretines = isAll
-          ? cloudDriveCache.barretinesAll
-          : (cloudDriveCache.barretinesByStudent[selectedStudent] || {});
-        return {
-          sessions,
-          keyStats,
-          stepBarretines,
-          proverbHistory: [],
-          teacherCfg
-        };
-      }
-
-      const telemetry = JSON.parse(localStorage.getItem("mecano_telemetry_v1") || "{\"sessions\":[],\"keyStats\":{}}");
-      const studentProg = JSON.parse(localStorage.getItem("mecano_pilot_nese_v2") || "{\"stepBarretines\":{},\"proverbHistory\":[]}");
-
-      return {
-        sessions: telemetry.sessions || [],
-        keyStats: telemetry.keyStats || {},
-        stepBarretines: studentProg.stepBarretines || {},
-        proverbHistory: studentProg.proverbHistory || [],
-        teacherCfg
-      };
-    }
-
-    function saveStudentBarretines(stepBarretines, proverbHistory) {
-      localStorage.setItem("mecano_pilot_nese_v2", JSON.stringify({
-        stepBarretines,
-        proverbHistory
-      }));
-    }
-
-    function renderAll() {
-      const data = loadDashboardData();
-      const sessions = data.sessions;
-      const totalSessions = sessions.length;
-      const totalSec = sessions.reduce((a, s) => a + (s.durationSec || 20), 0);
-      const avgWpm = totalSessions > 0
-        ? (sessions.reduce((a, s) => a + (s.wpmNet || 0), 0) / totalSessions).toFixed(1)
-        : "0.0";
-      const avgAcc = totalSessions > 0
-        ? Math.round(sessions.reduce((a, s) => a + (s.accuracyPct || 100), 0) / totalSessions)
-        : 100;
-      const totalB = Object.values(data.stepBarretines).reduce((a, b) => a + b, 0);
-
-      document.getElementById("kpi-sessions").textContent = String(totalSessions);
-      document.getElementById("kpi-time").textContent = `${Math.max(1, Math.round(totalSec / 60))} minuts practicats`;
-      document.getElementById("kpi-wpm").textContent = `${avgWpm} PPM`;
-      document.getElementById("kpi-acc").textContent = `${avgAcc}%`;
-      document.getElementById("kpi-barretines").innerHTML = `${totalB} / 75 ${renderBarretinaMiniSvg(true)}`;
-
-      // Determina nivell actual del Pilot (Nivells 1 i 2)
-      let currentLvlTitle = "Nivell 1 (Pedraforca)";
-      if ((data.stepBarretines["L01.PROVERB"] || 0) >= 3) {
-        currentLvlTitle = (data.stepBarretines["L02.PROVERB"] || 0) >= 3
-          ? "Pilot (Nivells 1 i 2) Completat! 🏆"
-          : "Nivell 2 Extens (Vilafranca)";
-      }
-      document.getElementById("kpi-level").textContent = currentLvlTitle;
-
-      renderMatrix(data);
-      renderHeatmap(data.keyStats);
-      renderProverbChart(data);
-      renderSessionsTable(sessions);
-
-      document.getElementById("cfg-min-acc").value = String(data.teacherCfg.minAccuracyPct || 88);
-      document.getElementById("cfg-unlock-all").checked = Boolean(data.teacherCfg.unlockedAllLevels);
-    }
-
-    function renderMatrix(data) {
-      const tbody = document.getElementById("matrix-body");
-      tbody.innerHTML = "";
-
-      for (const lvl of LEVELS_META) {
-        const tr = document.createElement("tr");
-        const allStepIds = [...lvl.drills.map(d => d.id), ...lvl.arcades.map(a => a.id), lvl.proverb];
-        const lvlEarned = allStepIds.reduce((a, id) => a + (data.stepBarretines[id] || 0), 0);
-        const maxLvlB = allStepIds.length * 5;
-
-        const renderStepPill = (stepId, shortLabel) => {
-          const b = data.stepBarretines[stepId] || 0;
-          const cls = b >= 3 ? "passed" : "";
-          return `<span class="step-pill ${cls}" data-step="${stepId}" title="Fes clic per canviar les Barretines d'aquest pas">${shortLabel}: ${b}/5 ${renderBarretinaMiniSvg(b >= 3)}</span>`;
-        };
-
-        tr.innerHTML = `
-          <td><strong>${lvl.title}</strong></td>
-          <td><code>${lvl.keys}</code></td>
-          <td>
-            <div style="display:flex;gap:5px;flex-wrap:wrap;">
-              ${lvl.drills.map(d => renderStepPill(d.id, d.short)).join("")}
-            </div>
-          </td>
-          <td>
-            <div style="display:flex;gap:5px;flex-wrap:wrap;">
-              ${lvl.arcades.map(a => renderStepPill(a.id, a.short)).join("")}
-            </div>
-          </td>
-          <td>${renderStepPill(lvl.proverb, "Dita")}</td>
-          <td><strong>${lvlEarned} / ${maxLvlB}</strong> ${renderBarretinaMiniSvg(lvlEarned >= allStepIds.length * 3)}</td>
-        `;
-        tbody.appendChild(tr);
-      }
-
-      tbody.querySelectorAll(".step-pill").forEach(pill => {
-        pill.onclick = () => {
-          const stepId = pill.getAttribute("data-step");
-          const cur = data.stepBarretines[stepId] || 0;
-          data.stepBarretines[stepId] = cur >= 3 ? 0 : 4;
-          saveStudentBarretines(data.stepBarretines, data.proverbHistory);
-          renderAll();
-        };
-      });
-    }
-
-    function renderHeatmap(keyStats) {
-      const box = document.getElementById("heatmap-kb");
-      box.innerHTML = "";
-      const weakKeys = [];
-
-      for (const row of KB_ROWS) {
-        const rDiv = document.createElement("div");
-        rDiv.className = "hm-row";
-        for (const ch of row) {
-          const st = keyStats[ch] || { hits: 0, errors: 0 };
-          const total = st.hits + st.errors;
-          const errRate = total > 0 ? (st.errors / total) * 100 : null;
-          let cls = "";
-          if (errRate !== null) {
-            if (errRate > 12) {
-              cls = "hm-err";
-              weakKeys.push({ ch: ch === " " ? "Espai" : ch.toUpperCase(), rate: Math.round(errRate) });
-            } else if (errRate >= 5) {
-              cls = "hm-warn";
-            } else {
-              cls = "hm-ok";
-            }
-          }
-
-          const kDiv = document.createElement("div");
-          kDiv.className = `hm-key ${ch === " " ? "space" : ""} ${cls}`;
-          kDiv.innerHTML = `
-            <span>${ch === " " ? "ESPAI" : ch.toUpperCase()}</span>
-            <small>${errRate !== null ? Math.round(100 - errRate) + "%" : "—"}</small>
-          `;
-          rDiv.appendChild(kDiv);
-        }
-        box.appendChild(rDiv);
-      }
-
-      const diag = document.getElementById("finger-diagnosis");
-      const kpiWeak = document.getElementById("kpi-weak-keys");
-      if (weakKeys.length === 0) {
-        kpiWeak.textContent = "Tecles a reforçar: Cap detectada";
-        diag.innerHTML = `✅ <strong>Diagnòstic automàtic:</strong> Totes les tecles practicades es mantenen per sota del llindar crític d'errors (&lt;12%).`;
-      } else {
-        const listStr = weakKeys.map(w => `${w.ch} (${w.rate}% err)`).join(", ");
-        kpiWeak.textContent = `Reforçar: ${weakKeys.map(w => w.ch).join(", ")}`;
-        diag.innerHTML = `⚠️ <strong>Recomanació pedagògica:</strong> S'observa més dificultat a les tecles <strong>${listStr}</strong>. Es recomana repetir la <em>Fase 1A (Parelles aïllades)</em> del nivell corresponent.`;
-      }
-    }
-
-    function renderProverbChart(data) {
-      const box = document.getElementById("proverb-chart");
-      const proverbsFromSessions = data.sessions.filter(s => s.phaseType === "proverb").slice(0, 6).reverse();
-      const items = proverbsFromSessions.length > 0
-        ? proverbsFromSessions.map(s => ({ label: s.stepLabel, wpm: s.wpmNet, acc: s.accuracyPct }))
-        : (data.proverbHistory || []).map(p => ({ label: p.title, wpm: p.wpm, acc: p.acc }));
-
-      if (items.length === 0) {
-        box.innerHTML = `<div style="padding:1rem;background:#f8fafc;border-radius:8px;color:var(--muted);font-size:0.84rem;">Encara no s'ha completat cap Repte de la Dita Catalana (Fase 3). Pots jugar-ne un a la vista de l'alumne o prémer «🧪 Carregar Dades d'Exemple».</div>`;
-        return;
-      }
-
-      box.innerHTML = items.map(it => `
-        <div class="proverb-row">
-          <span style="min-width:195px;font-weight:700;">${it.label}</span>
-          <div class="proverb-bar-bg">
-            <div class="proverb-bar-fill" style="width:${Math.min(100, Math.max(22, it.wpm * 3))}%">
-              ${it.wpm} PPM · ${it.acc}% precisió
-            </div>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    function renderSessionsTable(sessions) {
-      const tbody = document.getElementById("sessions-body");
-      const filtered = activeFilter === "all"
-        ? sessions
-        : sessions.filter(s => s.phaseType === activeFilter);
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.2rem;">No hi ha sessions registrades per a aquest filtre.</td></tr>`;
-        return;
-      }
-
-      const phaseBadge = (p) => {
-        if (p === "drill") return "⌨️ Fase 1 (Pràctica)";
-        if (p === "arcade") return "🕹️ Fase 2 (Joc 8-Bits)";
-        return "📜 Fase 3 (Dita)";
-      };
-
-      tbody.innerHTML = filtered.slice(0, 30).map(s => {
-        const dt = s.timestampIso ? new Date(s.timestampIso).toLocaleString("ca-ES", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) : "Avui";
-        return `
-          <tr>
-            <td>${dt}</td>
-            <td><strong>${s.levelId}</strong></td>
-            <td>${phaseBadge(s.phaseType)}</td>
-            <td>${s.stepLabel || s.stepId}</td>
-            <td><strong>${s.wpmNet} PPM</strong></td>
-            <td>${s.accuracyPct}%</td>
-            <td>${s.errors}</td>
-            <td>${s.barretines} / 5 ${renderBarretinaMiniSvg(s.barretines >= 3)}</td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    // Filtratge de taula
-    document.querySelectorAll(".filter-btn").forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("primary"));
-        btn.classList.add("primary");
-        activeFilter = btn.getAttribute("data-filter");
-        renderAll();
-      };
-    });
-
-    // Botó Carregar Dades d'Exemple per provar el panell docent al 100%
-    document.getElementById("btn-seed-demo").onclick = () => {
-      const demoStepBarretines = {
-        "L01.D1": 5, "L01.D2": 4, "L01.D3": 5, "L01.G1": 4, "L01.G2": 5, "L01.PROVERB": 4,
-        "L02.D1": 5, "L02.D2": 4, "L02.D3": 4, "L02.D4": 3, "L02.D5": 4, "L02.G1": 4, "L02.G2": 4, "L02.G3": 3, "L02.PROVERB": 4
-      };
-      const demoProverbs = [
-        { title: "⏱️ Prova Inicial (Termòmetre Zero)", wpm: 11.4, acc: 86 },
-        { title: "Nivell 1: L'Aterratge al Montsec", wpm: 15.2, acc: 93 },
-        { title: "Nivell 2: Castells a Vilafranca", wpm: 19.4, acc: 96 }
-      ];
-      const now = Date.now();
-      const demoSessions = [
-        { sessionId: "S-107", timestampIso: new Date(now - 300000).toISOString(), levelId: "L02", phaseType: "proverb", stepId: "L02.PROVERB", stepLabel: "Dita: «cada ovella al seu corral»", wpmNet: 19.4, accuracyPct: 96, errors: 1, totalPresses: 25, barretines: 4, durationSec: 18 },
-        { sessionId: "S-106", timestampIso: new Date(now - 900000).toISOString(), levelId: "L02", phaseType: "arcade", stepId: "L02.G3", stepLabel: "J3: Gran Castell 4 Lletres — 2 Castellers alhora (14 pisos)", wpmNet: 17.8, accuracyPct: 91, errors: 4, totalPresses: 48, barretines: 3, durationSec: 46 },
-        { sessionId: "S-105", timestampIso: new Date(now - 1500000).toISOString(), levelId: "L02", phaseType: "arcade", stepId: "L02.G2", stepLabel: "J2: Pugem per Mans D+F i K+J (12 pisos)", wpmNet: 17.2, accuracyPct: 94, errors: 2, totalPresses: 38, barretines: 4, durationSec: 39 },
-        { sessionId: "S-104", timestampIso: new Date(now - 2100000).toISOString(), levelId: "L02", phaseType: "drill", stepId: "L02.D4", stepLabel: "1D: Encreuament de les 4 lletres (dkfj fjdk dfkj)", wpmNet: 16.5, accuracyPct: 90, errors: 6, totalPresses: 62, barretines: 3, durationSec: 45 },
-        { sessionId: "S-103", timestampIso: new Date(now - 2700000).toISOString(), levelId: "L02", phaseType: "drill", stepId: "L02.D3", stepLabel: "1C: Coordinació per Mà: Esq. (df fd) i Dreta (kj jk)", wpmNet: 16.9, accuracyPct: 94, errors: 3, totalPresses: 52, barretines: 4, durationSec: 38 },
-        { sessionId: "S-102", timestampIso: new Date(now - 3600000).toISOString(), levelId: "L01", phaseType: "proverb", stepId: "L01.PROVERB", stepLabel: "Dita: «qui dia passa any empeny»", wpmNet: 15.2, accuracyPct: 93, errors: 2, totalPresses: 24, barretines: 4, durationSec: 22 },
-        { sessionId: "S-101", timestampIso: new Date(now - 4500000).toISOString(), levelId: "L01", phaseType: "proverb", stepId: "DIAG.ZERO", stepLabel: "⏱️ Prova Inicial (Termòmetre Zero)", wpmNet: 11.4, accuracyPct: 86, errors: 3, totalPresses: 20, barretines: 2, durationSec: 26 }
-      ];
-      const demoKeys = {
-        "f": { hits: 110, errors: 3 },
-        "j": { hits: 105, errors: 4 },
-        "d": { hits: 92, errors: 6 },
-        "k": { hits: 88, errors: 13 },
-        " ": { hits: 120, errors: 2 }
-      };
-
-      localStorage.setItem("mecano_pilot_nese_v2", JSON.stringify({
-        stepBarretines: demoStepBarretines,
-        proverbHistory: demoProverbs
-      }));
-      localStorage.setItem("mecano_telemetry_v1", JSON.stringify({
-        sessions: demoSessions,
-        keyStats: demoKeys
-      }));
-      renderAll();
-    };
-
-    // Exportació CSV
-    document.getElementById("btn-export-csv").onclick = () => {
-      const data = loadDashboardData();
-      const header = "session_id,timestamp_iso,level_id,phase_type,step_id,step_label,wpm_net,accuracy_pct,errors,barretines,duration_sec";
-      const rows = data.sessions.map(s =>
-        `${s.sessionId},${s.timestampIso},${s.levelId},${s.phaseType},${s.stepId},"${(s.stepLabel || "").replace(/"/g, '""')}",${s.wpmNet},${s.accuracyPct},${s.errors},${s.barretines},${s.durationSec}`
-      );
-      const csv = [header, ...rows].join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "mecano_ALU-01_sessions.csv";
-      a.click();
-      URL.revokeObjectURL(url);
-    };
-
-    // Reiniciar dades
-    document.getElementById("btn-clear-data").onclick = () => {
-      if (confirm("Vols esborrar les sessions i deixar el progrés de l'alumne a zero (només l'exercici 1A obert)?")) {
-        localStorage.removeItem("mecano_pilot_nese_v2");
-        localStorage.removeItem("mecano_v4_distinct");
-        localStorage.removeItem("mecano_telemetry_v1");
-        renderAll();
-      }
-    };
-
-    // Desar configuració pedagògica
-    document.getElementById("btn-save-cfg").onclick = () => {
-      const minAccuracyPct = Number(document.getElementById("cfg-min-acc").value || 88);
-      const unlockedAllLevels = Boolean(document.getElementById("cfg-unlock-all").checked);
-      localStorage.setItem("mecano_teacher_cfg_v1", JSON.stringify({ minAccuracyPct, unlockedAllLevels }));
-      if (window.google && window.google.script && window.google.script.run) {
-        window.google.script.run.apiSaveTeacherConfig({
-          minAccuracyPct,
-          minBarretinesToUnlock: 3,
-          unlockedAllLevels,
-          requireProverbPhase: true
-        });
-      }
-      alert("Configuració pedagògica desada correctament!");
-    };
-
-    // =========================================================================
-    // GOOGLE DRIVE OAUTH 2.0 (1 CLIC) + ALTERNATIVA APPS SCRIPT
-    // =========================================================================
-    const cloudInput = document.getElementById("input-cloud-url");
-    const cloudStatusPill = document.getElementById("cloud-status-pill");
-    const cloudFeedback = document.getElementById("cloud-sync-feedback");
-    const folderInput = document.getElementById("input-drive-folder");
-    const clientIdInput = document.getElementById("input-google-client-id");
     const studentFilterEl = document.getElementById("student-filter");
-    const oauthConnectedBox = document.getElementById("oauth-connected-actions");
-    const btnRefreshDrive = document.getElementById("btn-google-refresh");
-
-    if (window.MecanoGoogleAuth) {
-      const appName = window.MecanoGoogleAuth.getAppName();
-      document.title = appName + " — Panell del Docent";
-      const h1 = document.getElementById("admin-app-heading");
-      if (h1) h1.textContent = appName + " — Panell del Docent";
-      folderInput.value = localStorage.getItem("mecano_google_folder_name") || appName;
-      clientIdInput.value = window.MecanoGoogleAuth.getClientId();
-      // Si el Client ID ja està configurat a app-config.js, deixem el bloc plegat; si falta, l'obrim per guiar-te
-      if (!window.MecanoGoogleAuth.getClientId()) {
-        document.getElementById("oauth-clientid-details").open = true;
-      }
-    }
 
     function populateStudentFilter(students) {
       const current = studentFilterEl.value;
@@ -1026,225 +533,416 @@
       if (students.includes(current)) studentFilterEl.value = current;
     }
 
-    studentFilterEl.onchange = () => renderAll();
+    function getDataset() {
+      const selected = studentFilterEl.value || "__ALL__";
+      if (cloudDriveCache && Array.isArray(cloudDriveCache.sessions)) {
+        const isAll = selected === "__ALL__";
+        return {
+          isCloud: true,
+          selected,
+          students: cloudDriveCache.students || [],
+          sessions: isAll ? cloudDriveCache.sessions : cloudDriveCache.sessions.filter(s => s.studentName === selected),
+          allSessions: cloudDriveCache.sessions,
+          keyStats: isAll ? (cloudDriveCache.keyStatsAll || {}) : ((cloudDriveCache.keyStatsByStudent || {})[selected] || {}),
+          barretinesByStudent: cloudDriveCache.barretinesByStudent || {},
+          stepBarretines: isAll ? (cloudDriveCache.barretinesAll || {}) : ((cloudDriveCache.barretinesByStudent || {})[selected] || {})
+        };
+      }
 
-    function refreshOAuthConnectedUI() {
+      // Mode local (si encara no hi ha dades del Drive)
+      const telemetry = JSON.parse(localStorage.getItem("mecano_telemetry_v1") || "{\"sessions\":[],\"keyStats\":{}}");
+      const prog = JSON.parse(localStorage.getItem("deudits_pilot_intercalat_v1") || localStorage.getItem("mecano_pilot_nese_v2") || "{\"stepBarretines\":{}}");
+      const localName = "Alumne Local";
+      const sessions = (telemetry.sessions || []).map(s => Object.assign({ studentName: s.studentName || localName }, s));
+      const students = sessions.length > 0 ? Array.from(new Set(sessions.map(s => s.studentName))) : [localName];
+      const byStu = {};
+      byStu[students[0]] = prog.stepBarretines || {};
+
+      return {
+        isCloud: false,
+        selected: "__ALL__",
+        students,
+        sessions,
+        allSessions: sessions,
+        keyStats: telemetry.keyStats || {},
+        barretinesByStudent: byStu,
+        stepBarretines: prog.stepBarretines || {}
+      };
+    }
+
+    function renderAll() {
+      const ds = getDataset();
+      const sessions = ds.sessions;
+      const totalSessions = sessions.length;
+      const totalSec = sessions.reduce((a, s) => a + (s.durationSec || 20), 0);
+      const avgWpm = totalSessions > 0
+        ? Number((sessions.reduce((a, s) => a + (s.wpmNet || 0), 0) / totalSessions).toFixed(1))
+        : 0;
+      const avgAcc = totalSessions > 0
+        ? Math.round(sessions.reduce((a, s) => a + (s.accuracyPct || 100), 0) / totalSessions)
+        : 100;
+
+      const speedBand = getSpeedBand(avgWpm);
+      const accBand = getAccBand(avgAcc);
+
+      document.getElementById("kpi-sessions").textContent = String(totalSessions);
+      document.getElementById("kpi-time").textContent = `${Math.max(0, Math.round(totalSec / 60))} minuts practicats`;
+      document.getElementById("kpi-wpm").textContent = `${avgWpm} PPM`;
+      const wpmBadge = document.getElementById("kpi-wpm-badge");
+      wpmBadge.className = `level-pill ${speedBand.cls}`;
+      wpmBadge.textContent = speedBand.label;
+
+      document.getElementById("kpi-acc").textContent = `${avgAcc}%`;
+      const accBadge = document.getElementById("kpi-acc-badge");
+      accBadge.className = `level-pill ${accBand.cls}`;
+      accBadge.textContent = accBand.label;
+
+      const bVals = Object.entries(ds.stepBarretines).filter(([k]) => !k.endsWith(".G4")).map(([, v]) => v);
+      const avgB = bVals.length > 0 ? (bVals.reduce((a, b) => a + b, 0) / bVals.length).toFixed(1) : "0.0";
+      const flowersCount = ["L01.G4", "DIAG.ZERO", "L01.PROVERB", "L02.PROVERB"].filter(id => (ds.stepBarretines[id] || 0) >= 3).length;
+      document.getElementById("kpi-barretines").innerHTML = `${avgB}/5 ${renderBarretinaMiniSvg(true)} · ${flowersCount} 🌸`;
+
+      renderStudentsMatrix(ds);
+      renderEvolution(sessions);
+      renderHeatmap(ds.keyStats);
+      renderHistory(sessions);
+    }
+
+    // TAULA: COLUMNES = ALUMNES, FILES = NIVELLS (barra de progrés + mitjana Barretines + extres)
+    function renderStudentsMatrix(ds) {
+      const thead = document.getElementById("students-matrix-head");
+      const tbody = document.getElementById("students-matrix-body");
+      const students = ds.students;
+
+      if (students.length === 0) {
+        thead.innerHTML = "";
+        tbody.innerHTML = `<tr><td style="text-align:center;color:var(--muted);padding:1.2rem;">Encara no hi ha cap alumne registrat. Comparteix l'enllaç als alumnes i prem <strong>🔄 Actualitzar Drive</strong>!</td></tr>`;
+        return;
+      }
+
+      thead.innerHTML = `
+        <tr>
+          <th style="min-width:170px;">Nivell / Indicador</th>
+          ${students.map(stu => `
+            <th style="min-width:165px;">
+              <button type="button" class="stu-col-btn ${ds.selected === stu ? "active" : ""}" data-stu="${stu.replace(/"/g, "&quot;")}">
+                🧑‍🎓 ${stu}
+              </button>
+            </th>
+          `).join("")}
+        </tr>
+      `;
+
+      thead.querySelectorAll(".stu-col-btn").forEach(btn => {
+        btn.onclick = () => {
+          const name = btn.dataset.stu;
+          studentFilterEl.value = (studentFilterEl.value === name) ? "__ALL__" : name;
+          renderAll();
+        };
+      });
+
+      const rowsHtml = [];
+      for (const [lvlKey, meta] of Object.entries(LEVEL_STEPS)) {
+        rowsHtml.push(`
+          <tr>
+            <td><strong>${meta.name}</strong><br/><span style="font-size:0.75rem;color:var(--muted);">${meta.mandatory.length} missions obligatòries</span></td>
+            ${students.map(stu => {
+              const map = ds.barretinesByStudent[stu] || {};
+              const passed = meta.mandatory.filter(id => (map[id] || 0) >= 3).length;
+              const pct = Math.round((passed / meta.mandatory.length) * 100);
+              const doneScores = meta.mandatory.map(id => map[id] || 0).filter(v => v > 0);
+              const avgB = doneScores.length > 0 ? (doneScores.reduce((a, b) => a + b, 0) / doneScores.length).toFixed(1) : "—";
+              const extraDone = meta.extras.filter(id => (map[id] || 0) >= 3).length;
+              return `
+                <td>
+                  <div style="display:flex;justify-content:space-between;font-size:0.76rem;font-weight:800;">
+                    <span>${passed}/${meta.mandatory.length} (${pct}%)</span>
+                    <span>${avgB}/5 ${renderBarretinaMiniSvg(passed > 0)}</span>
+                  </div>
+                  <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${pct}%;"></div></div>
+                  ${meta.extras.length > 0 ? `<div style="font-size:0.74rem;color:${extraDone > 0 ? "#be185d" : "#64748b"};font-weight:700;">${extraDone > 0 ? "🌸 Extra completat!" : "🌸 Extra pendent"}</div>` : ""}
+                </td>
+              `;
+            }).join("")}
+          </tr>
+        `);
+      }
+
+      // Fila resum global per cada alumne (Velocitat + Precisió amb la mateixa escala!)
+      rowsHtml.push(`
+        <tr style="background:#f8fafc;">
+          <td><strong>Resum Global</strong><br/><span style="font-size:0.75rem;color:var(--muted);">Ritme i precisió mitjans</span></td>
+          ${students.map(stu => {
+            const stuSess = ds.allSessions.filter(s => s.studentName === stu);
+            const avgW = stuSess.length > 0 ? Number((stuSess.reduce((a, s) => a + (s.wpmNet || 0), 0) / stuSess.length).toFixed(1)) : 0;
+            const avgA = stuSess.length > 0 ? Math.round(stuSess.reduce((a, s) => a + (s.accuracyPct || 100), 0) / stuSess.length) : 0;
+            const sb = getSpeedBand(avgW);
+            const ab = getAccBand(avgA);
+            return `
+              <td>
+                <div style="font-weight:800;font-size:0.82rem;">${avgW} PPM <span class="level-pill ${sb.cls}">${sb.label}</span></div>
+                <div style="margin-top:0.25rem;font-weight:800;font-size:0.82rem;">${stuSess.length ? avgA + "%" : "—"} ${stuSess.length ? `<span class="level-pill ${ab.cls}">${ab.label}</span>` : ""}</div>
+              </td>
+            `;
+          }).join("")}
+        </tr>
+      `);
+
+      tbody.innerHTML = rowsHtml.join("");
+    }
+
+    // EVOLUCIÓ CLARA (Abans vs Ara + darreres sessions amb la mateixa escala!)
+    function renderEvolution(sessions) {
+      const compEl = document.getElementById("evo-compare");
+      const listEl = document.getElementById("evo-recent-list");
+
+      if (sessions.length === 0) {
+        compEl.innerHTML = `<div class="evo-box" style="grid-column:span 3;color:var(--muted);">Encara no hi ha sessions per mostrar evolució.</div>`;
+        listEl.innerHTML = "";
+        return;
+      }
+
+      // sessions ve ordenada de més nova [0] a més antiga [length-1]
+      const latest = sessions[0];
+      const first = sessions[sessions.length - 1];
+      const diffWpm = Number(((latest.wpmNet || 0) - (first.wpmNet || 0)).toFixed(1));
+      const diffAcc = Math.round((latest.accuracyPct || 0) - (first.accuracyPct || 0));
+      const firstBand = getSpeedBand(first.wpmNet || 0);
+      const latestBand = getSpeedBand(latest.wpmNet || 0);
+
+      compEl.innerHTML = `
+        <div class="evo-box">
+          <div class="lbl">Primera sessió</div>
+          <div class="val">${first.wpmNet || 0} PPM</div>
+          <span class="level-pill ${firstBand.cls}">${firstBand.label}</span>
+          <div style="font-size:0.74rem;color:var(--muted);margin-top:0.2rem;">Precisió: ${first.accuracyPct || 0}%</div>
+        </div>
+        <div class="evo-box">
+          <div class="lbl">Última sessió</div>
+          <div class="val">${latest.wpmNet || 0} PPM</div>
+          <span class="level-pill ${latestBand.cls}">${latestBand.label}</span>
+          <div style="font-size:0.74rem;color:var(--muted);margin-top:0.2rem;">Precisió: ${latest.accuracyPct || 0}%</div>
+        </div>
+        <div class="evo-box">
+          <div class="lbl">Progrés total</div>
+          <div class="val" style="color:${diffWpm >= 0 ? "#15803d" : "#b45309"};">${diffWpm >= 0 ? "+" : ""}${diffWpm} PPM</div>
+          <div style="font-size:0.78rem;font-weight:800;color:${diffAcc >= 0 ? "#15803d" : "#b45309"};">Precisió: ${diffAcc >= 0 ? "+" : ""}${diffAcc}%</div>
+        </div>
+      `;
+
+      const recent = sessions.slice(0, 6).reverse();
+      listEl.innerHTML = recent.map((s, i) => {
+        const sb = getSpeedBand(s.wpmNet || 0);
+        const pctWidth = Math.min(100, Math.max(10, Math.round(((s.wpmNet || 0) / 30) * 100)));
+        return `
+          <div style="display:flex;align-items:center;gap:0.5rem;margin:0.35rem 0;font-size:0.78rem;">
+            <span style="min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;">${s.stepLabel || s.stepId}</span>
+            <div style="flex:1;height:14px;background:#e2e8f0;border-radius:999px;overflow:hidden;">
+              <div style="width:${pctWidth}%;height:100%;background:#2563eb;border-radius:999px;"></div>
+            </div>
+            <strong style="min-width:52px;text-align:right;">${s.wpmNet || 0} PPM</strong>
+            <span class="level-pill ${sb.cls}">${sb.label}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderHeatmap(keyStats) {
+      const box = document.getElementById("heatmap-kb");
+      box.innerHTML = "";
+      const weak = [];
+
+      for (const row of KB_ROWS) {
+        const rowEl = document.createElement("div");
+        rowEl.className = "hm-row";
+        for (const ch of row) {
+          const st = keyStats[ch];
+          const total = st ? (st.hits + st.errors) : 0;
+          const acc = total > 0 ? Math.round((st.hits / total) * 100) : null;
+          let cls = "";
+          if (acc !== null) {
+            if (acc >= 90) cls = "hm-ok";
+            else if (acc >= 80) cls = "hm-warn";
+            else { cls = "hm-err"; weak.push({ ch, acc }); }
+          }
+          const kEl = document.createElement("div");
+          kEl.className = `hm-key ${ch === " " ? "space" : ""} ${cls}`;
+          kEl.innerHTML = `<span>${ch === " " ? "ESPAI" : ch.toUpperCase()}</span><small>${acc !== null ? acc + "%" : "—"}</small>`;
+          rowEl.appendChild(kEl);
+        }
+        box.appendChild(rowEl);
+      }
+
+      const diagEl = document.getElementById("finger-diagnosis");
+      if (weak.length === 0) {
+        diagEl.innerHTML = "✅ <strong>Diagnòstic:</strong> Cap tecla crítica per sota del 80% de precisió!";
+      } else {
+        weak.sort((a, b) => a.acc - b.acc);
+        diagEl.innerHTML = `⚠️ <strong>Tecles a reforçar:</strong> ${weak.map(w => `<code>${w.ch === " " ? "ESPAI" : w.ch.toUpperCase()}</code> (${w.acc}%)`).join(", ")}`;
+      }
+    }
+
+    function renderHistory(sessions) {
+      document.getElementById("hist-count").textContent = String(sessions.length);
+      const tbody = document.getElementById("history-body");
+      tbody.innerHTML = sessions.slice(0, 40).map(s => {
+        const dt = s.timestampIso ? new Date(s.timestampIso).toLocaleString("ca-ES", { dateStyle: "short", timeStyle: "short" }) : "—";
+        const sb = getSpeedBand(s.wpmNet || 0);
+        return `
+          <tr>
+            <td>${dt}</td>
+            <td><strong>${s.studentName || "Alumne"}</strong></td>
+            <td>${s.stepLabel || s.stepId}</td>
+            <td>${s.wpmNet || 0} PPM <span class="level-pill ${sb.cls}">${sb.label}</span></td>
+            <td><strong>${s.accuracyPct || 0}%</strong></td>
+            <td>${s.errors || 0}</td>
+            <td>${s.barretines || 0}/5 ${renderBarretinaMiniSvg((s.barretines || 0) >= 3)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // =========================================================================
+    // GOOGLE DRIVE OAUTH 2.0 + MODALS NETS (INSTRUCCIONS I CONFIGURACIÓ)
+    // =========================================================================
+    const firstBanner = document.getElementById("first-connect-banner");
+    const statusPill = document.getElementById("cloud-status-pill");
+    const btnTopRefresh = document.getElementById("btn-top-refresh");
+    const btnTopCopyLink = document.getElementById("btn-top-copy-link");
+
+    function updateConnectionUI() {
       if (!window.MecanoGoogleAuth) return;
       const sheetId = window.MecanoGoogleAuth.getSheetId();
       const sheetUrl = window.MecanoGoogleAuth.getSavedSheetUrl();
       const user = window.MecanoGoogleAuth.getSavedUser();
       const shareUrl = window.MecanoGoogleAuth.buildStudentShareLink();
+      const folder = localStorage.getItem("mecano_google_folder_name") || window.MecanoGoogleAuth.getAppName();
+
+      document.getElementById("input-drive-folder-banner").value = folder;
+      document.getElementById("input-drive-folder-cfg").value = folder;
+      document.getElementById("input-google-client-id").value = window.MecanoGoogleAuth.getClientId();
 
       if (sheetId) {
-        oauthConnectedBox.style.display = "block";
-        btnRefreshDrive.style.display = "inline-flex";
-        document.getElementById("link-open-gsheet").href = sheetUrl;
-        document.getElementById("student-share-url-preview").textContent = shareUrl;
+        // Un cop connectat, amaguem el banner principal i deixem tot net dins de Configuració + 2 botons ràpids a dalt!
+        firstBanner.style.display = "none";
+        statusPill.textContent = "✅ Drive connectat";
+        statusPill.style.background = "#bbf7d0";
+        statusPill.style.color = "#14532d";
+        btnTopRefresh.style.display = "inline-flex";
+        btnTopCopyLink.style.display = "inline-flex";
         document.getElementById("btn-open-student").href = shareUrl;
-        document.getElementById("oauth-folder-label").textContent = localStorage.getItem("mecano_google_folder_name") || window.MecanoGoogleAuth.getAppName();
-        document.getElementById("oauth-teacher-info").textContent = user ? `${user.name} (${user.email})` : "Google Drive vinculat";
+
+        document.getElementById("cfg-drive-status").textContent = user
+          ? `Connectat com a ${user.name} (${user.email}) · Carpeta: ${folder}`
+          : `Google Sheet vinculat · Carpeta: ${folder}`;
+        document.getElementById("cfg-connected-links").style.display = "flex";
+        document.getElementById("link-open-gsheet").href = sheetUrl;
         document.getElementById("link-share-classroom").href =
-          `https://classroom.google.com/share?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(window.MecanoGoogleAuth.getAppName() + " — Pràctica de Mecanografia")}`;
+          `https://classroom.google.com/share?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(window.MecanoGoogleAuth.getAppName() + " — Mecanografia")}`;
+      } else {
+        firstBanner.style.display = "block";
+        statusPill.textContent = "No connectat";
+        statusPill.style.background = "#fef3c7";
+        statusPill.style.color = "#92400e";
+        btnTopRefresh.style.display = "none";
+        btnTopCopyLink.style.display = "none";
+        document.getElementById("cfg-drive-status").textContent = "Encara no has connectat cap Google Drive.";
+        document.getElementById("cfg-connected-links").style.display = "none";
       }
     }
 
-    function updateCloudBadge() {
-      const url = localStorage.getItem("mecano_cloud_webhook_url") || "";
-      if (cloudInput) cloudInput.value = url;
-      const sheetId = window.MecanoGoogleAuth ? window.MecanoGoogleAuth.getSheetId() : "";
-      if (sheetId) {
-        cloudStatusPill.textContent = "✅ Connectat a Google Drive (OAuth)";
-        cloudStatusPill.style.background = "#bbf7d0";
-        cloudStatusPill.style.color = "#14532d";
-        refreshOAuthConnectedUI();
-      } else if (url.startsWith("https://script.google.com/")) {
-        cloudStatusPill.textContent = "✅ Connectat via Apps Script";
-        cloudStatusPill.style.background = "#bbf7d0";
-        cloudStatusPill.style.color = "#14532d";
-      } else {
-        cloudStatusPill.textContent = "Mode Local (No connectat al Drive)";
-        cloudStatusPill.style.background = "#fef3c7";
-        cloudStatusPill.style.color = "#92400e";
+    async function refreshFromGoogleDrive(feedbackEl) {
+      if (!window.MecanoGoogleAuth) return;
+      if (feedbackEl) { feedbackEl.style.color = "#1d4ed8"; feedbackEl.textContent = "⏳ Actualitzant dades dels alumnes des del Google Sheet..."; }
+      btnTopRefresh.textContent = "⏳ Actualitzant...";
+      try {
+        const data = await window.MecanoGoogleAuth.teacherFetchDashboardData();
+        cloudDriveCache = data;
+        localStorage.setItem(CLOUD_CACHE_KEY, JSON.stringify(data));
+        populateStudentFilter(data.students);
+        renderAll();
+        btnTopRefresh.textContent = "🔄 Actualitzar Drive";
+        if (feedbackEl) { feedbackEl.style.color = "#15803d"; feedbackEl.textContent = `✅ Actualitzat! (${data.students.length} alumnes · ${data.sessions.length} sessions)`; }
+      } catch (err) {
+        btnTopRefresh.textContent = "🔄 Actualitzar Drive";
+        const msg = "⚠️ " + (err && err.message ? err.message : String(err));
+        if (feedbackEl) { feedbackEl.style.color = "#b91c1c"; feedbackEl.textContent = msg; }
+        else alert(msg);
       }
     }
-    updateCloudBadge();
+
+    async function handleGoogleConnect(folderName, feedbackEl) {
+      if (!window.MecanoGoogleAuth) return;
+      try {
+        if (feedbackEl) { feedbackEl.style.color = "#1d4ed8"; feedbackEl.textContent = "⏳ Iniciant sessió amb Google i preparant el teu Drive..."; }
+        await window.MecanoGoogleAuth.teacherConnectAndSetup(folderName);
+        updateConnectionUI();
+        await refreshFromGoogleDrive(feedbackEl);
+      } catch (err) {
+        if (feedbackEl) { feedbackEl.style.color = "#b91c1c"; feedbackEl.textContent = "⚠️ " + (err && err.message ? err.message : String(err)); }
+      }
+    }
+
+    async function copyStudentLink() {
+      if (!window.MecanoGoogleAuth) return;
+      const url = window.MecanoGoogleAuth.buildStudentShareLink();
+      try {
+        await navigator.clipboard.writeText(url);
+        btnTopCopyLink.textContent = "✅ Enllaç copiat!";
+        setTimeout(() => { btnTopCopyLink.textContent = "🔗 Enllaç Alumnes"; }, 2200);
+      } catch {
+        prompt("Copia aquest enllaç per als alumnes:", url);
+      }
+    }
+
+    document.getElementById("btn-google-connect-banner").onclick = () =>
+      handleGoogleConnect(document.getElementById("input-drive-folder-banner").value.trim(), document.getElementById("banner-feedback"));
+    document.getElementById("btn-google-connect-cfg").onclick = () =>
+      handleGoogleConnect(document.getElementById("input-drive-folder-cfg").value.trim(), document.getElementById("cfg-feedback"));
+    btnTopRefresh.onclick = () => refreshFromGoogleDrive(document.getElementById("cfg-feedback"));
+    btnTopCopyLink.onclick = copyStudentLink;
+    document.getElementById("btn-cfg-copy-link").onclick = copyStudentLink;
 
     document.getElementById("btn-save-client-id").onclick = () => {
       if (!window.MecanoGoogleAuth) return;
-      const cid = clientIdInput.value.trim();
-      window.MecanoGoogleAuth.setClientId(cid);
-      cloudFeedback.style.color = "#15803d";
-      cloudFeedback.textContent = cid
-        ? "✅ Google Client ID desat! Ara ja pots prémer «🔐 Iniciar sessió amb Google»."
-        : "ℹ️ Client ID esborrat.";
-      refreshOAuthConnectedUI();
+      window.MecanoGoogleAuth.setClientId(document.getElementById("input-google-client-id").value.trim());
+      document.getElementById("cfg-feedback").textContent = "✅ Client ID desat!";
     };
-
-    async function loadCloudDataFromGoogleSheets() {
-      if (!window.MecanoGoogleAuth) return;
-      cloudFeedback.style.color = "#1d4ed8";
-      cloudFeedback.textContent = "⏳ Carregant partides dels alumnes des del teu Google Sheet...";
-      const data = await window.MecanoGoogleAuth.teacherFetchDashboardData();
-      cloudDriveCache = data;
-      populateStudentFilter(data.students);
-      renderAll();
-      cloudFeedback.style.color = "#15803d";
-      cloudFeedback.textContent = `✅ Dades actualitzades del Google Drive! (${data.sessions.length} sessions · ${data.students.length} alumnes)`;
-    }
-
-    document.getElementById("btn-google-oauth-connect").onclick = async () => {
-      if (!window.MecanoGoogleAuth) return;
-      if (window.location.protocol === "file:") {
-        cloudFeedback.style.color = "#b91c1c";
-        cloudFeedback.textContent = "⚠️ Google Sign-In requereix obrir l'app des d'una URL web (GitHub Pages o http://localhost), no des de file://. Consulta docs/guia-google-cloud-pwa.md.";
-        return;
-      }
-      try {
-        cloudFeedback.style.color = "#1d4ed8";
-        cloudFeedback.textContent = "⏳ Iniciant sessió amb Google i preparant la carpeta al teu Drive...";
-        const res = await window.MecanoGoogleAuth.teacherConnectAndSetup(folderInput.value.trim());
-        updateCloudBadge();
-        cloudFeedback.style.color = "#15803d";
-        cloudFeedback.textContent = res.createdNew
-          ? `🎉 Fet! Hem creat la carpeta «${res.folderName}» i el Google Sheet al teu Drive automàticament!`
-          : `✅ Connectat al teu Google Sheet existent dins la carpeta «${res.folderName}»!`;
-        await loadCloudDataFromGoogleSheets();
-      } catch (err) {
-        cloudFeedback.style.color = "#b91c1c";
-        cloudFeedback.textContent = "⚠️ " + (err && err.message ? err.message : String(err));
+    document.getElementById("btn-save-cfg").onclick = () => {
+      const minAccuracyPct = Number(document.getElementById("cfg-min-acc").value || 88);
+      localStorage.setItem("mecano_teacher_cfg_v1", JSON.stringify({ minAccuracyPct, unlockedAllLevels: false }));
+      document.getElementById("cfg-feedback").textContent = "✅ Ajustos pedagògics desats!";
+    };
+    document.getElementById("btn-clear-data").onclick = () => {
+      if (confirm("Vols netejar la memòria cau local d'aquest navegador? (No esborra res del teu Google Sheet)")) {
+        localStorage.removeItem(CLOUD_CACHE_KEY);
+        localStorage.removeItem("mecano_telemetry_v1");
+        cloudDriveCache = null;
+        populateStudentFilter([]);
+        renderAll();
       }
     };
 
-    btnRefreshDrive.onclick = async () => {
-      try {
-        await loadCloudDataFromGoogleSheets();
-      } catch (err) {
-        cloudFeedback.style.color = "#b91c1c";
-        cloudFeedback.textContent = "⚠️ " + (err && err.message ? err.message : String(err));
-      }
-    };
+    // Modals Instruccions i Configuració
+    const modalHelp = document.getElementById("modal-help");
+    const modalSettings = document.getElementById("modal-settings");
+    document.getElementById("btn-open-help").onclick = () => modalHelp.classList.add("open");
+    document.getElementById("btn-open-settings").onclick = () => modalSettings.classList.add("open");
+    document.querySelectorAll(".btn-close-modal").forEach(b => {
+      b.onclick = () => { modalHelp.classList.remove("open"); modalSettings.classList.remove("open"); };
+    });
+    [modalHelp, modalSettings].forEach(m => {
+      m.addEventListener("click", (e) => { if (e.target === m) m.classList.remove("open"); });
+    });
 
-    document.getElementById("btn-copy-student-link").onclick = async () => {
-      if (!window.MecanoGoogleAuth) return;
-      const shareUrl = window.MecanoGoogleAuth.buildStudentShareLink();
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        cloudFeedback.style.color = "#15803d";
-        cloudFeedback.textContent = "✅ Enllaç per als alumnes copiat! Envia'l per Classroom o posa'l als marcadors dels Chromebooks.";
-      } catch {
-        prompt("Copia aquest enllaç per als alumnes:", shareUrl);
-      }
-    };
-
-    document.getElementById("btn-toggle-cloud").onclick = () => {
-      const panel = document.getElementById("cloud-wizard-panel");
-      panel.style.display = panel.style.display === "none" ? "block" : "none";
-    };
-
-    document.getElementById("btn-copy-gas-code").onclick = async () => {
-      const gasScript = [
-        "function onOpen() {",
-        "  SpreadsheetApp.getUi().createMenu('MECANO ESCOLA')",
-        "    .addItem('1. Inicialitzar Pestanyes (1 clic)', 'ensureTabs').addToUi();",
-        "}",
-        "",
-        "function doGet() {",
-        "  ensureTabs();",
-        "  return ContentService.createTextOutput('Mecano Cloud OK');",
-        "}",
-        "",
-        "function doPost(e) {",
-        "  ensureTabs();",
-        "  var ss = SpreadsheetApp.getActiveSpreadsheet();",
-        "  var b = JSON.parse(e.postData.contents);",
-        "  var list = b.action === 'sync_batch' ? b.sessions : [b];",
-        "  var sh = ss.getSheetByName('Sessions');",
-        "  var shKeys = ss.getSheetByName('Estadistiques_Tecles');",
-        "  var shAch = ss.getSheetByName('Assoliments');",
-        "  for (var i = 0; i < list.length; i++) {",
-        "    var s = list[i];",
-        "    var stu = s.studentName || 'ALU-01';",
-        "    sh.appendRow([s.sessionId, s.timestampIso, stu, s.levelId, s.phaseType, s.stepId, s.stepLabel, s.wpmNet, s.accuracyPct, s.errors, s.totalPresses, s.barretines, s.durationSec]);",
-        "    if (shAch) shAch.appendRow([stu, s.stepId, s.levelId, s.barretines, s.wpmNet, s.timestampIso]);",
-        "    if (shKeys && s.keyStats) {",
-        "      var ks = Object.keys(s.keyStats);",
-        "      for (var k = 0; k < ks.length; k++) {",
-        "        var ch = ks[k];",
-        "        shKeys.appendRow([stu, ch, s.keyStats[ch].hits || 0, s.keyStats[ch].errors || 0, s.timestampIso]);",
-        "      }",
-        "    }",
-        "  }",
-        "  return ContentService.createTextOutput(JSON.stringify({ok: true})).setMimeType(ContentService.MimeType.JSON);",
-        "}",
-        "",
-        "function ensureTabs() {",
-        "  var ss = SpreadsheetApp.getActiveSpreadsheet();",
-        "  if (!ss.getSheetByName('Sessions')) {",
-        "    var sh = ss.insertSheet('Sessions');",
-        "    sh.appendRow(['session_id','timestamp_iso','student','level_id','phase_type','step_id','step_label','wpm_net','accuracy_pct','errors','total_presses','barretines','duration_sec']);",
-        "  }",
-        "  if (!ss.getSheetByName('Estadistiques_Tecles')) {",
-        "    var shK = ss.insertSheet('Estadistiques_Tecles');",
-        "    shK.appendRow(['student','key_char','hits','errors','updated_iso']);",
-        "  }",
-        "  if (!ss.getSheetByName('Assoliments')) {",
-        "    var shA = ss.insertSheet('Assoliments');",
-        "    shA.appendRow(['student','step_id','level_id','barretines','wpm_net','updated_iso']);",
-        "  }",
-        "}"
-      ].join("\n");
-      try {
-        await navigator.clipboard.writeText(gasScript);
-        cloudFeedback.textContent = "✅ Codi copiat amb salts de línia correctes! Ara enganxa'l a Extensions → Apps Script del teu Google Sheet i prem Desar.";
-      } catch {
-        alert("Copia el fitxer dist/Code.gs a Extensions -> Apps Script.");
-      }
-    };
-
-    document.getElementById("btn-sync-cloud-now").onclick = async () => {
-      const url = cloudInput.value.trim();
-      if (!url.startsWith("https://script.google.com/")) {
-        alert("Enganxa una adreça vàlida de Google Apps Script (comença per https://script.google.com/macros/s/.../exec)");
-        return;
-      }
-      localStorage.setItem("mecano_cloud_webhook_url", url);
-      updateCloudBadge();
-      const data = loadDashboardData();
-      cloudFeedback.textContent = "⏳ Enviant sessions al teu Google Sheet...";
-      try {
-        await fetch(url, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "sync_batch", sessions: data.sessions })
-        });
-        cloudFeedback.textContent = `✅ Sincronitzat! S'han enviat ${data.sessions.length} sessions al teu Google Sheet, i a partir d'ara cada partida nova s'hi desarà automàticament!`;
-      } catch (err) {
-        cloudFeedback.textContent = "⚠️ No s'ha pogut connectar. Revisa que l'aplicació web tingui accés obert.";
-      }
-    };
-
+    studentFilterEl.onchange = () => renderAll();
     window.addEventListener("storage", () => renderAll());
-    renderAll();
 
-    // Si s'obre dins de Google Apps Script (?vista=admin), carrega en directe les dades del Google Sheet!
-    if (window.google && window.google.script && window.google.script.run) {
-      window.google.script.run
-        .withSuccessHandler((cloud) => {
-          if (cloud && cloud.sessions) {
-            localStorage.setItem("mecano_telemetry_v1", JSON.stringify({
-              sessions: cloud.sessions,
-              keyStats: cloud.keyStats || {}
-            }));
-            localStorage.setItem("mecano_pilot_nese_v2", JSON.stringify({
-              stepBarretines: cloud.stepBarretines || {},
-              proverbHistory: []
-            }));
-            renderAll();
-          }
-        })
-        .apiGetCloudDashboard();
+    updateConnectionUI();
+    if (cloudDriveCache && cloudDriveCache.students) {
+      populateStudentFilter(cloudDriveCache.students);
     }
+    renderAll();
   </script>
 </body>
 </html>
