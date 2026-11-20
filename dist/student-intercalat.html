@@ -513,8 +513,8 @@
         <button type="button" id="btn-back" style="display:none;">⬅️ Enrere</button>
         <canvas id="logo-canvas" width="32" height="32" style="image-rendering:pixelated;"></canvas>
         <div>
-          <span class="topbar-title">DeuDits · Versió B (Intercalada)</span>
-          <span class="topbar-sub" id="header-breadcrumb">Camí P1→J1→P2→J2→P3→J3</span>
+          <span class="topbar-title">DeuDits</span>
+          <span class="topbar-sub" id="header-breadcrumb"></span>
         </div>
       </div>
 
@@ -2260,8 +2260,7 @@
       const provId = `${lvl.id}.PROVERB`;
       const provUnlocked = isStepUnlocked(lvl, provId);
       const provB = state.stepBarretines[provId] || 0;
-      const gateBanner = document.getElementById("proverb-gate-banner");
-      if (provUnlocked) {
+      if (gateBanner && provUnlocked) {
         gateBanner.innerHTML = `
           <div style="background:#fef3c7;border:3px solid #f59e0b;border-radius:14px;padding:0.75rem 1.1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;">
             <div>
