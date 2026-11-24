@@ -297,27 +297,33 @@ window.MecanoGoogleAuth = (function () {
     }
 
     const resp = await apiFetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchGet?ranges=Sessions!A2:M5000&ranges=Estadistiques_Tecles!A2:E5000&ranges=Assoliments!A2:F5000`
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchGet?valueRenderOption=UNFORMATTED_VALUE&ranges=Sessions!A2:M5000&ranges=Estadistiques_Tecles!A2:E5000&ranges=Assoliments!A2:F5000`
     );
     const vr = resp.valueRanges || [];
     const sessRows = (vr[0] && vr[0].values) || [];
     const keyRows = (vr[1] && vr[1].values) || [];
     const achRows = (vr[2] && vr[2].values) || [];
 
+    const parseNum = (v) => {
+      if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+      const n = Number(String(v == null ? "0" : v).trim().replace(",", "."));
+      return Number.isFinite(n) ? n : 0;
+    };
+
     const sessions = sessRows.map((r) => ({
       sessionId: r[0] || "",
       timestampIso: r[1] || "",
       studentName: r[2] || "Alumne",
-      levelId: Number(r[3] || 1),
+      levelId: parseNum(r[3] || 1),
       phaseType: r[4] || "PRACTICE",
       stepId: r[5] || "",
       stepLabel: r[6] || "",
-      wpmNet: Number(r[7] || 0),
-      accuracyPct: Number(r[8] || 100),
-      errors: Number(r[9] || 0),
-      totalPresses: Number(r[10] || 0),
-      barretines: Number(r[11] || 0),
-      durationSec: Number(r[12] || 0)
+      wpmNet: Number(parseNum(r[7]).toFixed(1)),
+      accuracyPct: Math.round(parseNum(r[8] == null ? 100 : r[8])),
+      errors: parseNum(r[9]),
+      totalPresses: parseNum(r[10]),
+      barretines: parseNum(r[11]),
+      durationSec: parseNum(r[12])
     })).reverse();
 
     const keyStatsByStudent = {};
