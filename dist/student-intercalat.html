@@ -1430,32 +1430,40 @@
       return state.minBarretinesReq || 3;
     }
 
-    // Melodia tradicional del Toc de Castells (gralla catalana: entrada + pujada + aleta!) nota a nota
+    // Melodia EXACTA del Toc de Castells (gralla catalana!) — 1 nota per cada tecla encertada!
+    // sol'=G4(392), si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa=F5(698.46), sol=G5(783.99)
+    const G4 = 392.00, B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99;
     const MELODY_TOC_DE_CASTELLS = [
-      // Frase A (motiu clàssic d'entrada del Toc de Castells)
-      523.25, 659.25, 783.99, 783.99, 880.00, 783.99, 698.46, 659.25,
-      587.33, 659.25, 698.46, 587.33, 523.25, 392.00,
-      // Frase B (pujada alegre dels pisos)
-      523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 783.99, 698.46,
-      659.25, 783.99, 880.00, 987.77, 1046.50, 783.99, 659.25, 523.25
+      // Inici: sol' - sol' - sol' - re - mi - fa - mi - re - do - re
+      G4, G4, G4, D5, E5, F5, E5, D5, C5, D5,
+      // Desenvolupament: do - si - re - sol' - re - si - re - do - si - do - mi - re - mi - do - re - si
+      C5, B4, D5, G4, D5, B4, D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
+      // Continuació: si - re - sol - sol - re - si - do - si - do - re - si - mi - re - mi - do - re - si - do - re - si - do - re - mi - re
+      B4, D5, G5, G5, D5, B4, C5, B4, C5, D5, B4, E5, D5, E5, C5, D5, B4, C5, D5, B4, C5, D5, E5, D5,
+      // Tancament de frase: sol - mi - re - mi - sol - fa - mi - re - do - si - re - sol - re - si
+      G5, E5, D5, E5, G5, F5, E5, D5, C5, B4, D5, G5, D5, B4
     ];
 
     function sfxGrallaNote(freq, ms = 140) {
       // Timbre càlid de gralla catalana (dos oscil·ladors harmònics)
-      sfxTone(freq, ms, "sawtooth", 0.042);
+      sfxTone(freq, ms, "sawtooth", 0.045);
       sfxTone(freq * 2, Math.round(ms * 0.7), "triangle", 0.018);
     }
 
     function playTocDeCastellsPujada() {
-      // Melodia festiva de la pujada i l'aleta del castell amb so de gralla!
+      // ALETA EXACTA (quan l'enxaneta fa l'aleta!):
+      // re-mi-re-mi-re-mi-re-sol___-fa______-mi___ + re-mi-fa-sol-fa-mi-re-mi-fa-mi-re-do-si-do-re-mi-re
       const notes = [
-        [523.25, 110], [659.25, 110], [783.99, 140], [783.99, 110],
-        [880.00, 140], [783.99, 120], [987.77, 140], [1046.50, 340]
+        [D5, 105], [E5, 105], [D5, 105], [E5, 105], [D5, 105], [E5, 105], [D5, 115],
+        [G5, 290], [F5, 380], [E5, 280],
+        [D5, 95], [E5, 95], [F5, 95], [G5, 120], [F5, 95], [E5, 95], [D5, 95],
+        [E5, 95], [F5, 95], [E5, 95], [D5, 95], [C5, 95], [B4, 95], [C5, 95],
+        [D5, 95], [E5, 95], [D5, 260]
       ];
       let delay = 0;
       notes.forEach(([freq, dur]) => {
         setTimeout(() => sfxGrallaNote(freq, dur), delay);
-        delay += dur + 30;
+        delay += dur + 22;
       });
     }
 
@@ -2761,6 +2769,7 @@
       state.arcadeLives = 5;
       state.arcadeEnergy = 100;
       state.arcadeCompleted = 0;
+      state.melodyCursor = -1;
       state.arcadeTotal = arcDef.totalTargets || 10;
       state.climbFromStep = 0;
       state.climbJumpProgress = 1;
