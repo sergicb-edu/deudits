@@ -863,9 +863,9 @@
         ],
         arcades: [
           { id: "L02.G1", label: "J1: 🎈 Vol en Globus pel Llobregat (D i K)", subMode: "bergueda_balloon", totalTargets: 10, isExtra: false },
-          { id: "L02.G2", label: "J2: 🎺 Els Grallers de Berga (Grups de 3)", subMode: "berga_grallers", totalTargets: 10, isExtra: false },
-          { id: "L02.G3", label: "J3: 🌉 Creuem el Pont de Pedret (Mà Esq. D+F)", subMode: "pedret_bridge", totalTargets: 10, isExtra: false },
-          { id: "L02.G4", label: "J4: 🍄 Collita de Rovellons al Bosc (Mà Dreta K+J)", subMode: "bergueda_mushrooms", totalTargets: 10, isExtra: false },
+          { id: "L02.G2", label: "J2: 🌉 Creuem el Pont de Pedret (Grups de 3 D i K)", subMode: "pedret_bridge", totalTargets: 10, isExtra: false },
+          { id: "L02.G3", label: "J3: 🍄 Collita de Rovellons al Bosc (Mà Esq. D+F)", subMode: "bergueda_mushrooms", totalTargets: 10, isExtra: false },
+          { id: "L02.G4", label: "J4: 🎺 Els Grallers de Berga (Mà Dreta K+J)", subMode: "berga_grallers", totalTargets: 10, isExtra: false },
           { id: "L02.G5", label: "J5: 🧱 Fem la Pinya a Berga (Alternança)", subMode: "berga_pinya", totalTargets: 10, isExtra: false },
           { id: "L02.G6", label: "J6: 🏰 Pugem el Castell de Berga (4 Lletres)", subMode: "dual_climbers", totalTargets: 12, isExtra: false },
           { id: "L02.EXTRA", label: "⭐ EXTRA: 🧩 El Codi Secret del Berguedà (Sèries lògiques!)", subMode: "bergueda_logic_code", totalTargets: 10, isExtra: true }
@@ -1430,35 +1430,35 @@
       return state.minBarretinesReq || 3;
     }
 
-    // Melodia EXACTA del Toc de Castells (gralla catalana!) — 1 nota per cada tecla encertada!
-    // sol'=G4(392), si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa=F5(698.46), sol=G5(783.99)
-    const G4 = 392.00, B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99;
+    // Melodia EXACTA del Toc de Castells en Sol Major (gralla catalana: FA# = 739.99 Hz!)
+    // sol'=G4(392), si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa#=Fs5(739.99), sol=G5(783.99)
+    const G4 = 392.00, B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, Fs5 = 739.99, G5 = 783.99;
     const MELODY_TOC_DE_CASTELLS = [
-      // Inici: sol' - sol' - sol' - re - mi - fa - mi - re - do - re
-      G4, G4, G4, D5, E5, F5, E5, D5, C5, D5,
+      // Inici: sol' - sol' - sol' - re - mi - fa# - mi - re - do - re
+      G4, G4, G4, D5, E5, Fs5, E5, D5, C5, D5,
       // Desenvolupament: do - si - re - sol' - re - si - re - do - si - do - mi - re - mi - do - re - si
       C5, B4, D5, G4, D5, B4, D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
       // Continuació: si - re - sol - sol - re - si - do - si - do - re - si - mi - re - mi - do - re - si - do - re - si - do - re - mi - re
       B4, D5, G5, G5, D5, B4, C5, B4, C5, D5, B4, E5, D5, E5, C5, D5, B4, C5, D5, B4, C5, D5, E5, D5,
-      // Tancament de frase: sol - mi - re - mi - sol - fa - mi - re - do - si - re - sol - re - si
-      G5, E5, D5, E5, G5, F5, E5, D5, C5, B4, D5, G5, D5, B4
+      // Tancament de frase: sol - mi - re - mi - sol - fa# - mi - re - do - si - re - sol - re - si
+      G5, E5, D5, E5, G5, Fs5, E5, D5, C5, B4, D5, G5, D5, B4
     ];
 
-    function sfxGrallaNote(freq, ms = 140) {
-      // Timbre càlid de gralla catalana (dos oscil·ladors harmònics)
-      sfxTone(freq, ms, "sawtooth", 0.045);
-      sfxTone(freq * 2, Math.round(ms * 0.7), "triangle", 0.018);
+    function sfxGrallaNote(freq, ms = 170) {
+      // Timbre brillant i reconeixible de gralla catalana
+      sfxTone(freq, ms, "sawtooth", 0.075);
+      sfxTone(freq * 2, Math.round(ms * 0.7), "triangle", 0.028);
     }
 
     function playTocDeCastellsPujada() {
-      // ALETA EXACTA (quan l'enxaneta fa l'aleta!):
-      // re-mi-re-mi-re-mi-re-sol___-fa______-mi___ + re-mi-fa-sol-fa-mi-re-mi-fa-mi-re-do-si-do-re-mi-re
+      // ALETA EXACTA en Sol Major (quan l'enxaneta fa l'aleta!):
+      // re-mi-re-mi-re-mi-re-sol___-fa#______-mi___ + re-mi-fa#-sol-fa#-mi-re-mi-fa#-mi-re-do-si-do-re-mi-re
       const notes = [
-        [D5, 105], [E5, 105], [D5, 105], [E5, 105], [D5, 105], [E5, 105], [D5, 115],
-        [G5, 290], [F5, 380], [E5, 280],
-        [D5, 95], [E5, 95], [F5, 95], [G5, 120], [F5, 95], [E5, 95], [D5, 95],
-        [E5, 95], [F5, 95], [E5, 95], [D5, 95], [C5, 95], [B4, 95], [C5, 95],
-        [D5, 95], [E5, 95], [D5, 260]
+        [D5, 110], [E5, 110], [D5, 110], [E5, 110], [D5, 110], [E5, 110], [D5, 120],
+        [G5, 300], [Fs5, 390], [E5, 290],
+        [D5, 100], [E5, 100], [Fs5, 100], [G5, 125], [Fs5, 100], [E5, 100], [D5, 100],
+        [E5, 100], [Fs5, 100], [E5, 100], [D5, 100], [C5, 100], [B4, 100], [C5, 100],
+        [D5, 100], [E5, 100], [D5, 280]
       ];
       let delay = 0;
       notes.forEach(([freq, dur]) => {
@@ -1469,10 +1469,11 @@
 
     function playGameNote(gameMode) {
       state.melodyCursor++;
-      if (gameMode === "castells") {
-        // Sona una nota del Toc de Castells cada cop que encertes una lletra!
+      const castellsSteps = ["L02.G4", "L02.G5", "L02.G6"];
+      if (gameMode === "castells" && castellsSteps.includes(state.stepId)) {
+        // A tots els jocs castellers (Grallers, Pinya i Castell) sona el Toc de Castells nota a nota!
         const f = MELODY_TOC_DE_CASTELLS[state.melodyCursor % MELODY_TOC_DE_CASTELLS.length];
-        sfxGrallaNote(f, 135);
+        sfxGrallaNote(f, 165);
       } else if (gameMode === "patum") {
         const f = MELODY_PATUM_TIRABOL[state.melodyCursor % MELODY_PATUM_TIRABOL.length];
         sfxTone(f, 95, "square", 0.065);
@@ -1576,7 +1577,7 @@
           if (stepIndex < warmup.length) return warmup[stepIndex];
           return randomCombo(2, state._lastArcadeWord);
         }
-        if (subMode === "atmosphere_birds" || subMode === "berga_grallers") {
+        if (subMode === "atmosphere_birds" || subMode === "pedret_bridge") {
           const warmup = [`${k1}${k1}${k2}`, `${k2}${k2}${k1}`, `${k1}${k2}${k1}`, `${k2}${k1}${k2}`];
           if (stepIndex < warmup.length) return warmup[stepIndex];
           return randomCombo(3, state._lastArcadeWord);
@@ -1586,7 +1587,7 @@
           if (stepIndex < warmup.length) return warmup[stepIndex];
           return randomCombo(4, state._lastArcadeWord);
         }
-        if (subMode === "pedret_bridge") {
+        if (subMode === "bergueda_mushrooms") {
           const L = lvl.leftKeys;
           const warmup = [`${L[0]}${L[1]}`, `${L[1]}${L[0]}`, `${L[0]}${L[1]}${L[0]}`, `${L[1]}${L[0]}${L[1]}`];
           if (stepIndex < warmup.length) return warmup[stepIndex];
@@ -1595,7 +1596,7 @@
           for (let c = 0; c < wLen; c++) s += L[Math.floor(rng() * L.length)];
           return s;
         }
-        if (subMode === "bergueda_mushrooms") {
+        if (subMode === "berga_grallers") {
           const R = lvl.rightKeys;
           const warmup = [`${R[0]}${R[1]}`, `${R[1]}${R[0]}`, `${R[0]}${R[1]}${R[0]}`, `${R[1]}${R[0]}${R[1]}`];
           if (stepIndex < warmup.length) return warmup[stepIndex];
@@ -1894,11 +1895,11 @@
         if (state.stepId === "L02.G1") {
           cap.textContent = "🎈 Volem en globus pel Berguedà seguint el riu Llobregat!";
         } else if (state.stepId === "L02.G2") {
-          cap.textContent = "🎺 Ajudem els grallers de Berga a tocar el Toc de Castells!";
+          cap.textContent = "🌉 Creuem el Pont Romànic de Pedret saltant pedra a pedra!";
         } else if (state.stepId === "L02.G3") {
-          cap.textContent = "🌉 Creuem el Pont Romànic de Pedret saltant pedra a pedra (Mà Esquerra D+F)!";
+          cap.textContent = "🍄 Collita de rovellons al bosc del Berguedà (Mà Esquerra D+F)!";
         } else if (state.stepId === "L02.G4") {
-          cap.textContent = "🍄 Collita de rovellons al bosc del Berguedà (Mà Dreta K+J)!";
+          cap.textContent = "🎺 Arribem a Berga! Ajudem els grallers a tocar el Toc de Castells!";
         } else if (state.stepId === "L02.G5") {
           cap.textContent = "🧱 Fem una pinya ben forta amb els Castellers de Berga!";
         } else if (state.stepId === "L02.G6") {
@@ -4542,7 +4543,7 @@
       if (isAdapted && earnedB > 3) earnedB = 3;
 
       if (survived && earnedB >= getMinBarretinesRequired()) {
-        if (lvl.gameMode === "castells" && (arcDef.subMode === "berga_grallers" || arcDef.subMode === "dual_climbers")) {
+        if (lvl.gameMode === "castells" && (arcDef.subMode === "berga_grallers" || arcDef.subMode === "berga_pinya" || arcDef.subMode === "dual_climbers")) {
           playTocDeCastellsPujada();
         } else {
           sfxFanfare();
