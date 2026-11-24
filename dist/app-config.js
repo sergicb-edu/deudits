@@ -502,6 +502,36 @@ window.MecanoGoogleAuth = (function () {
     return true;
   }
 
+  async function studentFetchClassLeaderboard(stepId) {
+    const sheetId = getSheetId();
+    if (!sheetId || !hasValidToken() || !stepId) return [];
+    try {
+      const resp = await apiFetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sessions!A2:M5000?valueRenderOption=UNFORMATTED_VALUE`
+      );
+      const rows = resp.values || [];
+      const parseNum = (v) => {
+        if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+        const n = Number(String(v == null ? "0" : v).trim().replace(",", "."));
+        return Number.isFinite(n) ? n : 0;
+      };
+      const bestByStudent = {};
+      for (const r of rows) {
+        if (String(r[5] || "") !== stepId) continue;
+        const stu = String(r[2] || "Alumne").trim();
+        const wpm = Number(parseNum(r[7]).toFixed(1));
+        const sec = Math.max(1, Math.round(parseNum(r[12]) || 15));
+        const errs = parseNum(r[9]);
+        if (!bestByStudent[stu] || wpm > bestByStudent[stu].wpm || (wpm === bestByStudent[stu].wpm && sec < bestByStudent[stu].sec)) {
+          bestByStudent[stu] = { studentName: stu, wpm, sec, errors: errs };
+        }
+      }
+      return Object.values(bestByStudent).sort((a, b) => (b.wpm - a.wpm) || (a.sec - b.sec));
+    } catch {
+      return [];
+    }
+  }
+
   function buildStudentShareLink() {
     const sheetId = getSheetId();
     const cid = getClientId();
@@ -514,6 +544,7 @@ window.MecanoGoogleAuth = (function () {
       const cfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{}");
       if (cfg.difficulty) base.searchParams.set("diff", cfg.difficulty);
       if (cfg.minBarretines) base.searchParams.set("minb", String(cfg.minBarretines));
+      if (cfg.tongueCompetition) base.searchParams.set("comp", "1");
     } catch {}
     return base.toString();
   }
@@ -531,6 +562,7 @@ window.MecanoGoogleAuth = (function () {
     teacherSaveStudentConfig,
     studentSignIn,
     studentFetchMyConfig,
+    studentFetchClassLeaderboard,
     studentAppendSession,
     buildStudentShareLink
   };

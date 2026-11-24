@@ -7,7 +7,7 @@
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#1d4ed8" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="./app-config.js?v=20261124b"></script>
+  <script src="./app-config.js?v=20261124c"></script>
   <script src="./dites-db.js?v=20261124b"></script>
   <style>
     :root {
@@ -611,7 +611,7 @@
               <div id="race-player-runner" style="position:absolute;left:6%;top:2px;font-size:1.45rem;transition:left 0.1s linear;">🧑‍🎓</div>
             </div>
             <div style="position:relative;height:34px;">
-              <span style="position:absolute;left:0;top:6px;font-size:0.74rem;font-weight:900;color:#1e40af;">EN BIT</span>
+              <span id="race-opponent-label" style="position:absolute;left:0;top:6px;font-size:0.74rem;font-weight:900;color:#1e40af;">EN BIT</span>
               <span style="position:absolute;right:2px;top:4px;font-size:1.1rem;">🏁</span>
               <div id="race-bit-runner" style="position:absolute;left:6%;top:2px;font-size:1.45rem;transition:left 0.15s linear;">🤖</div>
             </div>
@@ -1393,11 +1393,13 @@
     const savedTeacherCfg = JSON.parse(localStorage.getItem("mecano_teacher_cfg_v1") || "{}");
     state.difficulty = urlParamsCfg.get("diff") || savedTeacherCfg.difficulty || "normal"; // "suau" | "normal" | "rapid"
     state.minBarretinesReq = Math.max(1, Math.min(5, Number(urlParamsCfg.get("minb") || savedTeacherCfg.minBarretines || 3)));
-    if (urlParamsCfg.get("diff") || urlParamsCfg.get("minb")) {
+    state.tongueCompetition = urlParamsCfg.get("comp") === "1" || Boolean(savedTeacherCfg.tongueCompetition);
+    if (urlParamsCfg.get("diff") || urlParamsCfg.get("minb") || urlParamsCfg.get("comp")) {
       try {
         localStorage.setItem("mecano_teacher_cfg_v1", JSON.stringify({
           difficulty: state.difficulty,
-          minBarretines: state.minBarretinesReq
+          minBarretines: state.minBarretinesReq,
+          tongueCompetition: state.tongueCompetition
         }));
       } catch {}
     }
@@ -1428,32 +1430,41 @@
       return state.minBarretinesReq || 3;
     }
 
-    // Melodia tradicional del Toc de Castells (gralla catalana!) nota a nota
+    // Melodia tradicional del Toc de Castells (gralla catalana: entrada + pujada + aleta!) nota a nota
     const MELODY_TOC_DE_CASTELLS = [
-      392.00, 523.25, 587.33, 659.25, 698.46, 659.25, 587.33, 523.25,
-      587.33, 659.25, 783.99, 698.46, 659.25, 587.33, 523.25, 392.00,
-      523.25, 659.25, 783.99, 880.00, 783.99, 659.25, 587.33, 523.25
+      // Frase A (motiu clàssic d'entrada del Toc de Castells)
+      523.25, 659.25, 783.99, 783.99, 880.00, 783.99, 698.46, 659.25,
+      587.33, 659.25, 698.46, 587.33, 523.25, 392.00,
+      // Frase B (pujada alegre dels pisos)
+      523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 783.99, 698.46,
+      659.25, 783.99, 880.00, 987.77, 1046.50, 783.99, 659.25, 523.25
     ];
+
+    function sfxGrallaNote(freq, ms = 140) {
+      // Timbre càlid de gralla catalana (dos oscil·ladors harmònics)
+      sfxTone(freq, ms, "sawtooth", 0.042);
+      sfxTone(freq * 2, Math.round(ms * 0.7), "triangle", 0.018);
+    }
 
     function playTocDeCastellsPujada() {
       // Melodia festiva de la pujada i l'aleta del castell amb so de gralla!
       const notes = [
-        [523.25, 110], [587.33, 110], [659.25, 110], [783.99, 180],
-        [659.25, 110], [783.99, 160], [880.00, 140], [1046.50, 320]
+        [523.25, 110], [659.25, 110], [783.99, 140], [783.99, 110],
+        [880.00, 140], [783.99, 120], [987.77, 140], [1046.50, 340]
       ];
       let delay = 0;
       notes.forEach(([freq, dur]) => {
-        setTimeout(() => sfxTone(freq, dur, "sawtooth", 0.055), delay);
-        delay += dur + 35;
+        setTimeout(() => sfxGrallaNote(freq, dur), delay);
+        delay += dur + 30;
       });
     }
 
     function playGameNote(gameMode) {
       state.melodyCursor++;
       if (gameMode === "castells") {
-        // Sona una nota del Toc de Castells cada cop que encertes!
+        // Sona una nota del Toc de Castells cada cop que encertes una lletra!
         const f = MELODY_TOC_DE_CASTELLS[state.melodyCursor % MELODY_TOC_DE_CASTELLS.length];
-        sfxTone(f, 130, "sawtooth", 0.048);
+        sfxGrallaNote(f, 135);
       } else if (gameMode === "patum") {
         const f = MELODY_PATUM_TIRABOL[state.melodyCursor % MELODY_PATUM_TIRABOL.length];
         sfxTone(f, 95, "square", 0.065);
@@ -1996,7 +2007,7 @@
           drawSprite(ctx, SPRITES.casteller, 448, 30, 2.8);
           ctx.fillStyle = "#fde047";
           ctx.font = "bold 11px sans-serif";
-          ctx.fillText("🏰 Plaça de Vilafranca", 412, 20);
+          ctx.fillText("🏰 Plaça de Berga", 422, 20);
         }
 
         storyAnimId = requestAnimationFrame(tickStory);
@@ -2360,6 +2371,17 @@
             { id: "L02.PROVERB", phaseType: "proverb", label: "🔑", icon: "🔑", x: 95.5, y: 52, isKey: true },
             { id: "L02.EXTRA", phaseType: "arcade", label: "🌸 Extra", icon: "🧩", x: 91, y: 84, isExtra: true }
           ];
+          // Construeix el camí SVG exactament passant pel centre de cada node (1->2->...->12->🔑) i la branca a l'Extra!
+          const mainPts = mapNodes.filter(n => !n.isExtra).map(n => ({ x: Math.round(n.x * 9), y: Math.round(n.y * 4.1) }));
+          const l02PathD = mainPts.map((pt, i) => (i === 0 ? `M${pt.x},${pt.y}` : `L${pt.x},${pt.y}`)).join(" ");
+          const node12 = mainPts[11];
+          const extraNode = mapNodes.find(n => n.isExtra);
+          const extraPathD = `M${node12.x},${node12.y} L${Math.round(extraNode.x * 9)},${Math.round(extraNode.y * 4.1)}`;
+          const l02SvgPaths = board.querySelectorAll("svg path");
+          if (l02SvgPaths.length >= 2) {
+            l02SvgPaths[l02SvgPaths.length - 2].setAttribute("d", l02PathD);
+            l02SvgPaths[l02SvgPaths.length - 1].setAttribute("d", extraPathD);
+          }
         } else {
           // MAPA PLA 2D DEL NIVELL 1: Univers (esquerra) -> Atmosfera / Terra (centre) -> Pedraforca (dreta)
           board.innerHTML = `
@@ -3627,14 +3649,52 @@
         ctx.fillStyle = "#365314";
         ctx.fillRect(0, 185, canvas.width, 65);
 
-        // Cistell de bolets d'en Bit a baix a l'esquerra
+        // Cistell de bolets d'en Bit a baix a l'esquerra (s'il·lumina quan hi entra un rovelló!)
         drawSprite(ctx, SPRITES.bitRobot, 22, 175, 3.2);
-        ctx.font = "28px sans-serif";
+        const basketPop = (state.basketFlashTimer || 0) > 0 ? 5 : 0;
+        if (state.basketFlashTimer > 0) state.basketFlashTimer--;
+        ctx.font = `${28 + basketPop}px sans-serif`;
         ctx.fillText("🧺", 66, 222);
+        if (basketPop > 0) {
+          ctx.fillStyle = "#86efac"; ctx.font = "bold 14px sans-serif";
+          ctx.fillText("+1 🍄!", 68, 192);
+        }
+
+        // Rovellons que volen en arc parabòlic cap a dins el cistell 🧺!
+        const remFlyM = [];
+        for (const fm of (state.mushroomFlying || [])) {
+          fm.t += 0.06;
+          const p = Math.min(1, fm.t);
+          const fx = fm.sx + (78 - fm.sx) * p;
+          const fy = fm.sy + (214 - fm.sy) * p - Math.sin(p * Math.PI) * 75;
+          ctx.font = "32px sans-serif";
+          ctx.fillText("🍄", fx - 16, fy);
+          if (fm.t < 1) remFlyM.push(fm);
+          else { state.basketFlashTimer = 24; spawnParticles(78, 210, "#4ade80"); }
+        }
+        state.mushroomFlying = remFlyM;
+
+        // Rovellons que s'escapen i es perden pel bosc quan t'equivoques!
+        const remLostM = [];
+        for (const lm of (state.mushroomLost || [])) {
+          lm.t += 0.045;
+          lm.x += lm.vx;
+          lm.y -= 1.2;
+          ctx.globalAlpha = Math.max(0, 1 - lm.t);
+          ctx.font = "28px sans-serif";
+          ctx.fillText("🍄💨", lm.x, lm.y);
+          ctx.fillStyle = "#fecaca"; ctx.font = "bold 12px sans-serif";
+          ctx.fillText("Es perd pel bosc!", lm.x - 16, lm.y - 24);
+          ctx.globalAlpha = 1;
+          if (lm.t < 1) remLostM.push(lm);
+        }
+        state.mushroomLost = remLostM;
 
         if (state.arcadeRunning && ent) {
           ent.lifeTimer = (ent.lifeTimer || 300) - 1;
           if (ent.lifeTimer <= 0) {
+            state.mushroomLost = state.mushroomLost || [];
+            state.mushroomLost.push({ x: ent.x, y: ent.y, vx: ent.x > 440 ? 4.5 : -4.5, t: 0 });
             penalizeMistakeOrTimeout(100, true);
             spawnEntitiesForCurrentMode(lvl);
             return;
@@ -4370,6 +4430,11 @@
           state.arcadeJumpTimer = 18;
           state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
 
+          if (lvl.gameMode === "castells" && ent.subMode === "bergueda_mushrooms") {
+            // El rovelló vola directament dins el cistell d'en Bit!
+            state.mushroomFlying = state.mushroomFlying || [];
+            state.mushroomFlying.push({ sx: ent.x, sy: ent.y, t: 0 });
+          }
           if (lvl.gameMode === "meteors") {
             if (ent.isRecycle) {
               // El residu es llença directament dins la boca del contenidor que toca!
@@ -4429,6 +4494,14 @@
         state.arcadeKeyErrors[expected].errors++;
 
         if (lvl.gameMode === "castells") {
+          if (ent.subMode === "bergueda_mushrooms") {
+            // Si s'equivoca collint bolets, el bolet s'escapa pel bosc i n'apareix un altre!
+            state.mushroomLost = state.mushroomLost || [];
+            state.mushroomLost.push({ x: ent.x, y: ent.y, vx: ent.x > 440 ? 4.5 : -4.5, t: 0 });
+            penalizeMistakeOrTimeout(25, false);
+            spawnEntitiesForCurrentMode(lvl);
+            return;
+          }
           const isRightExpected = lvl.rightKeys.includes(expected);
           triggerFallingClimber(isRightExpected ? "right" : "left");
           if (ent.subMode === "dual_climbers" || ent.subMode === "hand_blocks") {
@@ -5157,6 +5230,7 @@
               <button type="button" class="btn-mode-prova" style="font-size:0.8rem;background:#e0f2fe;border-color:#0284c7;color:#0369a1;">📝 Prova</button>
               <button type="button" class="btn-mode-tortuga" style="font-size:0.8rem;background:#dcfce7;border-color:#16a34a;color:#14532d;">🐢 Cursa (Principiant)</button>
               <button type="button" class="btn-mode-turbo" style="font-size:0.8rem;background:#fef08a;border-color:#ca8a04;color:#713f12;">⚡ Cursa Turbo</button>
+              ${state.tongueCompetition ? `<button type="button" class="btn-mode-class" style="font-size:0.8rem;background:#ede9fe;border-color:#7c3aed;color:#5b21b6;">🏆 Contra Companys</button>` : ""}
             ` : `<span style="font-size:1.3rem;">🔒</span>`}
           </div>
         `;
@@ -5165,16 +5239,36 @@
           row.querySelector(".btn-mode-prova").onclick = () => startTongueRace(it, "prova");
           row.querySelector(".btn-mode-tortuga").onclick = () => startTongueRace(it, "tortuga");
           row.querySelector(".btn-mode-turbo").onclick = () => startTongueRace(it, "turbo");
+          const classBtn = row.querySelector(".btn-mode-class");
+          if (classBtn) classBtn.onclick = () => startClassTongueRace(it);
         }
         listEl.appendChild(row);
       });
     }
 
+    async function startClassTongueRace(item) {
+      let lb = [];
+      if (window.MecanoGoogleAuth && window.MecanoGoogleAuth.studentFetchClassLeaderboard) {
+        lb = await window.MecanoGoogleAuth.studentFetchClassLeaderboard(item.id);
+      }
+      const me = (window.MecanoGoogleAuth && window.MecanoGoogleAuth.getSavedUser() && window.MecanoGoogleAuth.getSavedUser().name) || "";
+      const rivals = lb.filter(r => r.studentName !== me);
+      const rival = rivals.length > 0 ? rivals[0] : null;
+      tongueState.classLeaderboard = lb;
+      tongueState.rival = rival;
+      startTongueRace(item, "class");
+    }
+
     function startTongueRace(item, mode = "prova") {
       stopTongueRaceTimer();
       tongueState.activeItem = item;
-      tongueState.mode = mode; // "prova" | "tortuga" | "turbo"
-      tongueState.speedWpm = mode === "turbo" ? 18 : mode === "tortuga" ? 10 : 0;
+      tongueState.mode = mode; // "prova" | "tortuga" | "turbo" | "class"
+      if (mode !== "class") {
+        tongueState.rival = null;
+        tongueState.classLeaderboard = null;
+      }
+      const rivalWpm = (mode === "class" && tongueState.rival && tongueState.rival.wpm > 0) ? tongueState.rival.wpm : 12;
+      tongueState.speedWpm = mode === "class" ? rivalWpm : mode === "turbo" ? 18 : mode === "tortuga" ? 10 : 0;
       tongueState.cursor = 0;
       tongueState.errors = 0;
       tongueState.wrongFlash = false;
@@ -5189,7 +5283,19 @@
       document.getElementById("tongue-after-actions").style.display = "none";
       document.getElementById("tongue-after-actions").innerHTML = "";
 
-      const modeLabel = mode === "turbo" ? "⚡ CURSA TURBO (18 PPM)" : mode === "tortuga" ? "🐢 CURSA PRINCIPIANT (10 PPM)" : "📝 MODE PROVA (Pràctica sense temps)";
+      const oppLabelEl = document.getElementById("race-opponent-label");
+      const oppRunnerEl = document.getElementById("race-bit-runner");
+      if (mode === "class" && tongueState.rival) {
+        if (oppLabelEl) oppLabelEl.textContent = tongueState.rival.studentName.toUpperCase();
+        if (oppRunnerEl) oppRunnerEl.textContent = "🏃";
+      } else {
+        if (oppLabelEl) oppLabelEl.textContent = "EN BIT";
+        if (oppRunnerEl) oppRunnerEl.textContent = "🤖";
+      }
+
+      const modeLabel = mode === "class"
+        ? (tongueState.rival ? `🏆 COMPETICIÓ vs ${tongueState.rival.studentName} (${tongueState.rival.wpm} PPM)` : "🏆 COMPETICIÓ DE CLASSE (Sigues el 1r rècord!)")
+        : mode === "turbo" ? "⚡ CURSA TURBO (18 PPM)" : mode === "tortuga" ? "🐢 CURSA PRINCIPIANT (10 PPM)" : "📝 MODE PROVA (Pràctica sense temps)";
       document.getElementById("tongue-active-badge").textContent = `${modeLabel} · ${item.flower} ${item.flowerName}`;
       document.getElementById("tongue-track-box").style.display = mode === "prova" ? "none" : "block";
       document.getElementById("race-player-runner").style.left = "6%";
@@ -5403,8 +5509,19 @@
               keyStats: {}
             });
 
-            const badgeStr = mode === "turbo" ? "⚡ Cursa Turbo" : "🐢 Cursa Principiant";
-            statusEl.innerHTML = `<span style="color:#15803d;font-size:1.02rem;">🏆 ${badgeStr} guanyada! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos) · Has fet florir ${it.flower} ${it.flowerName}!</span>`;
+            const badgeStr = mode === "class" ? "🏆 Competició de Classe" : mode === "turbo" ? "⚡ Cursa Turbo" : "🐢 Cursa Principiant";
+            let rankHtml = "";
+            if (mode === "class") {
+              const myName = (window.MecanoGoogleAuth && window.MecanoGoogleAuth.getSavedUser() && window.MecanoGoogleAuth.getSavedUser().name) || "Tu";
+              const board = (tongueState.classLeaderboard || []).filter(r => r.studentName !== myName);
+              board.push({ studentName: myName, wpm, sec: durS, errors: tongueState.errors, isMe: true });
+              board.sort((a, b) => (b.wpm - a.wpm) || (a.sec - b.sec));
+              const myPos = board.findIndex(r => r.isMe) + 1;
+              const medals = ["🥇", "🥈", "🥉"];
+              const topStr = board.slice(0, 3).map((r, i) => `${medals[i] || `#${i + 1}`} ${r.studentName} (${r.wpm} PPM · ${r.sec}s)`).join(" · ");
+              rankHtml = `<div style="margin-top:0.35rem;font-size:0.9rem;color:#5b21b6;background:#ede9fe;padding:0.35rem 0.65rem;border-radius:8px;">🏅 Has quedat en <strong>#${myPos} posició</strong> de ${board.length} alumnes!<br/><span style="font-size:0.78rem;">${topStr}</span></div>`;
+            }
+            statusEl.innerHTML = `<span style="color:#15803d;font-size:1.02rem;">🏆 ${badgeStr} guanyada! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos) · Has fet florir ${it.flower} ${it.flowerName}!</span>${rankHtml}`;
             actionsEl.style.display = "flex";
             actionsEl.innerHTML = `
               <button type="button" id="btn-after-list" class="primary" style="background:#db2777;border-color:#be185d;">➡️ Tornar al Jardí (Següent embarbussament)</button>
