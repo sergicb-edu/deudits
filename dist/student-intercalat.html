@@ -7,8 +7,8 @@
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#1d4ed8" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="./app-config.js?v=20261120"></script>
-  <script src="./dites-db.js?v=20261120"></script>
+  <script src="./app-config.js?v=20261124b"></script>
+  <script src="./dites-db.js?v=20261124b"></script>
   <style>
     :root {
       --font-scale: 1;
@@ -1294,9 +1294,11 @@
 
       const sheetId = window.MecanoGoogleAuth.getSheetId();
       const btn = document.getElementById("btn-student-google");
-      if (!btn || !sheetId) return;
-
-      btn.style.display = "inline-flex";
+      if (!btn) return;
+      if (window.location.protocol !== "file:") {
+        btn.style.display = "inline-flex";
+      }
+      if (!sheetId && window.location.protocol === "file:") return;
       const savedUser = window.MecanoGoogleAuth.getSavedUser();
       if (savedUser && savedUser.givenName) {
         btn.textContent = `🔐 ${savedUser.givenName} (Connecta)`;
@@ -1318,6 +1320,18 @@
           btn.style.borderColor = "#16a34a";
           btn.style.color = "#14532d";
           if (modal) modal.style.display = "none";
+
+          // Carrega els ajustos pedagògics individuals assignats pel docent a aquest alumne!
+          if (window.MecanoGoogleAuth.studentFetchMyConfig) {
+            const myCfg = await window.MecanoGoogleAuth.studentFetchMyConfig(user.name || user.givenName);
+            if (myCfg) {
+              if (myCfg.difficulty) state.difficulty = myCfg.difficulty;
+              if (myCfg.minBarretines) state.minBarretinesReq = Number(myCfg.minBarretines);
+              const dv = document.getElementById("val-difficulty");
+              const dl = { suau: "🐢 Suau", normal: "🦊 Normal", rapid: "⚡ Ràpid" };
+              if (dv) dv.textContent = dl[state.difficulty] || "🦊 Normal";
+            }
+          }
 
           // Envia qualsevol partida feta abans de connectar-se (sense bloquejar el login si el Sheet encara no té permisos)
           const pending = JSON.parse(localStorage.getItem("mecano_pending_oauth_sessions") || "[]");

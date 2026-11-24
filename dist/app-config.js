@@ -297,12 +297,22 @@ window.MecanoGoogleAuth = (function () {
     }
 
     const resp = await apiFetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchGet?valueRenderOption=UNFORMATTED_VALUE&ranges=Sessions!A2:M5000&ranges=Estadistiques_Tecles!A2:E5000&ranges=Assoliments!A2:F5000`
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchGet?valueRenderOption=UNFORMATTED_VALUE&ranges=Sessions!A2:M5000&ranges=Estadistiques_Tecles!A2:E5000&ranges=Assoliments!A2:F5000&ranges=Config!A2:B500`
     );
     const vr = resp.valueRanges || [];
     const sessRows = (vr[0] && vr[0].values) || [];
     const keyRows = (vr[1] && vr[1].values) || [];
     const achRows = (vr[2] && vr[2].values) || [];
+    const cfgRows = (vr[3] && vr[3].values) || [];
+
+    const studentConfigs = {};
+    for (const r of cfgRows) {
+      const k = String(r[0] || "");
+      if (k.startsWith("student_cfg:")) {
+        const stuName = k.slice("student_cfg:".length);
+        try { studentConfigs[stuName] = JSON.parse(String(r[1] || "{}")); } catch {}
+      }
+    }
 
     const parseNum = (v) => {
       if (typeof v === "number") return Number.isFinite(v) ? v : 0;
@@ -364,8 +374,49 @@ window.MecanoGoogleAuth = (function () {
       keyStatsAll,
       keyStatsByStudent,
       barretinesAll,
-      barretinesByStudent
+      barretinesByStudent,
+      studentConfigs
     };
+  }
+
+  async function teacherSaveStudentConfig(studentName, cfgObj) {
+    const sheetId = getSheetId();
+    if (!sheetId) throw new Error("No hi ha cap Google Sheet vinculat.");
+    if (!hasValidToken()) {
+      await requestAccessToken(
+        "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+        ""
+      );
+    }
+    const key = `student_cfg:${studentName}`;
+    await apiFetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Config!A:B:append?valueInputOption=RAW`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ values: [[key, JSON.stringify(cfgObj)]] })
+      }
+    );
+    return true;
+  }
+
+  async function studentFetchMyConfig(studentName) {
+    const sheetId = getSheetId();
+    if (!sheetId || !hasValidToken() || !studentName) return null;
+    try {
+      const resp = await apiFetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Config!A2:B500`);
+      const rows = resp.values || [];
+      let found = null;
+      const targetKey = `student_cfg:${studentName}`;
+      for (const r of rows) {
+        if (String(r[0] || "") === targetKey) {
+          try { found = JSON.parse(String(r[1] || "{}")); } catch {}
+        }
+      }
+      return found;
+    } catch {
+      return null;
+    }
   }
 
   // --- ALUMNE: Inicia sessió amb el compte Google escolar i desa sessions al Sheet del docent ---
@@ -477,7 +528,9 @@ window.MecanoGoogleAuth = (function () {
     hasValidToken,
     teacherConnectAndSetup,
     teacherFetchDashboardData,
+    teacherSaveStudentConfig,
     studentSignIn,
+    studentFetchMyConfig,
     studentAppendSession,
     buildStudentShareLink
   };
