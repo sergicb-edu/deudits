@@ -672,6 +672,36 @@
         </tr>
       `);
 
+      // Fila d'Adaptacions NESE detectades per cada alumne (vel. reduïda, veu, contrast, lletra gran...)
+      rowsHtml.push(`
+        <tr style="background:#fefce8;">
+          <td><strong>🧩 Adaptacions (NESE)</strong><br/><span style="font-size:0.75rem;color:#854d0e;">Suports usats per superar nivells</span></td>
+          ${students.map(stu => {
+            const stuSess = ds.allSessions.filter(s => s.studentName === stu);
+            const foundTags = new Set();
+            let adaptedCount = 0;
+            stuSess.forEach(s => {
+              const m = String(s.stepLabel || "").match(/\[ADAPTAT:\s*([^\]]+)\]/);
+              if (m && m[1]) {
+                adaptedCount++;
+                m[1].split(",").map(t => t.trim()).filter(Boolean).forEach(t => foundTags.add(t));
+              }
+            });
+            if (foundTags.size === 0) {
+              return `<td><span style="font-size:0.78rem;color:#15803d;font-weight:700;">✅ Sense adaptacions</span></td>`;
+            }
+            return `
+              <td>
+                <div style="font-size:0.76rem;font-weight:800;color:#854d0e;margin-bottom:0.25rem;">${adaptedCount} ${adaptedCount === 1 ? "sessió adaptada" : "sessions adaptades"} (màx. 3 ★)</div>
+                <div style="display:flex;flex-wrap:wrap;gap:3px;">
+                  ${Array.from(foundTags).map(t => `<span style="background:#fef08a;color:#713f12;border:1px solid #eab308;border-radius:99px;padding:1px 7px;font-size:0.71rem;font-weight:800;">${t}</span>`).join("")}
+                </div>
+              </td>
+            `;
+          }).join("")}
+        </tr>
+      `);
+
       // Fila resum global per cada alumne (Velocitat + Precisió amb la mateixa escala!)
       rowsHtml.push(`
         <tr style="background:#f8fafc;">

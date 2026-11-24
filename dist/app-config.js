@@ -137,7 +137,7 @@ window.MecanoGoogleAuth = (function () {
     const q = encodeURIComponent(
       `name='${safeName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`
     );
-    const search = await apiFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`);
+    const search = await apiFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=createdTime%20asc&fields=files(id,name)`);
     if (search.files && search.files.length > 0) {
       return search.files[0];
     }
@@ -153,11 +153,19 @@ window.MecanoGoogleAuth = (function () {
 
   async function findExistingSheetInFolder(folderId, sheetTitle) {
     const safeTitle = sheetTitle.replace(/'/g, "\\'");
-    const q = encodeURIComponent(
+    // 1r busca pel títol exacte dins la carpeta
+    const qExact = encodeURIComponent(
       `'${folderId}' in parents and name='${safeTitle}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`
     );
-    const search = await apiFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,webViewLink)`);
-    return (search.files && search.files.length > 0) ? search.files[0] : null;
+    const searchExact = await apiFetch(`https://www.googleapis.com/drive/v3/files?q=${qExact}&fields=files(id,name,webViewLink)`);
+    if (searchExact.files && searchExact.files.length > 0) return searchExact.files[0];
+
+    // 2n si ja existeix qualsevol full de càlcul dins d'aquesta carpeta (ex. reanomenat o d'una versió anterior), hi connecta!
+    const qAny = encodeURIComponent(
+      `'${folderId}' in parents and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`
+    );
+    const searchAny = await apiFetch(`https://www.googleapis.com/drive/v3/files?q=${qAny}&orderBy=createdTime%20asc&fields=files(id,name,webViewLink)`);
+    return (searchAny.files && searchAny.files.length > 0) ? searchAny.files[0] : null;
   }
 
   async function createStructuredSheet(folderId, sheetTitle, userDomain) {

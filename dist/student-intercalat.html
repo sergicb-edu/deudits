@@ -1388,10 +1388,27 @@
       } catch {}
     }
 
+    state.stepAttempts = JSON.parse(localStorage.getItem("deudits_step_attempts_v1") || "{}");
+    state.adaptedSteps = JSON.parse(localStorage.getItem("deudits_adapted_steps_v1") || "{}");
+    state.usedVoiceThisSession = false;
+
+    function isCurrentStepAutoAdapted() {
+      return Boolean(state.adaptedSteps && state.adaptedSteps[state.stepId]);
+    }
     function getSpeedMultiplier() {
-      if (state.difficulty === "suau") return 0.85;
-      if (state.difficulty === "rapid") return 2.15;
-      return 1.5; // Normal (primària): ritme alegre i jugable!
+      let base = state.difficulty === "suau" ? 0.85 : state.difficulty === "rapid" ? 2.15 : 1.5;
+      // Si després de 3 intents fallits s'ha activat l'adaptació automàtica, reduïm la velocitat!
+      if (isCurrentStepAutoAdapted()) base = Math.min(base * 0.62, 0.72);
+      return base;
+    }
+    function getActiveAdaptationTags() {
+      const tags = [];
+      if (isCurrentStepAutoAdapted()) tags.push("🌱 Vel. reduïda (3 intents)");
+      if (state.difficulty === "suau") tags.push("🐢 Dificultat suau");
+      if (state.usedVoiceThisSession) tags.push("🔊 Veu");
+      if (state.highContrast) tags.push("👁️ Alt contrast");
+      if (state.dyslexia || state.fontScale > 1) tags.push("🔤 Lletra gran/Dislèxia");
+      return tags;
     }
     function getMinBarretinesRequired() {
       return state.minBarretinesReq || 3;
@@ -4147,57 +4164,6 @@
       ctx.fillStyle = "#fde047";
       ctx.font = "bold 12px sans-serif";
       ctx.fillText(`🏰 Castell de Berga · Pis ${builtFloors}/5 (${state.arcadeCompleted}/${state.arcadeTotal})`, 22, 28);
-      return;
-
-      drawSprite(ctx, SPRITES.casteller, baseX - 55, 186, 3.2);
-      drawSprite(ctx, SPRITES.casteller, baseX + 35, 186, 3.2);
-      drawSprite(ctx, SPRITES.casteller, baseX - 10, 186, 3.2);
-
-      const builtFloors = Math.min(4, Math.floor(state.arcadeCompleted / 2) + 1);
-      for (let f = 1; f <= builtFloors; f++) {
-        const yPos = 186 - f * 28;
-        if (isDual) {
-          drawSprite(ctx, SPRITES.casteller, baseX - 32, yPos, 2.9);
-          drawSprite(ctx, SPRITES.casteller, baseX + 14, yPos, 2.9);
-        } else {
-          drawSprite(ctx, SPRITES.casteller, baseX - 10, yPos, 3);
-        }
-      }
-
-      if (ent) {
-        if (isDual) {
-          const leftY = 180 - state.leftClimberStep * 28;
-          ctx.fillStyle = "#38bdf8";
-          ctx.font = "bold 12px sans-serif";
-          ctx.fillText("⬅️ Mà Esq. (D, F)", 185, 30);
-          drawSprite(ctx, SPRITES.casteller, baseX - 75, leftY, 3);
-
-          const rightY = 180 - state.rightClimberStep * 28;
-          ctx.fillStyle = "#fde047";
-          ctx.fillText("Mà Dreta (K, J) ➡️", 575, 30);
-          drawSprite(ctx, SPRITES.casteller, baseX + 55, rightY, 3);
-
-          drawWordBox(ctx, ent.word, ent.typedIndex, 375, 22, true);
-        } else {
-          const climbY = 180 - ent.typedIndex * 24;
-          drawSprite(ctx, SPRITES.casteller, baseX - 68, climbY, 3.1);
-          drawWordBox(ctx, ent.word, ent.typedIndex, 210, 95, true);
-        }
-      }
-
-      const remFall = [];
-      for (const fc of state.fallingClimbers) {
-        fc.x += fc.vx;
-        fc.y += fc.vy;
-        fc.vy += 0.28;
-        fc.life--;
-        drawSprite(ctx, SPRITES.casteller, fc.x, fc.y, 3);
-        ctx.fillStyle = "#ef4444";
-        ctx.font = "bold 13px sans-serif";
-        ctx.fillText("💥 Uiii! Cau!", fc.x - 10, fc.y - 8);
-        if (fc.life > 0 && fc.y < 230) remFall.push(fc);
-      }
-      state.fallingClimbers = remFall;
     }
 
     // 3) MECÀNICA 3: SARDANA A GIRONA
@@ -4391,11 +4357,7 @@
           state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
 
           if (lvl.gameMode === "meteors") {
-            if (ent.isLogicCode) {
-          const done = ent.word.slice(0, ent.typedIndex);
-          wordEl.innerHTML = `🧩 Dedueix què falta al [ ? ] <span style="color:#4ade80;">${done}</span>`;
-          renderSupportKeyboardAndHands(null);
-        } else if (ent.isRecycle) {
+            if (ent.isRecycle) {
               // El residu es llença directament dins la boca del contenidor que toca!
               const cardX = Math.max(40, Math.min(620, ent.x - 95));
               const targetBinX = 76 + ent.binIndex * 190 + 80;
@@ -4478,8 +4440,12 @@
     function endArcadeGame(survived) {
       const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
       const arcDef = getActiveArcadeDef(lvl);
-      const earnedB = survived ? state.arcadeLives : 0;
-      if (survived) {
+      const isAdapted = isCurrentStepAutoAdapted();
+      let earnedB = survived ? state.arcadeLives : 0;
+      // Si s'ha activat el mode adaptat (velocitat reduïda després de 3 intents), màxim 3 Barretines!
+      if (isAdapted && earnedB > 3) earnedB = 3;
+
+      if (survived && earnedB >= getMinBarretinesRequired()) {
         if (lvl.gameMode === "castells" && (arcDef.subMode === "berga_grallers" || arcDef.subMode === "dual_climbers")) {
           playTocDeCastellsPujada();
         } else {
@@ -4488,17 +4454,27 @@
         const prev = state.stepBarretines[state.stepId] || 0;
         state.stepBarretines[state.stepId] = Math.max(prev, earnedB);
         saveProgress();
+      } else {
+        // Compta intent fallit: després de 3 intents fallits, activa automàticament l'adaptació (velocitat reduïda, màx 3 Barretines)!
+        state.stepAttempts[state.stepId] = (state.stepAttempts[state.stepId] || 0) + 1;
+        localStorage.setItem("deudits_step_attempts_v1", JSON.stringify(state.stepAttempts));
+        if (state.stepAttempts[state.stepId] >= 3) {
+          state.adaptedSteps[state.stepId] = true;
+          localStorage.setItem("deudits_adapted_steps_v1", JSON.stringify(state.adaptedSteps));
+        }
       }
       const acc = state.arcadeTotalPresses > 0
         ? Math.round(((state.arcadeTotalPresses - state.arcadeErrors) / state.arcadeTotalPresses) * 100)
         : 100;
       const durS = Math.max(1, Math.round((performance.now() - state.startedAtMs) / 1000));
       const wpm = Number(((state.arcadeTotalPresses / 5) / (durS / 60)).toFixed(1));
+      const adaptTags = getActiveAdaptationTags();
+      const labelWithAdapt = adaptTags.length > 0 ? `${arcDef.label} [ADAPTAT: ${adaptTags.join(", ")}]` : arcDef.label;
 
       recordTelemetrySession({
         phaseType: "arcade",
         stepId: state.stepId,
-        stepLabel: arcDef.label,
+        stepLabel: labelWithAdapt,
         wpmNet: wpm,
         accuracyPct: acc,
         errors: state.arcadeErrors,
@@ -4506,6 +4482,7 @@
         barretines: earnedB,
         keyStats: state.arcadeKeyErrors
       });
+      state.usedVoiceThisSession = false;
 
       const resultPayload = {
         title: survived && earnedB >= 3
@@ -4722,10 +4699,13 @@
         ? `Dita: «${lvl.proverbCa}»`
         : (drillObj ? drillObj.label : state.stepId);
 
+      const tapeAdaptTags = getActiveAdaptationTags();
+      const stepLabelWithAdapt = tapeAdaptTags.length > 0 ? `${stepLabel} [ADAPTAT: ${tapeAdaptTags.join(", ")}]` : stepLabel;
+
       recordTelemetrySession({
         phaseType: state.phaseType === "diagnostic" ? "proverb" : (state.phaseType === "adaptive" ? "drill" : state.phaseType),
         stepId: state.stepId,
-        stepLabel,
+        stepLabel: stepLabelWithAdapt,
         wpmNet: wpm,
         accuracyPct: Math.round(acc * 100),
         errors: errs,
@@ -4733,6 +4713,7 @@
         barretines: b,
         keyStats: state.tapeKeyStats
       });
+      state.usedVoiceThisSession = false;
 
       showResultScreen({
         title: state.phaseType === "diagnostic"
@@ -5066,6 +5047,7 @@
     }
 
     function speakCatalanText(txt) {
+      state.usedVoiceThisSession = true;
       if (!("speechSynthesis" in window)) return;
       try {
         window.speechSynthesis.cancel();
