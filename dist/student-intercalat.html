@@ -1430,18 +1430,27 @@
       return state.minBarretinesReq || 3;
     }
 
-    // Melodia EXACTA del Toc de Castells en Sol Major (gralla catalana: FA# = 739.99 Hz!)
-    // sol'=G4(392), si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa#=Fs5(739.99), sol=G5(783.99)
-    const G4 = 392.00, B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, Fs5 = 739.99, G5 = 783.99;
+    // Partitura COMPLETA i EXACTA del Toc de Castells (1a Gralla, nota per nota!):
+    // sol'=G4(392.00), si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa=F5(698.46), sol=G5(783.99)
+    const G4 = 392.00, B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99;
     const MELODY_TOC_DE_CASTELLS = [
-      // Inici: sol' - sol' - sol' - re - mi - fa# - mi - re - do - re
-      G4, G4, G4, D5, E5, Fs5, E5, D5, C5, D5,
-      // Desenvolupament: do - si - re - sol' - re - si - re - do - si - do - mi - re - mi - do - re - si
-      C5, B4, D5, G4, D5, B4, D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
-      // Continuació: si - re - sol - sol - re - si - do - si - do - re - si - mi - re - mi - do - re - si - do - re - si - do - re - mi - re
-      B4, D5, G5, G5, D5, B4, C5, B4, C5, D5, B4, E5, D5, E5, C5, D5, B4, C5, D5, B4, C5, D5, E5, D5,
-      // Tancament de frase: sol - mi - re - mi - sol - fa# - mi - re - do - si - re - sol - re - si
-      G5, E5, D5, E5, G5, Fs5, E5, D5, C5, B4, D5, G5, D5, B4
+      // Entrada: sol' sol' sol'
+      G4, G4, G4,
+      // Inici: re mi fa mi re do re · do si re sol' re si · re do si do mi re mi do re si
+      D5, E5, F5, E5, D5, C5, D5,
+      C5, B4, D5, G4, D5, B4,
+      D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
+      // Desenvolupament: si re sol' sol' re si do si do · re si mi re mi do re si do re · si do re mi re___ · sol mi re mi___
+      B4, D5, G4, G4, D5, B4, C5, B4, C5,
+      D5, B4, E5, D5, E5, C5, D5, B4, C5, D5,
+      B4, C5, D5, E5, D5,
+      G5, E5, D5, E5,
+      // Repetició / Enllaç:
+      G5, F5, E5, D5, C5, B4, D5, G5, D5, B4,
+      D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
+      B4, D5, G5, G5, D5, B4, C5, B4, C5, D5, B4,
+      E5, D5, E5, C5, D5, B4, C5, D5,
+      B4, C5, D5, E5, D5
     ];
 
     function sfxGrallaNote(freq, ms = 170) {
@@ -1451,19 +1460,20 @@
     }
 
     function playTocDeCastellsPujada() {
-      // ALETA EXACTA en Sol Major (quan l'enxaneta fa l'aleta!):
-      // re-mi-re-mi-re-mi-re-sol___-fa#______-mi___ + re-mi-fa#-sol-fa#-mi-re-mi-fa#-mi-re-do-si-do-re-mi-re
+      // ALETA EXACTA de la partitura (quan l'enxaneta fa l'aleta!):
       const notes = [
-        [D5, 110], [E5, 110], [D5, 110], [E5, 110], [D5, 110], [E5, 110], [D5, 120],
-        [G5, 300], [Fs5, 390], [E5, 290],
-        [D5, 100], [E5, 100], [Fs5, 100], [G5, 125], [Fs5, 100], [E5, 100], [D5, 100],
-        [E5, 100], [Fs5, 100], [E5, 100], [D5, 100], [C5, 100], [B4, 100], [C5, 100],
-        [D5, 100], [E5, 100], [D5, 280]
+        // re mi re mi re mi re · sol___ fa______ mi_____
+        [D5, 100], [E5, 100], [D5, 100], [E5, 100], [D5, 100], [E5, 100], [D5, 110],
+        [G5, 290], [F5, 420], [E5, 340],
+        // re mi fa sol fa mi re mi fa mi re · do si do re mi re
+        [D5, 95], [E5, 95], [F5, 95], [G5, 115], [F5, 95], [E5, 95], [D5, 95],
+        [E5, 95], [F5, 95], [E5, 95], [D5, 110],
+        [C5, 95], [B4, 95], [C5, 95], [D5, 95], [E5, 95], [D5, 260]
       ];
       let delay = 0;
       notes.forEach(([freq, dur]) => {
         setTimeout(() => sfxGrallaNote(freq, dur), delay);
-        delay += dur + 22;
+        delay += dur + 20;
       });
     }
 
