@@ -862,12 +862,12 @@
           { id: "L02.D6", label: "P6: Les 4 Lletres Creuades (dkfj fjdk)", stepType: "cross_four", wordsCount: 12, mix: true }
         ],
         arcades: [
-          { id: "L02.G1", label: "J1: 🎈 Vol en Globus pel Llobregat (D i K)", subMode: "bergueda_balloon", totalTargets: 10, isExtra: false },
-          { id: "L02.G2", label: "J2: 🌉 Creuem el Pont de Pedret (Grups de 3 D i K)", subMode: "pedret_bridge", totalTargets: 10, isExtra: false },
-          { id: "L02.G3", label: "J3: 🍄 Collita de Rovellons al Bosc (Mà Esq. D+F)", subMode: "bergueda_mushrooms", totalTargets: 10, isExtra: false },
-          { id: "L02.G4", label: "J4: 🎺 Els Grallers de Berga (Mà Dreta K+J)", subMode: "berga_grallers", totalTargets: 10, isExtra: false },
-          { id: "L02.G5", label: "J5: 🧱 Fem la Pinya a Berga (Alternança)", subMode: "berga_pinya", totalTargets: 10, isExtra: false },
-          { id: "L02.G6", label: "J6: 🏰 Pugem el Castell de Berga (4 Lletres)", subMode: "dual_climbers", totalTargets: 12, isExtra: false },
+          { id: "L02.G1", label: "J1: 🎈 Vol en Globus pel Llobregat (D i K)", subMode: "bergueda_balloon", totalTargets: 20, isExtra: false },
+          { id: "L02.G2", label: "J2: 🌉 Creuem el Pont de Pedret (Grups de 3 D i K)", subMode: "pedret_bridge", totalTargets: 20, isExtra: false },
+          { id: "L02.G3", label: "J3: 🍄 Collita de Rovellons al Bosc (Mà Esq. D+F)", subMode: "bergueda_mushrooms", totalTargets: 20, isExtra: false },
+          { id: "L02.G4", label: "J4: 🎺 Els Grallers de Berga · Guitar Hero (Mà Dreta K+J)", subMode: "berga_grallers", totalTargets: 44, isExtra: false },
+          { id: "L02.G5", label: "J5: 🧱 Fem la Pinya a Berga (Alternança)", subMode: "berga_pinya", totalTargets: 20, isExtra: false },
+          { id: "L02.G6", label: "J6: 🏰 Pugem el Castell de Berga (4 Lletres)", subMode: "dual_climbers", totalTargets: 24, isExtra: false },
           { id: "L02.EXTRA", label: "⭐ EXTRA: 🧩 El Codi Secret del Berguedà (Sèries lògiques!)", subMode: "bergueda_logic_code", totalTargets: 10, isExtra: true }
         ]
       },
@@ -1430,31 +1430,38 @@
       return state.minBarretinesReq || 3;
     }
 
-    // Partitura COMPLETA i EXACTA del Toc de Castells en SOL MAJOR (1a Gralla, FA# = Fs5!):
-    // si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa#=Fs5(739.99), sol/sol'=G5(783.99)
-    const B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, Fs5 = 739.99, G5 = 783.99;
-    const MELODY_TOC_DE_CASTELLS = [
-      // Entrada: sol' sol' sol'
-      G5, G5, G5,
-      // Inici: re mi fa# mi re do re · do si re sol' re si · re do si do mi re mi do re si
-      D5, E5, Fs5, E5, D5, C5, D5,
-      C5, B4, D5, G5, D5, B4,
-      D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
-      // Desenvolupament: si re sol' sol' re si do si do · re si mi re mi do re si do re · si do re mi re___ · sol mi re mi___
-      B4, D5, G5, G5, D5, B4, C5, B4, C5,
-      D5, B4, E5, D5, E5, C5, D5, B4, C5, D5,
-      B4, C5, D5, E5, D5,
-      G5, E5, D5, E5,
-      // Repetició / Enllaç:
-      G5, Fs5, E5, D5, C5, B4, D5, G5, D5, B4,
-      D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
-      B4, D5, G5, G5, D5, B4, C5, B4, C5, D5, B4,
-      E5, D5, E5, C5, D5, B4, C5, D5,
-      B4, C5, D5, E5, D5
+    // Partitura EXACTA del PDF: Toc de Castells (1a Gralla — Castellers de Sant Feliu de Llobregat, Moderate ♩ = 112)
+    // Armadura sense sostinguts (Do Major: FA natural = F5, i FA# = Fs5 només a les alteracions accidentals!)
+    // Alturas al pentagrama (5 línies a y=75..147): G5=66, F5/Fs5=75, E5=84, D5=93, C5=102, B4=111
+    const B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, Fs5 = 739.99, G5 = 783.99;
+    const TOC_BEAT_MS = 536; // ♩ = 112 BPM exacte de la partitura!
+    const TOC_STAFF_Y = { [G5]: 66, [Fs5]: 75, [F5]: 75, [E5]: 84, [D5]: 93, [C5]: 102, [B4]: 111 };
+
+    // Compassos 1 a 10 complets [freq, beats] (44 notes exactes amb el seu ritme real!)
+    const TOC_DE_CASTELLS_SCORE = [
+      // Compàs 1 (3/4 — ENTRADA): sol' (corx), sol' (corx), sol' (negra amb punt)
+      [G5, 0.5], [G5, 0.5], [G5, 1.5],
+      // Compàs 2 (3/4): re (negra punt), mi (corx), fa-mi-re-do (4 semicorxeres)
+      [D5, 1.5], [E5, 0.5], [F5, 0.25], [E5, 0.25], [D5, 0.25], [C5, 0.25],
+      // Compàs 3 (2/4): re (corx punt), do (semi), si-re-sol'-re (4 semicorxeres)
+      [D5, 0.75], [C5, 0.25], [B4, 0.25], [D5, 0.25], [G5, 0.25], [D5, 0.25],
+      // Compàs 4 (3/4): si (corx punt), re (semi), do-si-do-mi (4 semi), re-mi-do-re (4 semi)
+      [B4, 0.75], [D5, 0.25], [C5, 0.25], [B4, 0.25], [C5, 0.25], [E5, 0.25], [D5, 0.25], [E5, 0.25], [C5, 0.25], [D5, 0.25],
+      // Compàs 5 (2/4): si (corx punt), re (semi), sol' (corx), sol' (semi), re (semi)
+      [B4, 0.75], [D5, 0.25], [G5, 0.5], [G5, 0.25], [D5, 0.25],
+      // Compàs 6 (3/4): si-do-si-do (4 semi), re (corx punt), si (semi), mi-re-mi-do (4 semi)
+      [B4, 0.25], [C5, 0.25], [B4, 0.25], [C5, 0.25], [D5, 0.75], [B4, 0.25], [E5, 0.25], [D5, 0.25], [E5, 0.25], [C5, 0.25],
+      // Compàs 7 (3/8): re (corx), si (corx), do (corx)
+      [D5, 0.5], [B4, 0.5], [C5, 0.5],
+      // Compàs 8 (2/4): re (negra), si-do-re-mi (4 semicorxeres)
+      [D5, 1.0], [B4, 0.25], [C5, 0.25], [D5, 0.25], [E5, 0.25],
+      // Compassos 9-10 (3/4): re___ (blanca amb punt lligada a negra = 3.5 beats!)
+      [D5, 3.0]
     ];
+    const MELODY_TOC_DE_CASTELLS = TOC_DE_CASTELLS_SCORE.map(n => n[0]);
 
     function sfxGrallaNote(freq, ms = 170) {
-      // Timbre brillant, afinat i reconeixible de gralla catalana (Sol Major)
+      // Timbre brillant, afinat i reconeixible de gralla catalana
       sfxTone(freq, ms, "triangle", 0.095);
       sfxTone(freq, Math.round(ms * 0.85), "sawtooth", 0.042);
       sfxTone(freq * 2, Math.round(ms * 0.6), "sine", 0.022);
@@ -1462,55 +1469,53 @@
 
     let _tocPreviewTimers = [];
     function playTocDeCastellsPreview() {
-      // Atura qualsevol previsualització anterior i reprodueix el Toc de Castells en Sol Major (FA#) amb el ritme real!
+      // Atura qualsevol previsualització anterior i reprodueix EXACTAMENT els compassos 1-10 del PDF a ♩=112!
       _tocPreviewTimers.forEach(id => clearTimeout(id));
       _tocPreviewTimers = [];
-      const preview = [
-        // Entrada: sol' sol' sol'
-        [G5, 130], [G5, 130], [G5, 320],
-        // Inici: re mi fa# mi re do re
-        [D5, 125], [E5, 125], [Fs5, 125], [E5, 125], [D5, 125], [C5, 125], [D5, 300],
-        // do si re sol' re si
-        [C5, 125], [B4, 125], [D5, 140], [G5, 250], [D5, 135], [B4, 260],
-        // re do si do mi re mi do re si
-        [D5, 125], [C5, 125], [B4, 125], [C5, 135], [E5, 150], [D5, 125], [E5, 125], [C5, 125], [D5, 125], [B4, 260],
-        // si re sol' sol' re si do si do
-        [B4, 125], [D5, 125], [G5, 220], [G5, 220], [D5, 125], [B4, 140], [C5, 125], [B4, 125], [C5, 280]
-      ];
       let delay = 0;
-      preview.forEach(([freq, dur]) => {
-        const id = setTimeout(() => sfxGrallaNote(freq, dur), delay);
+      TOC_DE_CASTELLS_SCORE.forEach(([freq, beats]) => {
+        const durMs = Math.max(95, Math.round(beats * TOC_BEAT_MS * 0.88));
+        const stepMs = Math.round(beats * TOC_BEAT_MS);
+        const id = setTimeout(() => sfxGrallaNote(freq, durMs), delay);
         _tocPreviewTimers.push(id);
-        delay += dur + 22;
+        delay += stepMs;
       });
     }
 
     function playTocDeCastellsPujada() {
-      // ALETA EXACTA de la partitura en Sol Major (FA# = Fs5) quan l'enxaneta fa l'aleta!
-      const notes = [
-        // re mi re mi re mi re · sol___ fa#______ mi_____
-        [D5, 100], [E5, 100], [D5, 100], [E5, 100], [D5, 100], [E5, 100], [D5, 115],
-        [G5, 300], [Fs5, 440], [E5, 350],
-        // re mi fa# sol fa# mi re mi fa# mi re · do si do re mi re
-        [D5, 95], [E5, 95], [Fs5, 95], [G5, 125], [Fs5, 95], [E5, 95], [D5, 95],
-        [E5, 95], [Fs5, 95], [E5, 95], [D5, 115],
-        [C5, 95], [B4, 95], [C5, 95], [D5, 95], [E5, 95], [D5, 280]
+      // ALETA EXACTA de la pàgina 2 del PDF (compassos 23-28, trino + crit sol' + baixada amb fa# accidental!)
+      const aletaScore = [
+        // Compàs 23 (trino accelerant re-mi):
+        [D5, 0.35], [E5, 0.35], [D5, 0.22], [E5, 0.22], [D5, 0.22], [E5, 0.22],
+        [D5, 0.16], [E5, 0.16], [D5, 0.16], [E5, 0.16], [D5, 0.16], [E5, 0.16], [D5, 0.2],
+        // Compàs 24-25 (crit agut de l'Aleta + baixada):
+        [G5, 1.4], [F5, 0.9], [E5, 0.8],
+        // Compàs 25-26: re-mi-fa-sol-fa-mi-re-mi-fa-mi-re
+        [D5, 0.25], [E5, 0.25], [F5, 0.25], [G5, 0.35], [F5, 0.25], [E5, 0.25], [D5, 0.25],
+        [E5, 0.25], [F5, 0.25], [E5, 0.25], [D5, 0.35],
+        // Compàs 27-28 (amb fa# accidental del compàs 28!):
+        [C5, 0.25], [B4, 0.25], [C5, 0.25], [D5, 0.25], [E5, 0.25], [Fs5, 0.25], [G5, 0.45],
+        [Fs5, 0.25], [E5, 0.25], [D5, 0.8]
       ];
       let delay = 0;
-      notes.forEach(([freq, dur]) => {
-        setTimeout(() => sfxGrallaNote(freq, dur), delay);
-        delay += dur + 20;
+      aletaScore.forEach(([freq, beats]) => {
+        const durMs = Math.max(85, Math.round(beats * TOC_BEAT_MS * 0.88));
+        setTimeout(() => sfxGrallaNote(freq, durMs), delay);
+        delay += Math.round(beats * TOC_BEAT_MS);
       });
     }
 
-    function playGameNote(gameMode) {
-      const idx = state.melodyCursor;
-      state.melodyCursor++;
+    function playGameNote(gameMode, customFreq, customBeats) {
+      const idx = Math.max(0, state.melodyCursor);
+      state.melodyCursor = idx + 1;
       const castellsSteps = ["L02.G4", "L02.G5", "L02.G6"];
       if (gameMode === "castells" && castellsSteps.includes(state.stepId)) {
-        // A tots els jocs castellers (Grallers, Pinya i Castell) sona el Toc de Castells nota a nota des de l'entrada!
-        const f = MELODY_TOC_DE_CASTELLS[idx % MELODY_TOC_DE_CASTELLS.length];
-        sfxGrallaNote(f, 170);
+        // A tots els jocs castellers (Grallers, Pinya i Castell) sona el Toc de Castells amb durada real!
+        const notePair = TOC_DE_CASTELLS_SCORE[idx % TOC_DE_CASTELLS_SCORE.length];
+        const f = customFreq || notePair[0];
+        const beats = customBeats || notePair[1];
+        const durMs = Math.max(115, Math.min(620, Math.round(beats * TOC_BEAT_MS * 0.85)));
+        sfxGrallaNote(f, durMs);
       } else if (gameMode === "patum") {
         const f = MELODY_PATUM_TIRABOL[state.melodyCursor % MELODY_PATUM_TIRABOL.length];
         sfxTone(f, 95, "square", 0.065);
@@ -2807,7 +2812,9 @@
       state.arcadeLives = 5;
       state.arcadeEnergy = 100;
       state.arcadeCompleted = 0;
-      state.melodyCursor = -1;
+      state.melodyCursor = 0;
+      state.grallerFeedback = "";
+      state.grallerFeedbackTimer = 0;
       state.arcadeTotal = arcDef.totalTargets || 10;
       state.climbFromStep = 0;
       state.climbJumpProgress = 1;
@@ -3065,6 +3072,29 @@
               window.speechSynthesis.speak(utt);
             } catch {}
           }
+        } else if (arcDef.subMode === "berga_grallers") {
+          // J4 GUITAR HERO DEL TOC DE CASTELLS: genera totes les 44 notes amb l'espaiat rítmic REAL del PDF!
+          const pxPerBeat = 155;
+          let cumBeats = 0;
+          state.arcadeEntities = TOC_DE_CASTELLS_SCORE.map(([freq, beats], idx) => {
+            // Mà dreta (K per notes agudes >= E5, J per notes greus <= D5 — intuïtiu i musical!)
+            const letter = freq >= E5 ? "k" : "j";
+            const entX = 460 + Math.round(cumBeats * pxPerBeat);
+            const entY = TOC_STAFF_Y[freq] || 93;
+            cumBeats += beats;
+            return {
+              id: Date.now() + idx,
+              word: letter,
+              typedIndex: 0,
+              subMode: "berga_grallers",
+              noteFreq: freq,
+              noteBeats: beats,
+              x: entX,
+              y: entY,
+              speed: 1.55 * getSpeedMultiplier(),
+              progress: 0
+            };
+          });
         } else {
           const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
           state._lastArcadeWord = rawW;
@@ -3076,9 +3106,9 @@
             word: w,
             typedIndex: 0,
             subMode: arcDef.subMode,
-            x: arcDef.subMode === "bergueda_balloon" ? 760 : arcDef.subMode === "berga_grallers" ? 780 : 420,
+            x: arcDef.subMode === "bergueda_balloon" ? 760 : 420,
             y: arcDef.subMode === "bergueda_balloon" ? (55 + (state.arcadeCompleted % 3) * 32) : 95,
-            speed: arcDef.subMode === "bergueda_balloon" ? (0.58 * getSpeedMultiplier()) : arcDef.subMode === "berga_grallers" ? (0.52 * getSpeedMultiplier()) : 0,
+            speed: arcDef.subMode === "bergueda_balloon" ? (0.58 * getSpeedMultiplier()) : 0,
             progress: 0
           }];
         }
@@ -3930,7 +3960,7 @@
       }
 
       if (arcDef.subMode === "berga_grallers") {
-        // J2: ELS GRALLERS DE BERGA (Notes musicals sobre pentagrama a la plaça!)
+        // J4: ELS GRALLERS DE BERGA — MODE GUITAR HERO DEL TOC DE CASTELLS (44 notes amb el ritme real del PDF!)
         const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
         bg.addColorStop(0, "#1e1b4b");
         bg.addColorStop(1, "#312e81");
@@ -3944,46 +3974,104 @@
           ctx.beginPath();
           ctx.moveTo(i * 52, 0);
           ctx.lineTo(i * 52 + 48, 0);
-          ctx.lineTo(i * 52 + 24, 24);
+          ctx.lineTo(i * 52 + 24, 22);
           ctx.fill();
         }
 
-        // Pentagrama musical
-        ctx.strokeStyle = "rgba(255,255,255,0.28)";
+        // Pentagrama musical (5 línies a y = 75, 93, 111, 129, 147)
+        ctx.strokeStyle = "rgba(255,255,255,0.32)";
         ctx.lineWidth = 2;
         for (let l = 0; l < 5; l++) {
           const ly = 75 + l * 18;
-          ctx.beginPath(); ctx.moveTo(40, ly); ctx.lineTo(840, ly); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(40, ly); ctx.lineTo(845, ly); ctx.stroke();
         }
 
-        // Zona de la gralla a l'esquerra
-        ctx.fillStyle = "rgba(250, 204, 21, 0.25)";
-        ctx.beginPath(); ctx.arc(130, 112, 34, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "#facc15"; ctx.lineWidth = 3; ctx.stroke();
-        ctx.font = "34px sans-serif";
-        ctx.fillText("🎺", 112, 124);
-        drawSprite(ctx, SPRITES.bitRobot, 44, 152, 3.2);
+        // Línia daurada de compàs (Zona Guitar Hero a x = 148)
+        const hitX = 148;
+        ctx.fillStyle = "rgba(250, 204, 21, 0.16)";
+        ctx.fillRect(hitX - 24, 48, 48, 122);
+        ctx.strokeStyle = "#facc15";
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(hitX, 48); ctx.lineTo(hitX, 170); ctx.stroke();
 
-        if (state.arcadeRunning && ent) {
-          ent.x -= ent.speed;
-          if (ent.x <= 155) {
-            penalizeMistakeOrTimeout(100, true);
-            ent.x = 780;
-            ent.typedIndex = 0;
-            updateArcadeHud(lvl);
+        // Gralla i en Bit a l'esquerra
+        ctx.font = "32px sans-serif";
+        ctx.fillText("🎺", 82, 116);
+        drawSprite(ctx, SPRITES.bitRobot, 26, 148, 3.0);
+
+        // Moviment suau sincronitzat de tota la cinta de notes (si la primera arriba a hitX, espera suaument!)
+        const head = state.arcadeEntities[0];
+        if (state.arcadeRunning && head) {
+          const moveDx = head.x > hitX ? Math.min(head.speed, head.x - hitX) : 0;
+          if (moveDx > 0) {
+            for (let i = 0; i < state.arcadeEntities.length; i++) {
+              state.arcadeEntities[i].x -= moveDx;
+            }
           }
         }
-        if (ent) {
-          ctx.font = "34px sans-serif";
-          ctx.fillText("🎵", ent.x, 120);
-          drawWordBox(ctx, ent.word, ent.typedIndex, ent.x - 16, 56, true);
+
+        // Dibuixa totes les notes visibles dins del pentagrama
+        for (let i = state.arcadeEntities.length - 1; i >= 0; i--) {
+          const n = state.arcadeEntities[i];
+          if (n.x < 90 || n.x > 870) continue;
+          const isCurrent = (i === 0);
+          const isK = n.word === "k";
+          const noteColor = isK ? "#38bdf8" : "#facc15";
+          const radius = isCurrent ? 18 : 14;
+
+          // Cua de durada per a notes llargues (>= 0.75 beats)
+          if (n.noteBeats >= 0.75) {
+            const tailLen = Math.min(220, Math.round(n.noteBeats * 120));
+            ctx.fillStyle = isK ? "rgba(56,189,248,0.35)" : "rgba(250,204,21,0.35)";
+            ctx.fillRect(n.x, n.y - 7, tailLen, 14);
+          }
+
+          // Plica musical
+          ctx.strokeStyle = isCurrent ? "#ffffff" : "rgba(255,255,255,0.65)";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(n.x + radius - 2, n.y);
+          ctx.lineTo(n.x + radius - 2, n.y - 32);
+          ctx.stroke();
+
+          // Halo polsant si és la nota activa esperant a la línia daurada
+          if (isCurrent) {
+            ctx.fillStyle = n.x <= hitX + 35 ? "rgba(74, 222, 128, 0.35)" : "rgba(250, 204, 21, 0.28)";
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, radius + 9 + Math.sin(Date.now() / 120) * 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Bola de la nota amb la lletra (K o J) ben clara
+          ctx.fillStyle = noteColor;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = isCurrent ? "#ffffff" : "#0f172a";
+          ctx.lineWidth = isCurrent ? 3 : 2;
+          ctx.stroke();
+
+          ctx.fillStyle = "#0f172a";
+          ctx.font = isCurrent ? "900 17px sans-serif" : "800 13px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(n.word.toUpperCase(), n.x, n.y + 1);
+          ctx.textAlign = "left";
+          ctx.textBaseline = "alphabetic";
         }
 
-        ctx.fillStyle = "rgba(15,23,42,0.75)";
-        ctx.fillRect(14, 216, 300, 24);
+        if (state.grallerFeedbackTimer > 0) {
+          state.grallerFeedbackTimer--;
+          ctx.fillStyle = "#4ade80";
+          ctx.font = "900 15px sans-serif";
+          ctx.fillText(state.grallerFeedback || "✨ PERFECTE!", hitX - 36, 42);
+        }
+
+        ctx.fillStyle = "rgba(15,23,42,0.82)";
+        ctx.fillRect(14, 214, 420, 26);
         ctx.fillStyle = "#fde047";
         ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🎺 Toc de Castells a Berga: ${state.arcadeCompleted} / ${state.arcadeTotal} melodies`, 22, 232);
+        ctx.fillText(`🎺 Toc de Castells (Guitar Hero · K agut / J greu): ${state.arcadeCompleted} / ${state.arcadeTotal} notes`, 22, 231);
         return;
       }
 
@@ -4471,7 +4559,11 @@
       if (typedChar === expected) {
         state.arcadeKeyErrors[expected].hits++;
         ent.typedIndex++;
-        playGameNote(lvl.gameMode);
+        playGameNote(lvl.gameMode, ent.noteFreq, ent.noteBeats);
+        if (ent.subMode === "berga_grallers") {
+          state.grallerFeedback = Math.abs(ent.x - 148) <= 45 ? "✨ PERFECTE!" : "🎵 BÉ!";
+          state.grallerFeedbackTimer = 28;
+        }
 
         if (lvl.gameMode === "castells") {
           if (lvl.leftKeys.includes(typedChar)) state.leftClimberStep++;
@@ -4479,7 +4571,9 @@
         }
 
         if (ent.typedIndex >= ent.word.length) {
-          sfxActionSuccess();
+          // A J4/J5/J6 silenciëm el 'ding-dong' perquè només soni la melodia neta del Toc de Castells!
+          const isCastellsMusicStep = (lvl.gameMode === "castells" && ["L02.G4", "L02.G5", "L02.G6"].includes(state.stepId));
+          if (!isCastellsMusicStep) sfxActionSuccess();
           spawnParticles(ent.x || 120, ent.y || 120, "#fde047");
           state.arcadeAngle += 0.8;
           state.arcadeJumpTimer = 18;
