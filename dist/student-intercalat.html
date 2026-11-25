@@ -935,7 +935,7 @@
           { id: "L03.G4", label: "J4: 🏮 Bosc del Catllaràs · Ulls Vermells (Mà Dreta J, K, L)", subMode: "gaudi_lantern", totalTargets: 24, isExtra: false },
           { id: "L03.G5", label: "J5: 🏡 L'Arc Parabòlic del Xalet del Catllaràs (Alternança 6 Dits)", subMode: "gaudi_xalet", totalTargets: 24, isExtra: false },
           { id: "L03.G6", label: "J6: 🦅 Vol d'Àliga des del Catllaràs al Pedraforca (6 Dits)", subMode: "gaudi_stars", totalTargets: 24, isExtra: false },
-          { id: "L03.EXTRA", label: "⭐ EXTRA: 🚴 Parc de Trucs al Catllaràs · 6 Controls (S,D,F,J,K,L!)", subMode: "gaudi_blueprint", totalTargets: 16, isExtra: true }
+          { id: "L03.EXTRA", label: "⭐ EXTRA: 🌊🌈 La Font Màgica de Colors d'en Gaudí (6 Dits!)", subMode: "gaudi_blueprint", totalTargets: 16, isExtra: true }
         ]
       },
       {
@@ -2152,7 +2152,7 @@
         } else if (state.stepId === "L03.G6") {
           cap.textContent = "🌌 Nit d'estels al Mirador del Catllaràs! Caça els estels fugaços amb els 6 dits!";
         } else if (state.stepId === "L03.EXTRA") {
-          cap.textContent = "📐 Els Plànols Simètrics d'en Gaudí! Dedueix i escriu el mirall exacte de cada arc!";
+          cap.textContent = "🌊🌈 La Font Màgica de Colors d'en Gaudí! Barreja colors (S, D, F) i tria la forma (J, K, L)!";
         } else {
           cap.textContent = "🚂 En Bit puja al Tren del Ciment cap als Jardins Artigas i el Xalet del Catllaràs! Practica S i L!";
         }
@@ -2373,6 +2373,24 @@
           const bx = 90 + (t * 2) % 360, by = 126 - (bx / 600) * 44 - Math.abs(Math.sin(t * 0.12)) * 28;
           ctx.font = "30px sans-serif"; ctx.fillText("🚴", bx, by);
           ctx.fillStyle = "#d6d3d1"; ctx.beginPath(); ctx.moveTo(490, 108); ctx.quadraticCurveTo(530, 14, 570, 108); ctx.fill();
+        } else if (state.stepId === "L03.G6") {
+          // Mini-animació real N3 J6: Vol d'Àliga / Ala Delta des del Catllaràs cap al Pedraforca!
+          ctx.fillStyle = "#7dd3fc"; ctx.fillRect(0, 0, 600, 165);
+          drawPedraforcaSilhouette(ctx, 380, 165, 220, 95, true);
+          const gx = 70 + (t * 1.8) % 380, gy = 62 + Math.sin(t * 0.1) * 14;
+          ctx.fillStyle = "#ef4444"; ctx.beginPath(); ctx.moveTo(gx - 22, gy - 8); ctx.lineTo(gx + 26, gy); ctx.lineTo(gx - 14, gy + 8); ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = "#facc15"; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(460, 65, 10, 24, 0, 0, Math.PI * 2); ctx.stroke();
+        } else if (state.stepId === "L03.EXTRA") {
+          // Mini-animació real N3 EXTRA: Font Màgica de Colors d'en Gaudí als Jardins Artigas!
+          ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, 600, 165);
+          ctx.fillStyle = "#0369a1"; ctx.fillRect(0, 130, 600, 35);
+          ctx.fillStyle = "#a8a29e"; ctx.fillRect(255, 105, 90, 28);
+          const fCols = ["#ef4444", "#facc15", "#38bdf8", "#22c55e", "#f97316", "#a855f7"];
+          const curC = fCols[Math.floor(t / 28) % fCols.length];
+          ctx.strokeStyle = curC; ctx.lineWidth = 8; ctx.lineCap = "round";
+          ctx.beginPath(); ctx.moveTo(300, 105); ctx.quadraticCurveTo(250, 25 - Math.sin(t * 0.15) * 12, 200, 128); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(300, 105); ctx.quadraticCurveTo(350, 25 - Math.sin(t * 0.15) * 12, 400, 128); ctx.stroke();
+          ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif"; ctx.fillText("🌊🌈 Font Màgica de Colors d'en Gaudí!", 185, 22);
         } else {
           // Nivell 2 (J6 / P) o fallback: Castells a la Plaça de Berga!
           ctx.fillStyle = "#172554";
@@ -3133,7 +3151,7 @@
           gaudi_lantern: "🏮 Puja pel bosc del Catllaràs (J, K, L)! Mantén encesa la llum del fanalet o els animals d'ulls vermells se t'acostaran!",
           gaudi_xalet: "🚴 Puja en bici cap al Xalet del Catllaràs! Si fas una paraula sense fallos faràs un truc (salt, frontflip, backflip)! Si et quedes sense energia punxes roda!",
           gaudi_stars: "🌌 Caça els estels fugaços des del Mirador del Catllaràs combinant els 6 dits!",
-          gaudi_blueprint: "📐 Dedueix el mirall simètric dels plànols d'en Gaudí!"
+          gaudi_blueprint: "🌊🌈 Font Màgica d'en Gaudí! Barreja colors (S Vermell, D Groc, F Blau) i tria la forma (J Baix, K Alt, L Arc)!"
         };
         instrMsg = INSTR_MAP[sub] || (arc ? arc.label : instrMsg);
       }
@@ -3648,42 +3666,46 @@
           }];
         }
       } else if (lvl.gameMode === "gaudi") {
-        // NIVELL 3: EL TREN DEL CIMENT I L'UNIVERS GAUDÍ AL BERGUEDÀ (6 jocs amb emoció + Extra Parc de Trucs 6 Controls!)
+        // NIVELL 3 EXTRA (OPCIÓ A VALIDADA): 🌊🌈 LA FONT MÀGICA DE COLORS D'EN GAUDÍ (Jardins Artigas · 6 Controls Visuals!)
         if (arcDef.subMode === "gaudi_blueprint") {
-          const OBSTACLES = [
-            { icon: "🌿", title: "Branca baixa! Ajup-te!", req: ["s"], trick: "⬇️ AJUPIT!" },
-            { icon: "🪨", title: "Roca al camí! Salta!", req: ["d"], trick: "⬆️ SALT!" },
-            { icon: "⛰️", title: "Pujada forta! Turbo!", req: ["f"], trick: "🚀 TURBO!" },
-            { icon: "🕳️", title: "Barranc ample! Super-Salt (Salta + Turbo)!", req: ["d", "f"], trick: "⚡ SUPER-SALT!" },
-            { icon: "📐", title: "Rampa Backflip! (Salta + Enrere)!", req: ["d", "j"], trick: "🔁 BACKFLIP!" },
-            { icon: "📐", title: "Rampa Frontflip! (Salta + Endavant)!", req: ["d", "k"], trick: "🔄 FRONTFLIP!" },
-            { icon: "🌀", title: "Anell d'aire! Turbo-Espiral (Turbo + Girar)!", req: ["f", "l"], trick: "🌀 TURBO-ESPIRAL!" },
-            { icon: "🌿", title: "Dues branques! Ajup-te ràpid!", req: ["s"], trick: "⬇️ AJUPIT!" },
-            { icon: "🪨", title: "Pedra grossa! Salta!", req: ["d"], trick: "⬆️ SALT!" },
-            { icon: "🕳️", title: "Riuet al sender! Super-Salt (Salta + Turbo)!", req: ["d", "f"], trick: "⚡ SUPER-SALT!" },
-            { icon: "📐", title: "Mega Rampa! Backflip (Salta + Enrere)!", req: ["d", "j"], trick: "🔁 MEGA BACKFLIP!" },
-            { icon: "📐", title: "Salt del Xalet! Frontflip (Salta + Endavant)!", req: ["d", "k"], trick: "🔄 MEGA FRONTFLIP!" },
-            { icon: "🌀", title: "Corrent d'aire! Turbo-Espiral (Turbo + Girar)!", req: ["f", "l"], trick: "🌀 ESPIRAL PRO!" },
-            { icon: "⛰️", title: "Última pujada! Turbo!", req: ["f"], trick: "🚀 TURBO MÀXIM!" },
-            { icon: "📐", title: "Rampa final! Backflip (Salta + Enrere)!", req: ["d", "j"], trick: "🏆 BACKFLIP FINAL!" },
-            { icon: "🏁", title: "Meta del Catllaràs! Turbo-Espiral (Turbo + Girar)!", req: ["f", "l"], trick: "🎉 ARRIBADA ÈPICA!" }
+          const FOUNTAINS = [
+            { colorName: "VERMELL", hex: "#ef4444", shape: "baix", shapeLabel: "💧 BAIX", req: ["s", "j"] },
+            { colorName: "GROC",    hex: "#facc15", shape: "alt",  shapeLabel: "⛲ ALT",  req: ["d", "k"] },
+            { colorName: "BLAU",    hex: "#38bdf8", shape: "arc",  shapeLabel: "🌈 ARC",  req: ["f", "l"] },
+            { colorName: "VERMELL", hex: "#ef4444", shape: "alt",  shapeLabel: "⛲ ALT",  req: ["s", "k"] },
+            { colorName: "BLAU",    hex: "#38bdf8", shape: "baix", shapeLabel: "💧 BAIX", req: ["f", "j"] },
+            { colorName: "GROC",    hex: "#facc15", shape: "arc",  shapeLabel: "🌈 ARC",  req: ["d", "l"] },
+            { colorName: "TARONJA", hex: "#f97316", shape: "baix", shapeLabel: "💧 BAIX", req: ["s", "d", "j"] },
+            { colorName: "VERD",    hex: "#22c55e", shape: "alt",  shapeLabel: "⛲ ALT",  req: ["d", "f", "k"] },
+            { colorName: "LILA",    hex: "#a855f7", shape: "arc",  shapeLabel: "🌈 ARC",  req: ["s", "f", "l"] },
+            { colorName: "TARONJA", hex: "#f97316", shape: "alt",  shapeLabel: "⛲ ALT",  req: ["s", "d", "k"] },
+            { colorName: "VERD",    hex: "#22c55e", shape: "arc",  shapeLabel: "🌈 ARC",  req: ["d", "f", "l"] },
+            { colorName: "LILA",    hex: "#a855f7", shape: "baix", shapeLabel: "💧 BAIX", req: ["s", "f", "j"] },
+            { colorName: "TARONJA", hex: "#f97316", shape: "arc",  shapeLabel: "🌈 ARC",  req: ["s", "d", "l"] },
+            { colorName: "VERD",    hex: "#22c55e", shape: "baix", shapeLabel: "💧 BAIX", req: ["d", "f", "j"] },
+            { colorName: "LILA",    hex: "#a855f7", shape: "alt",  shapeLabel: "⛲ ALT",  req: ["s", "f", "k"] },
+            { colorName: "VERD",    hex: "#22c55e", shape: "arc",  shapeLabel: "🌈 ARC",  req: ["d", "f", "l"] }
           ];
-          const ob = OBSTACLES[state.arcadeCompleted % OBSTACLES.length];
+          const f = FOUNTAINS[state.arcadeCompleted % FOUNTAINS.length];
           state.parkComboBuffer = {};
           state.arcadeEntities = [{
             id: Date.now(),
-            word: ob.req.join(""),
-            reqKeys: ob.req,
+            word: f.req.join(""),
+            reqKeys: f.req,
             typedIndex: 0,
             isParkTrick: true,
             isLogicCode: true,
-            obsIcon: ob.icon,
-            obsTitle: ob.title,
-            obsTrick: ob.trick,
+            fountainColorName: f.colorName,
+            fountainHex: f.hex,
+            fountainShape: f.shape,
+            fountainShapeLabel: f.shapeLabel,
+            obsIcon: "⛲",
+            obsTitle: `${f.colorName} + ${f.shapeLabel}`,
+            obsTrick: `✨ ${f.colorName} ${f.shapeLabel}!`,
             subMode: "gaudi_blueprint",
-            x: 780,
-            y: 168,
-            speed: 1.55 * getSpeedMultiplier()
+            x: 440,
+            y: 120,
+            speed: 0
           }];
         } else {
           const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
@@ -5751,56 +5773,105 @@
         return;
       }
 
-      // EXTRA (OPCIÓ 2 VALIDADA): 🚴🏔️ PARC DE TRUCS AL CATLLARÀS · 6 CONTROLS COMBINABLES (S, D, F, J, K, L)!
-      if (state.arcadeRunning && ent) {
-        ent.x -= ent.speed;
-        if (ent.x <= 155) {
-          // Obstacle superat amb ensurt (perd 1 Barretina i passa al següent per continuar practicant!)
-          penalizeMistakeOrTimeout(100, true);
-          state.cleanStreak = 0;
-          state.arcadeEntities.shift();
-          state.arcadeCompleted++;
-          if (state.arcadeCompleted >= state.arcadeTotal) {
-            state.arcadeRunning = false;
-            setTimeout(() => endArcadeGame(true), 350);
-          } else {
-            spawnEntitiesForCurrentMode(lvl);
-          }
-        }
-      }
-      const psky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      psky.addColorStop(0, "#0f172a"); psky.addColorStop(0.6, "#1e3a8a"); psky.addColorStop(1, "#14532d");
-      ctx.fillStyle = psky; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawXaletCatllaras(ctx, 770, 198, 1.0, true, 0);
-      ctx.fillStyle = "#78350f"; ctx.fillRect(0, 196, canvas.width, 28);
-      // En Bit en bici a l'esquerra fent la maniobra!
-      const pJump = state.parkActionTimer > 0 ? Math.sin((state.parkActionTimer / 34) * Math.PI) * 52 : 0;
-      const pDuck = state.parkActionText && state.parkActionText.includes("AJUPIT") && state.parkActionTimer > 0 ? 14 : 0;
-      if (state.parkActionTimer > 0) state.parkActionTimer--;
-      ctx.font = "34px sans-serif";
-      ctx.fillText("🚴", 132, 192 - pJump + pDuck);
+      // EXTRA (OPCIÓ A VALIDADA): 🌊🌈 LA FONT MÀGICA DE COLORS D'EN GAUDÍ (100% visual, zero text petit!)
+      const fbg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      fbg.addColorStop(0, "#0f172a"); fbg.addColorStop(0.68, "#1e293b"); fbg.addColorStop(1, "#0369a1");
+      ctx.fillStyle = fbg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Estany blau i base de pedra de la Font dels Jardins Artigas al centre
+      ctx.fillStyle = "#0284c7"; ctx.fillRect(250, 198, 380, 52);
+      ctx.fillStyle = "#a8a29e"; ctx.strokeStyle = "#44403c"; ctx.lineWidth = 3;
+      ctx.fillRect(380, 166, 120, 36); ctx.strokeRect(380, 166, 120, 36);
+      ctx.fillStyle = "#d6d3d1"; ctx.fillRect(410, 146, 60, 22); ctx.strokeRect(410, 146, 60, 22);
+
+      // Animació del raig d'aigua màgic quan encertes la combinació!
       if (state.parkActionTimer > 0) {
-        ctx.fillStyle = "#4ade80"; ctx.font = "900 17px sans-serif";
-        ctx.fillText(state.parkActionText, 110, 134 - pJump);
+        state.parkActionTimer--;
+        const jetCol = state.fountainLastHex || "#38bdf8";
+        const jetShape = state.fountainLastShape || "alt";
+        ctx.strokeStyle = jetCol; ctx.lineCap = "round";
+        if (jetShape === "baix") {
+          ctx.lineWidth = 10;
+          ctx.beginPath(); ctx.moveTo(440, 146); ctx.quadraticCurveTo(385, 108, 345, 200); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(440, 146); ctx.quadraticCurveTo(495, 108, 535, 200); ctx.stroke();
+        } else if (jetShape === "alt") {
+          ctx.lineWidth = 12;
+          ctx.beginPath(); ctx.moveTo(440, 146); ctx.quadraticCurveTo(395, 32, 355, 200); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(440, 146); ctx.quadraticCurveTo(485, 32, 525, 200); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(440, 146); ctx.lineTo(440, 46); ctx.stroke();
+        } else {
+          ctx.lineWidth = 10;
+          ctx.beginPath(); ctx.arc(440, 178, 120, Math.PI, 0); ctx.stroke();
+          ctx.strokeStyle = "#fde047"; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.arc(440, 178, 108, Math.PI, 0); ctx.stroke();
+        }
+        ctx.fillStyle = "#4ade80"; ctx.font = "900 16px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(state.parkActionText || "✨ GENIAL!", 440, 234);
+        ctx.textAlign = "left";
       }
-      // Obstacle apropant-se des de la dreta amb la pista d'acció (sense regalar les lletres — has de pensar el control!)
+
+      // Targeta visual GEGANT al centre superior amb el Color + Forma que demana en Gaudí!
       if (ent) {
-        ctx.font = "36px sans-serif";
-        ctx.fillText(ent.obsIcon || "🪨", ent.x, 192);
-        ctx.fillStyle = "rgba(15,23,42,0.88)";
-        ctx.fillRect(Math.max(220, Math.min(540, ent.x - 110)), 62, 310, 44);
-        ctx.strokeStyle = "#fde047"; ctx.lineWidth = 2;
-        ctx.strokeRect(Math.max(220, Math.min(540, ent.x - 110)), 62, 310, 44);
-        ctx.fillStyle = "#fde047"; ctx.font = "900 13px sans-serif";
-        ctx.fillText(ent.obsTitle || "", Math.max(230, Math.min(550, ent.x - 100)), 89);
+        ctx.fillStyle = "rgba(15,23,42,0.92)";
+        ctx.fillRect(300, 12, 280, 68);
+        ctx.strokeStyle = ent.fountainHex || "#fde047"; ctx.lineWidth = 4;
+        ctx.strokeRect(300, 12, 280, 68);
+        // Cercle gegant del color demanat
+        ctx.fillStyle = ent.fountainHex || "#fde047";
+        ctx.beginPath(); ctx.arc(342, 46, 22, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2.5; ctx.stroke();
+        // Nom del color i forma en gran!
+        ctx.fillStyle = "#ffffff"; ctx.font = "900 18px sans-serif";
+        ctx.fillText(ent.fountainColorName || "", 378, 40);
+        ctx.fillStyle = "#fde047"; ctx.font = "900 17px sans-serif";
+        ctx.fillText(ent.fountainShapeLabel || "", 378, 66);
       }
-      // Barra llegenda dels 6 CONTROLS COMBINABLES a baix!
-      ctx.fillStyle = "rgba(15,23,42,0.92)"; ctx.fillRect(0, 224, canvas.width, 26);
-      ctx.fillStyle = "#38bdf8"; ctx.font = "bold 11px sans-serif";
-      ctx.fillText("S: Ajupir  ·  D: Saltar  ·  F: Turbo   |   J: Enrere  ·  K: Endavant  ·  L: Girar   (Combina'ls alhora!)", 18, 241);
-      ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 440, 26);
-      ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-      ctx.fillText(`🚴 Parc de Trucs (${state.arcadeCompleted}/${total}) · ${state.parkScore || 0} pts ${state.cleanStreak >= 2 ? `· 🔥 x${state.cleanStreak}` : ""}`, 22, 27);
+
+      // 3 BOTONS GEGANTS DE COLORS A L'ESQUERRA (S = Vermell, D = Groc, F = Blau)
+      const buf = state.parkComboBuffer || {};
+      const LEFT_JARS = [
+        { k: "s", label: "S", name: "Vermell", hex: "#ef4444", y: 54 },
+        { k: "d", label: "D", name: "Groc",    hex: "#facc15", y: 120 },
+        { k: "f", label: "F", name: "Blau",    hex: "#38bdf8", y: 186 }
+      ];
+      LEFT_JARS.forEach(j => {
+        const active = Boolean(buf[j.k]);
+        ctx.fillStyle = active ? j.hex : "rgba(15,23,42,0.85)";
+        ctx.fillRect(18, j.y - 24, 195, 50);
+        ctx.strokeStyle = j.hex; ctx.lineWidth = active ? 4 : 2.5;
+        ctx.strokeRect(18, j.y - 24, 195, 50);
+        ctx.fillStyle = j.hex;
+        ctx.beginPath(); ctx.arc(46, j.y + 1, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#0f172a"; ctx.font = "900 17px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(j.label, 46, j.y + 7); ctx.textAlign = "left";
+        ctx.fillStyle = active ? "#0f172a" : "#ffffff"; ctx.font = "900 16px sans-serif";
+        ctx.fillText(j.name, 74, j.y + 7);
+      });
+
+      // 3 BOTONS GEGANTS DE FORMES A LA DRETA (J = Baix, K = Alt, L = Arc)
+      const RIGHT_SHAPES = [
+        { k: "j", label: "J", name: "💧 Baix", y: 54 },
+        { k: "k", label: "K", name: "⛲ Alt",  y: 120 },
+        { k: "l", label: "L", name: "🌈 Arc",  y: 186 }
+      ];
+      RIGHT_SHAPES.forEach(s => {
+        const active = Boolean(buf[s.k]);
+        ctx.fillStyle = active ? "#fde047" : "rgba(15,23,42,0.85)";
+        ctx.fillRect(667, s.y - 24, 195, 50);
+        ctx.strokeStyle = "#fde047"; ctx.lineWidth = active ? 4 : 2.5;
+        ctx.strokeRect(667, s.y - 24, 195, 50);
+        ctx.fillStyle = "#fde047";
+        ctx.beginPath(); ctx.arc(695, s.y + 1, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#0f172a"; ctx.font = "900 17px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(s.label, 695, s.y + 7); ctx.textAlign = "left";
+        ctx.fillStyle = active ? "#0f172a" : "#ffffff"; ctx.font = "900 16px sans-serif";
+        ctx.fillText(s.name, 723, s.y + 7);
+      });
+
+      ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(280, 218, 320, 24);
+      ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(`🌊 Font Màgica (${state.arcadeCompleted}/${total}) · ${state.parkScore || 0} pts`, 440, 234);
+      ctx.textAlign = "left";
     }
 
     function tickAndDrawSardana(ctx, canvas, lvl, shakeX) {
@@ -5986,9 +6057,11 @@
             const mult = Math.min(4, 1 + Math.floor(state.cleanStreak / 2));
             state.parkScore = (state.parkScore || 0) + 100 * mult;
             state.parkActionText = `${ent.obsTrick} +${100 * mult}`;
-            state.parkActionTimer = 34;
+            state.fountainLastHex = ent.fountainHex || "#38bdf8";
+            state.fountainLastShape = ent.fountainShape || "alt";
+            state.parkActionTimer = 46;
             sfxActionSuccess();
-            spawnParticles(160, 160, "#fde047");
+            spawnParticles(440, 120, ent.fountainHex || "#fde047");
             state.arcadeEntities.shift();
             state.arcadeCompleted++;
             if (state.arcadeCompleted >= state.arcadeTotal) {
@@ -6886,6 +6959,34 @@
       const steps = getOrderedSteps(lvl);
       const idx = steps.findIndex(s => s.id === state.stepId);
       if (lvl.isInterleaved) {
+        // Si acaba d'aconseguir la CLAU (🔑 PROVERB), animació èpica: la clau surt de la pantalla, minimitza el mapa i obre el següent nivell!
+        const nextLvl = LEVELS.find(l => l.order === lvl.order + 1 && !l.isPostPilot);
+        if (state.stepId.endsWith(".PROVERB") && nextLvl) {
+          showScreen("phases");
+          const board = document.querySelector("#phases-cards .flat-map-board");
+          const overlay = document.createElement("div");
+          overlay.style.cssText = "position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;pointer-events:none;";
+          overlay.innerHTML = `<div id="flying-key-anim" style="font-size:4.5rem;transition:all 0.85s cubic-bezier(.2,1.2,.4,1);transform:scale(0.6);filter:drop-shadow(0 0 24px #fde047);">🔑</div><div style="margin-top:0.6rem;background:#0f172a;color:#fde047;border:3px solid #fde047;border-radius:999px;padding:0.4rem 1.2rem;font-weight:900;font-size:1.15rem;">🔓 NIVELL ${nextLvl.order} DESBLOQUEJAT!</div>`;
+          document.body.appendChild(overlay);
+          sfxFanfare();
+          requestAnimationFrame(() => {
+            const kEl = document.getElementById("flying-key-anim");
+            if (kEl) { kEl.style.transform = "scale(3.4) rotate(22deg)"; kEl.style.opacity = "0"; }
+          });
+          setTimeout(() => {
+            if (board) {
+              board.style.transition = "transform 0.65s ease-in, opacity 0.65s ease-in";
+              board.style.transform = "scale(0.08)";
+              board.style.opacity = "0";
+            }
+          }, 550);
+          setTimeout(() => {
+            overlay.remove();
+            state.levelId = nextLvl.id;
+            showScreen("phases");
+          }, 1280);
+          return;
+        }
         // Tornem al mapa 2D: 1r apareixen les Barretines, 2n s'obre el candau de la següent missió perquè l'alumne hi faci clic!
         state.justCompletedStepId = state.stepId;
         state.justUnlockedStepId = (idx >= 0 && idx < steps.length - 1) ? steps[idx + 1].id : null;
