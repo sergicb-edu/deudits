@@ -723,12 +723,13 @@
           <strong id="arcade-title" style="color:#fde047;">🕹️ JOC</strong>
           <span id="arcade-act-badge" style="background:#312e81;padding:2px 8px;border-radius:99px;font-size:0.8rem;">Acte 1/3</span>
           <span id="arcade-progress">0 / 9</span>
-          <div class="energy-meter" title="Cada tecla errònia resta 25% d'energia!">
+          <div id="arcade-energy-wrap" class="energy-meter" title="Cada tecla errònia resta energia!">
             <span>⚡ Energia:</span>
             <div class="energy-bar-bg">
               <div class="energy-bar-fill" id="arcade-energy-fill" style="width:100%;"></div>
             </div>
           </div>
+          <div id="arcade-score-wrap" style="display:none;background:#312e81;border:2px solid #fde047;color:#fde047;border-radius:999px;padding:0.15rem 0.75rem;font-weight:900;font-size:0.88rem;">🏆 Punts: 0</div>
           <div id="arcade-lives" style="display:flex;align-items:center;gap:3px;"></div>
         </div>
 
@@ -3289,10 +3290,13 @@
       state.parkActionTimer = 0;
       if (!state.ghTargetPpm || ![2, 4, 8].includes(state.ghTargetPpm)) state.ghTargetPpm = 2;
 
-      // A Guitar Hero PRO no cal barra d'energia, només puntuació i ratxa!
-      const energyBarWrap = document.getElementById("arcade-energy-fill") && document.getElementById("arcade-energy-fill").parentElement;
-      if (energyBarWrap) {
-        energyBarWrap.style.display = arcDef.subMode === "berga_guitar_hero_pro" ? "none" : "";
+      // A Guitar Hero PRO no cal barra d'energia, sinó marcador gran de Punts + Ratxa!
+      const energyWrap = document.getElementById("arcade-energy-wrap");
+      const scoreWrap = document.getElementById("arcade-score-wrap");
+      if (energyWrap) energyWrap.style.display = arcDef.subMode === "berga_guitar_hero_pro" ? "none" : "flex";
+      if (scoreWrap) {
+        scoreWrap.style.display = arcDef.subMode === "berga_guitar_hero_pro" ? "inline-flex" : "none";
+        scoreWrap.textContent = "🏆 Punts: 0 · 🔥 x0";
       }
 
       // Selector de 3 velocitats (8, 15, 25 PPM) només a Guitar Hero PRO!
@@ -3740,6 +3744,10 @@
       document.getElementById("arcade-act-badge").textContent = `Tram ${act}/3`;
       document.getElementById("arcade-progress").innerHTML = `<strong>${state.arcadeCompleted} / ${state.arcadeTotal}</strong>`;
       document.getElementById("arcade-energy-fill").style.width = `${Math.max(0, state.arcadeEnergy)}%`;
+      const scoreWrapHud = document.getElementById("arcade-score-wrap");
+      if (scoreWrapHud && scoreWrapHud.style.display !== "none") {
+        scoreWrapHud.textContent = `🏆 Punts: ${state.ghScore || 0} · 🔥 x${state.ghCombo || 0}`;
+      }
       document.getElementById("arcade-lives").innerHTML =
         [1, 2, 3, 4, 5].map(n => renderBarretinaSvg(n <= state.arcadeLives, 2.6)).join("");
 
@@ -5352,6 +5360,10 @@
             if (Math.random() < 0.14) state.gaudiSplashes.push({ x: ent.x, y: 204, t: 0 });
             state.arcadeEnergy = Math.max(0, state.arcadeEnergy - 0.48 * drainMult);
             document.getElementById("arcade-energy-fill").style.width = `${Math.max(0, state.arcadeEnergy)}%`;
+      const scoreWrapHud = document.getElementById("arcade-score-wrap");
+      if (scoreWrapHud && scoreWrapHud.style.display !== "none") {
+        scoreWrapHud.textContent = `🏆 Punts: ${state.ghScore || 0} · 🔥 x${state.ghCombo || 0}`;
+      }
             if (state.arcadeEnergy <= 0) {
               penalizeMistakeOrTimeout(100, true);
               ent.y = 42;
