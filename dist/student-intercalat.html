@@ -720,7 +720,12 @@
         <div class="arcade-prompt-strip">
           <span>🎯 Escriu ara: <strong id="arcade-active-word" style="color:#fde047;font-size:1.15rem;">---</strong></span>
           <span id="arcade-hint-text" style="font-size:0.8rem;color:#cbd5e1;"></span>
-          <div style="display:flex;gap:0.4rem;">
+          <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+            <div id="gh-speed-bar" style="display:none;gap:0.25rem;align-items:center;">
+              <button type="button" class="gh-spd-btn" data-ppm="8" style="font-size:0.74rem;padding:0.2rem 0.48rem;">🟠 8 PPM</button>
+              <button type="button" class="gh-spd-btn" data-ppm="15" style="font-size:0.74rem;padding:0.2rem 0.48rem;">🟡 15 PPM</button>
+              <button type="button" class="gh-spd-btn" data-ppm="25" style="font-size:0.74rem;padding:0.2rem 0.48rem;">🟢 25 PPM</button>
+            </div>
             <button type="button" id="btn-speak-arcade" style="display:none;">🔊 Escoltar</button>
             <button type="button" id="btn-restart-arcade">🔄 Reiniciar joc</button>
           </div>
@@ -2914,12 +2919,25 @@
       startStoryMiniVideo(lvl, phaseType);
     }
 
+    function getIgnitionKeysForLevel(lvl) {
+      // Totes les tecles que es faran servir al nivell (d'esquerra a dreta) + Barra d'ESPAI!
+      const left = Array.isArray(lvl.leftKeys) ? [...lvl.leftKeys] : [lvl.newKeys[0]];
+      const right = Array.isArray(lvl.rightKeys) ? [...lvl.rightKeys].reverse() : [lvl.newKeys[1]];
+      const seen = new Set();
+      const all = [];
+      for (const k of [...left, ...right]) {
+        if (k && !seen.has(k)) { seen.add(k); all.push(k); }
+      }
+      all.push(" ");
+      return all;
+    }
+
     function renderIgnitionBoxes(lvl) {
-      const items = [
-        { k: lvl.newKeys[0], label: `Tecla ${lvl.newKeys[0].toUpperCase()}` },
-        { k: lvl.newKeys[1], label: `Tecla ${lvl.newKeys[1].toUpperCase()}` },
-        { k: " ", label: "Barra d'ESPAI" }
-      ];
+      const reqKeys = getIgnitionKeysForLevel(lvl);
+      const items = reqKeys.map(k => ({
+        k,
+        label: k === " " ? "Barra d'ESPAI" : `Tecla ${k.toUpperCase()}`
+      }));
       document.getElementById("ignition-keys").innerHTML = items.map(it => {
         const lit = Boolean(state.ignitionPressed[it.k]);
         return `<div class="ignition-key ${lit ? "lit" : ""}">${lit ? "✅ " : "⚡ "}${it.label}</div>`;
@@ -3015,6 +3033,52 @@
       state.gaudiLoseReason = "";
       state.gaudiSplashes = [];
       state.gaudiTileTimer = 100;
+      state.pedretStoneHp = 100;
+      state.pedretLives = isCurrentStepAutoAdapted() ? 4 : 3;
+      state.pedretFallenStones = [];
+      state.pedretSplashTimer = 0;
+      state.castellBanner = "";
+      state.castellBannerTimer = 0;
+      if (!state.ghTargetPpm) state.ghTargetPpm = 8;
+
+      // Selector de 3 velocitats (8, 15, 25 PPM) només a Guitar Hero PRO!
+      const ghBar = document.getElementById("gh-speed-bar");
+      if (ghBar) {
+        ghBar.style.display = arcDef.subMode === "berga_guitar_hero_pro" ? "inline-flex" : "none";
+        ghBar.querySelectorAll(".gh-spd-btn").forEach(b => {
+          const ppm = Number(b.dataset.ppm);
+          b.style.background = ppm === state.ghTargetPpm ? "#fde047" : "#1e293b";
+          b.style.color = ppm === state.ghTargetPpm ? "#0f172a" : "#e2e8f0";
+          b.style.borderColor = ppm === state.ghTargetPpm ? "#eab308" : "#475569";
+          b.style.fontWeight = "900";
+          b.onclick = () => {
+            state.ghTargetPpm = ppm;
+            initArcadeSession(lvl);
+          };
+        });
+      }
+
+      // Compte enrere 3 - 2 - 1 - JA! abans de començar TOTS els jocs!
+      if (state._arcadeCdTimer) clearInterval(state._arcadeCdTimer);
+      state.arcadeRunning = false;
+      state.arcadeCountdown = 3;
+      sfxTone(440, 110, "square", 0.06);
+      state._arcadeCdTimer = setInterval(() => {
+        if (state.screen !== "play" || state.phaseType !== "arcade") {
+          clearInterval(state._arcadeCdTimer);
+          return;
+        }
+        state.arcadeCountdown--;
+        if (state.arcadeCountdown > 0) {
+          sfxTone(440, 110, "square", 0.06);
+        } else {
+          clearInterval(state._arcadeCdTimer);
+          state.arcadeCountdown = 0;
+          state.arcadeRunning = true;
+          state.startedAtMs = performance.now();
+          sfxTone(880, 200, "square", 0.08);
+        }
+      }, 650);
       state.arcadeTotal = arcDef.totalTargets || 10;
       state.climbFromStep = 0;
       state.climbJumpProgress = 1;
@@ -3288,9 +3352,12 @@
               letter = alt[letter];
             }
             prevLetter = letter;
-            const entX = (isPro ? 540 : 460) + Math.round(cumBeats * pxPerBeat);
+            const entX = (isPro ? 460 : 460) + Math.round(cumBeats * pxPerBeat);
             const entY = TOC_STAFF_Y[freq] || 93;
             cumBeats += beats;
+            // Velocitat real segons la rúbrica (8 PPM En inici, 15 PPM En procés, 25 PPM Assolit)!
+            const proSpeedMap = { 8: 1.05, 15: 1.85, 25: 2.85 };
+            const proSpeed = proSpeedMap[state.ghTargetPpm || 8] || 1.05;
             return {
               id: Date.now() + idx,
               word: letter,
@@ -3301,7 +3368,7 @@
               noteBeats: beats,
               x: entX,
               y: entY,
-              speed: isPro ? (pxPerBeat / (TOC_BEAT_MS / 16.67)) : (1.55 * getSpeedMultiplier()),
+              speed: isPro ? proSpeed : (1.35 * getSpeedMultiplier()),
               progress: 0
             };
           });
@@ -3564,6 +3631,29 @@
         if (p.life > 0) remP.push(p);
       }
       state.arcadeParticles = remP;
+
+      // Overlay visual del Compte Enrere 3 - 2 - 1 abans de començar cada joc!
+      if (state.arcadeCountdown > 0) {
+        ctx.fillStyle = "rgba(15, 23, 42, 0.58)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fde047";
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, canvas.height / 2, 54, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "900 58px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(state.arcadeCountdown), canvas.width / 2, canvas.height / 2 + 3);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "800 15px sans-serif";
+        ctx.fillText("Col·loca els dits a punt!", canvas.width / 2, canvas.height / 2 + 76);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+      }
 
       animFrameId = requestAnimationFrame(arcadeTick);
     }
@@ -3961,31 +4051,83 @@
           ctx.strokeStyle = "#475569"; ctx.lineWidth = 5; ctx.stroke();
         }
 
-        // 10 pedres il·luminades al llarg del pont
+        // 20 pedres al llarg del pont: les superades cauen al riu, i la pedra actual tremola si trigues massa!
         const total = Math.max(1, state.arcadeTotal);
-        for (let i = 0; i <= total; i++) {
-          const sx = 95 + (i / total) * 690;
-          const done = i < state.arcadeCompleted;
-          const cur = i === state.arcadeCompleted;
-          ctx.fillStyle = done ? "#22c55e" : cur ? "#facc15" : "#e2e8f0";
-          ctx.fillRect(sx - 20, 142, 40, 12);
-          ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 1.5; ctx.strokeRect(sx - 20, 142, 40, 12);
+        const pedretDrain = isCurrentStepAutoAdapted() ? 0.08 : (state.difficulty === "suau" ? 0.1 : state.difficulty === "rapid" ? 0.2 : 0.14);
+        if (state.arcadeRunning && ent) {
+          state.pedretStoneHp = Math.max(0, (state.pedretStoneHp !== undefined ? state.pedretStoneHp : 100) - pedretDrain);
+          if (state.pedretStoneHp <= 0) {
+            // La pedra cedeix i en Bit cau xipollejant al riu Llobregat!
+            const curSx = 95 + (state.arcadeCompleted / total) * 690;
+            state.pedretFallenStones = state.pedretFallenStones || [];
+            state.pedretFallenStones.push({ x: curSx, y: 148, vy: 2.5 });
+            state.pedretSplashTimer = 32;
+            state.pedretLives = Math.max(0, (state.pedretLives || 3) - 1);
+            sfxError();
+            if (state.pedretLives <= 0) {
+              state.gaudiLoseReason = "🌊 Has caigut 3 cops al riu Llobregat des del Pont de Pedret! Prem «Repetir» per tornar-ho a intentar!";
+              state.arcadeRunning = false;
+              endArcadeGame(false);
+              return;
+            } else {
+              state.pedretStoneHp = 100;
+              updateArcadeHud(lvl);
+            }
+          }
         }
 
-        // En Bit saltant d'una pedra a l'altra!
+        // Animació de pedres caient xipollejant a l'aigua!
+        state.pedretFallenStones = (state.pedretFallenStones || []).filter(fs => fs.y < 235);
+        state.pedretFallenStones.forEach(fs => {
+          fs.vy += 0.35;
+          fs.y += fs.vy;
+          ctx.fillStyle = "#94a3b8";
+          ctx.fillRect(fs.x - 16, fs.y, 32, 10);
+          ctx.strokeStyle = "#334155"; ctx.lineWidth = 1.5; ctx.strokeRect(fs.x - 16, fs.y, 32, 10);
+          if (fs.y >= 198 && fs.y <= 216) {
+            ctx.strokeStyle = "#e0f2fe"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(fs.x, 206, 16, Math.PI, 0); ctx.stroke();
+          }
+        });
+
+        for (let i = state.arcadeCompleted; i <= total; i++) {
+          const sx = 95 + (i / total) * 690;
+          const cur = i === state.arcadeCompleted;
+          const wobble = cur && state.pedretStoneHp < 45 ? Math.sin(performance.now() * 0.05) * 3 : 0;
+          const sinkY = cur ? Math.round((100 - state.pedretStoneHp) * 0.14) : 0;
+          ctx.fillStyle = cur ? (state.pedretStoneHp < 35 ? "#ef4444" : "#facc15") : "#e2e8f0";
+          ctx.fillRect(sx - 18 + wobble, 142 + sinkY, 36, 12);
+          ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 1.5; ctx.strokeRect(sx - 18 + wobble, 142 + sinkY, 36, 12);
+        }
+
+        // En Bit saltant d'una pedra a l'altra (o xipollejant a l'aigua si acaba de caure!)
         const bitX = 95 + (state.arcadeCompleted / total) * 690 + shakeX;
         const bob = Math.abs(Math.sin(performance.now() * 0.008)) * 6;
-        drawSprite(ctx, SPRITES.bitRobot, bitX - 14, 102 - bob, 3.4);
-        drawSprite(ctx, SPRITES.barretina, bitX - 10, 90 - bob, 2.1);
+        if (state.pedretSplashTimer > 0) {
+          state.pedretSplashTimer--;
+          drawSprite(ctx, SPRITES.bitRobot, bitX - 14, 178, 3.2);
+          ctx.font = "26px sans-serif";
+          ctx.fillText("💦", bitX - 18, 206);
+          ctx.fillText("💦", bitX + 12, 204);
+        } else {
+          const sinkY = Math.round((100 - (state.pedretStoneHp || 100)) * 0.14);
+          drawSprite(ctx, SPRITES.bitRobot, bitX - 14, 102 + sinkY - bob, 3.4);
+          drawSprite(ctx, SPRITES.barretina, bitX - 10, 90 + sinkY - bob, 2.1);
+        }
 
         if (ent) {
           const wx = Math.min(720, Math.max(40, bitX + 22));
           drawWordBox(ctx, ent.word, ent.typedIndex, wx, 52, true);
         }
-        ctx.fillStyle = "rgba(15,23,42,0.78)";
-        ctx.fillRect(14, 10, 320, 24);
+        ctx.fillStyle = "rgba(15,23,42,0.85)";
+        ctx.fillRect(14, 10, 460, 26);
         ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🌉 J2 · Pont de Pedret (D+K): pedra ${state.arcadeCompleted}/${total}`, 22, 26);
+        ctx.fillText(`🌉 Pont de Pedret (${state.arcadeCompleted}/${total}) · ${"❤️".repeat(state.pedretLives || 0)}`, 22, 27);
+        ctx.fillStyle = "#334155"; ctx.fillRect(325, 16, 138, 13);
+        ctx.fillStyle = (state.pedretStoneHp || 100) > 35 ? "#4ade80" : "#ef4444";
+        ctx.fillRect(325, 16, Math.round(1.38 * (state.pedretStoneHp || 100)), 13);
+        ctx.fillStyle = "#0f172a"; ctx.font = "bold 10px sans-serif";
+        ctx.fillText("🪨 Pedra", 332, 26);
         return;
       }
 
@@ -4701,6 +4843,35 @@
       ctx.fillStyle = "#fde047";
       ctx.font = "bold 12px sans-serif";
       ctx.fillText(`🏰 Diada a Berga · ${curCastell.name} (Fila ${builtFloors}/${curCastell.floors}) · Total ${state.arcadeCompleted}/${state.arcadeTotal}`, 22, 28);
+
+      // Medalles persistents dels 4 castells completats (perquè quedi claríssim que cada castell s'ha DESCARREGAT amb èxit!)
+      const badges = [
+        { short: "P4", done: state.arcadeCompleted >= 4 },
+        { short: "T6", done: state.arcadeCompleted >= 10 },
+        { short: "3d7", done: state.arcadeCompleted >= 17 },
+        { short: "4d8", done: state.arcadeCompleted >= 24 }
+      ];
+      ctx.fillStyle = "rgba(15,23,42,0.82)";
+      ctx.fillRect(620, 12, 246, 24);
+      ctx.font = "bold 11px sans-serif";
+      badges.forEach((b, idx) => {
+        ctx.fillStyle = b.done ? "#4ade80" : "#94a3b8";
+        ctx.fillText(`${b.done ? "✅" : "⏳"} ${b.short}`, 630 + idx * 59, 28);
+      });
+
+      // Rètol celebratori gran quan s'acaba de descarregar un castell!
+      if (state.castellBannerTimer > 0) {
+        state.castellBannerTimer--;
+        ctx.fillStyle = "rgba(22, 163, 74, 0.94)";
+        ctx.fillRect(190, 56, 500, 38);
+        ctx.strokeStyle = "#fde047"; ctx.lineWidth = 3;
+        ctx.strokeRect(190, 56, 500, 38);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 15px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(state.castellBanner || "🎉 CASTELL DESCARREGAT!", 440, 80);
+        ctx.textAlign = "left";
+      }
     }
 
     // 3) MECÀNICA 3: SARDANA A GIRONA
@@ -5409,6 +5580,31 @@
           state.arcadeJumpTimer = 18;
           state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
 
+          if (lvl.gameMode === "castells" && ent.subMode === "pedret_bridge") {
+            // La pedra vella cau xipollejant al Llobregat en saltar a la següent!
+            const oldSx = 95 + (state.arcadeCompleted / Math.max(1, state.arcadeTotal)) * 690;
+            state.pedretFallenStones = state.pedretFallenStones || [];
+            state.pedretFallenStones.push({ x: oldSx, y: 148, vy: 1.8 });
+            state.pedretStoneHp = 100;
+          }
+          if (lvl.gameMode === "castells" && ent.subMode === "dual_climbers") {
+            // Celebració clara en completar cadascun dels 4 castells (Pilar de 4, Torre de 6, 3 de 7, 4 de 8)!
+            const nextDone = state.arcadeCompleted + 1;
+            const milestones = {
+              4: "🎉 PILAR DE 4 DESCARREGAT! Següent: TORRE DE 6!",
+              10: "🎉 TORRE DE 6 DESCARREGADA! Següent: 3 DE 7!",
+              17: "🎉 3 DE 7 DESCARREGAT! Últim repte: 4 DE 8!",
+              24: "🏆 4 DE 8 CORONAT AMB L'ENXANETA!"
+            };
+            if (milestones[nextDone]) {
+              state.castellBanner = milestones[nextDone];
+              state.castellBannerTimer = 140;
+              sfxFanfare();
+              spawnParticles(440, 80, "#fde047");
+              spawnParticles(380, 110, "#4ade80");
+              spawnParticles(500, 110, "#38bdf8");
+            }
+          }
           if (lvl.gameMode === "castells" && ent.subMode === "bergueda_mushrooms") {
             // El rovelló vola directament dins el cistell d'en Bit!
             state.mushroomFlying = state.mushroomFlying || [];
@@ -5912,11 +6108,12 @@
       if (state.screen === "ignition") {
         if (ev.key === " ") ev.preventDefault();
         const k = ev.key === " " ? " " : typed;
-        if (k === lvl.newKeys[0] || k === lvl.newKeys[1] || k === " ") {
+        const reqKeys = getIgnitionKeysForLevel(lvl);
+        if (reqKeys.includes(k)) {
           state.ignitionPressed[k] = true;
           sfxTone(640, 70, "square", 0.06);
           renderIgnitionBoxes(lvl);
-          if (state.ignitionPressed[lvl.newKeys[0]] && state.ignitionPressed[lvl.newKeys[1]] && state.ignitionPressed[" "]) {
+          if (reqKeys.every(rk => state.ignitionPressed[rk])) {
             setTimeout(() => launchActiveStep(), 240);
           }
         }
