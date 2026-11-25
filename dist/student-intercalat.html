@@ -527,7 +527,7 @@
       </div>
 
       <div class="topbar-right">
-        <span id="student-mastery-badge" title="Insígnia de mestria i millora en escriptura" style="display:inline-flex;align-items:center;gap:0.25rem;background:#fef9c3;border:2px solid #eab308;color:#713f12;border-radius:999px;padding:0.2rem 0.65rem;font-weight:900;font-size:0.78rem;white-space:nowrap;">🐣 Aprenent</span>
+        <button type="button" id="student-mastery-badge" title="Clica per veure totes les insígnies i què et falta per la següent!" style="display:inline-flex;align-items:center;gap:0.25rem;background:#fef9c3;border:2px solid #eab308;color:#713f12;border-radius:999px;padding:0.2rem 0.65rem;font-weight:900;font-size:0.78rem;white-space:nowrap;cursor:pointer;">🐣 Aprenent</button>
         <button type="button" id="btn-student-google" style="display:none;background:#eff6ff;border:2px solid #2563eb;color:#1e3a8a;border-radius:999px;padding:0.22rem 0.65rem;font-weight:800;font-size:0.78rem;cursor:pointer;">🔐 Entrar amb Google</button>
         <button type="button" id="btn-open-album" style="background:#fdf2f8;border:2px solid #ec4899;color:#9d174d;border-radius:999px;padding:0.2rem 0.65rem;font-weight:800;font-size:0.8rem;cursor:pointer;" title="Àlbum de Flors del Berguedà i Cromos">🌸 <span id="header-flowers">0</span> · 📘 Cromos</button>
         <span id="header-barretines" style="font-weight:800;font-size:0.9rem;"></span>
@@ -652,10 +652,26 @@
       </div>
     </div>
 
+    <!-- MODAL INSÍGNIES DE MESTRIA I MILLORA -->
+    <div id="mastery-modal" style="position:fixed;inset:0;background:rgba(15,23,42,0.78);display:none;align-items:center;justify-content:center;z-index:9999;padding:1rem;">
+      <div style="background:#ffffff;border:3px solid #eab308;border-radius:1.2rem;padding:1.3rem;max-width:560px;width:100%;max-height:86vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.65rem;">
+          <h2 style="margin:0;color:#854d0e;font-size:1.25rem;">🏅 Les teves Insígnies DeuDits</h2>
+          <button type="button" id="btn-close-mastery" style="font-weight:900;">✖️</button>
+        </div>
+        <div id="mastery-summary-box" style="background:#fefce8;border:2px solid #fde047;border-radius:12px;padding:0.75rem 0.9rem;margin-bottom:0.85rem;font-size:0.88rem;color:#422006;"></div>
+        <div id="mastery-ranks-list" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+      </div>
+    </div>
+
     <!-- PANTALLA 3: INTRODUCCIÓ ANIMADA + ENGEGAR MOTORS (NETA I NESE-FRIENDLY) -->
     <section class="view-screen" id="screen-ignition">
       <div class="ignition-screen" style="max-width:680px;margin:0.5rem auto;padding:1.1rem 1.3rem;">
-        <h2 id="story-caption" style="margin:0 0 0.7rem;font-size:1.35rem;line-height:1.3;color:#fde047;font-weight:900;"></h2>
+        <h2 id="story-caption" style="margin:0 0 0.5rem;font-size:1.3rem;line-height:1.3;color:#fde047;font-weight:900;"></h2>
+        <div id="ignition-instruction-bar" style="display:flex;align-items:center;justify-content:center;gap:0.55rem;flex-wrap:wrap;background:rgba(15,23,42,0.65);border:1.5px solid #475569;border-radius:10px;padding:0.45rem 0.75rem;margin-bottom:0.65rem;">
+          <span id="ignition-instruction-text" style="font-size:0.88rem;color:#e2e8f0;font-weight:700;"></span>
+          <button type="button" id="btn-ignition-speak" style="font-size:0.78rem;padding:0.22rem 0.6rem;background:#0284c7;color:#ffffff;border-color:#38bdf8;">🔊 Escoltar</button>
+        </div>
         <canvas id="story-canvas" width="600" height="165" style="width:100%;max-width:600px;height:auto;border-radius:10px;border:2px solid #475569;background:#060913;image-rendering:pixelated;margin-bottom:0.75rem;"></canvas>
         <div class="ignition-keys" id="ignition-keys" style="margin:0.45rem 0 0.1rem;"></div>
       </div>
@@ -1355,17 +1371,69 @@
         const speedScore = Math.min(20, (avgWpm / 25) * 20);
         const total = Math.round(barretinesScore + impScore + speedScore);
 
-        let rank = { icon: "🐣", name: "Aprenent", bg: "#fef9c3", border: "#eab308", color: "#713f12" };
-        if (total >= 83) rank = { icon: "⚡", name: "Mestre DeuDits", bg: "#dbeafe", border: "#2563eb", color: "#1e3a8a" };
-        else if (total >= 65) rank = { icon: "🦅", name: "Expert", bg: "#dcfce7", border: "#16a34a", color: "#14532d" };
-        else if (total >= 45) rank = { icon: "🦊", name: "Àgil", bg: "#ffedd5", border: "#f97316", color: "#7c2d12" };
-        else if (total >= 25) rank = { icon: "🐢", name: "Constant", bg: "#e0f2fe", border: "#0284c7", color: "#0c4a6e" };
+        const MASTERY_RANKS = [
+          { min: 0,  icon: "🐣", name: "Aprenent",      bg: "#fef9c3", border: "#eab308", color: "#713f12", desc: "Estàs començant l'aventura d'escriure amb tots els dits!" },
+          { min: 25, icon: "🐢", name: "Constant",      bg: "#e0f2fe", border: "#0284c7", color: "#0c4a6e", desc: "Ja guanyes Barretines de forma regular i sense rendir-te!" },
+          { min: 45, icon: "🦊", name: "Àgil",          bg: "#ffedd5", border: "#f97316", color: "#7c2d12", desc: "Els teus dits van més segurs i notes una gran millora!" },
+          { min: 65, icon: "🦅", name: "Expert",        bg: "#dcfce7", border: "#16a34a", color: "#14532d", desc: "Alta precisió, moltes Barretines i molt bon ritme!" },
+          { min: 83, icon: "⚡", name: "Mestre DeuDits", bg: "#dbeafe", border: "#2563eb", color: "#1e3a8a", desc: "Domines el teclat amb precisió, velocitat i constància!" }
+        ];
+        let rankIdx = 0;
+        for (let i = 0; i < MASTERY_RANKS.length; i++) {
+          if (total >= MASTERY_RANKS[i].min) rankIdx = i;
+        }
+        const rank = MASTERY_RANKS[rankIdx];
+        const nextRank = MASTERY_RANKS[rankIdx + 1] || null;
 
         el.textContent = `${rank.icon} ${rank.name}`;
         el.style.background = rank.bg;
         el.style.borderColor = rank.border;
         el.style.color = rank.color;
-        el.title = `Insígnia de millora (${total}/100) · Mitjana Barretines: ${avgB.toFixed(1)}/5 · Ritme recent: ${avgWpm.toFixed(1)} PPM`;
+        el.title = `Clica per veure totes les insígnies (${total}/100 punts)`;
+        state._masteryInfo = { total, avgB, avgWpm, barretinesScore: Math.round(barretinesScore), impScore: Math.round(impScore), speedScore: Math.round(speedScore), rankIdx, rank, nextRank, ranks: MASTERY_RANKS };
+
+        el.onclick = () => {
+          const modal = document.getElementById("mastery-modal");
+          const sumBox = document.getElementById("mastery-summary-box");
+          const listBox = document.getElementById("mastery-ranks-list");
+          if (!modal || !sumBox || !listBox) return;
+          const m = state._masteryInfo;
+          const nextMsg = m.nextRank
+            ? `Et falten <strong>${Math.max(1, m.nextRank.min - m.total)} punts</strong> per aconseguir <strong>${m.nextRank.icon} ${m.nextRank.name}</strong>! (${m.total} / ${m.nextRank.min})`
+            : `🎉 <strong>Has arribat al nivell màxim: ⚡ Mestre DeuDits!</strong>`;
+          const pctNext = m.nextRank ? Math.min(100, Math.round((m.total / m.nextRank.min) * 100)) : 100;
+          sumBox.innerHTML = `
+            <div style="font-weight:900;font-size:1rem;margin-bottom:0.35rem;">Insígnia actual: ${m.rank.icon} ${m.rank.name} (${m.total}/100 punts)</div>
+            <div style="margin-bottom:0.45rem;">${nextMsg}</div>
+            <div style="background:#e2e8f0;height:12px;border-radius:99px;overflow:hidden;margin-bottom:0.45rem;">
+              <div style="background:#eab308;height:100%;width:${pctNext}%;transition:width 0.3s;"></div>
+            </div>
+            <div style="font-size:0.78rem;color:#713f12;">
+              🔴 Barretines: <strong>${m.barretinesScore}/50</strong> (mitjana ${m.avgB.toFixed(1)}/5) ·
+              📈 Millora: <strong>${m.impScore}/30</strong> ·
+              ⚡ Fluïdesa: <strong>${m.speedScore}/20</strong> (${m.avgWpm.toFixed(1)} PPM)
+            </div>
+          `;
+          listBox.innerHTML = m.ranks.map((rk, i) => {
+            const unlocked = i <= m.rankIdx;
+            const isCur = i === m.rankIdx;
+            return `
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:0.7rem;padding:0.6rem 0.8rem;border-radius:10px;border:2px solid ${isCur ? rk.border : unlocked ? "#cbd5e1" : "#e2e8f0"};background:${isCur ? rk.bg : unlocked ? "#f8fafc" : "#f1f5f9"};opacity:${unlocked ? 1 : 0.65};">
+                <div style="display:flex;align-items:center;gap:0.6rem;">
+                  <span style="font-size:1.5rem;">${rk.icon}</span>
+                  <div>
+                    <div style="font-weight:900;font-size:0.92rem;color:${rk.color};">${rk.name} ${isCur ? "· (La teva actual!)" : ""}</div>
+                    <div style="font-size:0.78rem;color:#475569;">${rk.desc}</div>
+                  </div>
+                </div>
+                <span style="font-size:0.78rem;font-weight:900;white-space:nowrap;color:${unlocked ? "#15803d" : "#64748b"};">${unlocked ? "✅ Assolida" : `🔒 ${rk.min} pts`}</span>
+              </div>
+            `;
+          }).join("");
+          modal.style.display = "flex";
+        };
+        const closeM = document.getElementById("btn-close-mastery");
+        if (closeM) closeM.onclick = () => { document.getElementById("mastery-modal").style.display = "none"; };
       } catch {}
     }
 
@@ -2915,6 +2983,46 @@
       const lvl = LEVELS.find(l => l.id === levelId) || LEVELS[0];
 
       renderIgnitionBoxes(lvl);
+      // Mostra l'explicació clara del joc + botó de veu catalana ABANS de començar!
+      const instrTextEl = document.getElementById("ignition-instruction-text");
+      const instrBtnEl = document.getElementById("btn-ignition-speak");
+      let instrMsg = "Prem les tecles il·luminades per col·locar els dits a punt i començar!";
+      if (phaseType === "drill") {
+        instrMsg = "⌨️ Pràctica guiada: escriu cada lletra amb el dit recomanat. Si t'equivoques, repeteix la mateixa lletra fins encertar-la!";
+      } else if (phaseType === "proverb") {
+        instrMsg = "🔑 Prova Clau: escriu la frase completa del nivell amb precisió per desbloquejar el següent nivell!";
+      } else {
+        const arc = (lvl.arcades || []).find(a => a.id === stepId);
+        const sub = arc ? arc.subMode : "";
+        const INSTR_MAP = {
+          space_asteroids: "☄️ Escriu les lletres abans que els asteroides toquin la nau d'en Bit!",
+          atmosphere_birds: "🦅 Esquiva els ocells mentre aterres al Pedraforca escrivint cada grup de 3 lletres!",
+          pedraforca_climb: "🏔️ Escala el Pedraforca pas a pas! Cada paraula fa saltar en Bit al següent esglaó!",
+          pedraforca_recycle: "♻️ Classifica cada residu al seu contenidor: Plàstic (ffj), Paper (jjf), Orgànica (fjf) o Rebuig (jfj).",
+          bergueda_balloon: "🎈 Volem en globus pel Llobregat fins a Berga! Escriu les parelles D i K dels núvols.",
+          pedret_bridge: "🌉 Creua el Pont de Pedret! Escriu ràpid abans que la pedra on estàs cedeixi i caiguis a l'aigua!",
+          bergueda_mushrooms: "🍄 Cull els rovellons del bosc! Primers 12 amb la mà esquerra (D+F) i segons 12 amb la dreta (K+J).",
+          berga_grallers: "🎺 Toca el Toc de Castells amb les 4 lletres (D, F, J, K) quan les notes arribin a la línia daurada!",
+          berga_pinya: "🧱 Forma la pinya dels Castellers de Berga barrejant les 4 lletres (D, F, J, K)!",
+          dual_climbers: "🏰 Diada Castellera! Construeix 4 castells seguits (Pilar de 4, Torre de 6, 3 de 7 i 4 de 8) fins a l'Enxaneta!",
+          berga_guitar_hero_pro: "🎸 Guitar Hero PRO! Clava la tecla exacta quan la nota passa per la línia daurada per fer Combo! Pots triar 8, 15 o 25 PPM.",
+          gaudi_train: "🚂 Engega el Tren del Ciment (S i L)! Escriu seguit perquè la pressió del vapor no baixi a zero!",
+          gaudi_bridge: "🌉 Basteix el Pont dels Arcs dels Jardins Artigas (S i L)! Si una pedra toca l'aigua, baixa l'energia fins que la salvis!",
+          gaudi_trencadis: "🧱 Construeix la Salamandra de Trencadís d'en Gaudí estil Minecraft amb la mà esquerra (S, D, F)!",
+          gaudi_lantern: "🏮 Puja pel bosc del Catllaràs (J, K, L)! Mantén encesa la llum del fanalet o els animals d'ulls vermells se t'acostaran!",
+          gaudi_xalet: "🚴 Puja en bici cap al Xalet del Catllaràs! Si fas una paraula sense fallos faràs un truc (salt, frontflip, backflip)! Si et quedes sense energia punxes roda!",
+          gaudi_stars: "🌌 Caça els estels fugaços des del Mirador del Catllaràs combinant els 6 dits!",
+          gaudi_blueprint: "📐 Dedueix el mirall simètric dels plànols d'en Gaudí!"
+        };
+        instrMsg = INSTR_MAP[sub] || (arc ? arc.label : instrMsg);
+      }
+      if (instrTextEl) instrTextEl.textContent = instrMsg;
+      if (instrBtnEl) {
+        instrBtnEl.onclick = () => {
+          state.usedVoiceThisSession = true;
+          speakCatalanText(instrMsg);
+        };
+      }
       showScreen("ignition");
       startStoryMiniVideo(lvl, phaseType);
     }
@@ -3577,10 +3685,8 @@
         }
       }
 
-      if (state.arcadeLives <= 0) {
-        state.arcadeRunning = false;
-        setTimeout(() => endArcadeGame(false), 450);
-      }
+      // Permetem continuar practicant fins al final tot i arribar a 0 Barretines!
+      // (En acabar, si té menys de 3 Barretines no podrà avançar i haurà de repetir, però haurà practicat tot el nivell!)
     }
 
     function spawnParticles(x, y, color = "#fde047") {
@@ -4057,22 +4163,14 @@
         if (state.arcadeRunning && ent) {
           state.pedretStoneHp = Math.max(0, (state.pedretStoneHp !== undefined ? state.pedretStoneHp : 100) - pedretDrain);
           if (state.pedretStoneHp <= 0) {
-            // La pedra cedeix i en Bit cau xipollejant al riu Llobregat!
+            // La pedra cedeix i en Bit cau xipollejant al riu Llobregat (perd 1 Barretina i continua practicant!)
             const curSx = 95 + (state.arcadeCompleted / total) * 690;
             state.pedretFallenStones = state.pedretFallenStones || [];
             state.pedretFallenStones.push({ x: curSx, y: 148, vy: 2.5 });
             state.pedretSplashTimer = 32;
-            state.pedretLives = Math.max(0, (state.pedretLives || 3) - 1);
-            sfxError();
-            if (state.pedretLives <= 0) {
-              state.gaudiLoseReason = "🌊 Has caigut 3 cops al riu Llobregat des del Pont de Pedret! Prem «Repetir» per tornar-ho a intentar!";
-              state.arcadeRunning = false;
-              endArcadeGame(false);
-              return;
-            } else {
-              state.pedretStoneHp = 100;
-              updateArcadeHud(lvl);
-            }
+            penalizeMistakeOrTimeout(100, true);
+            state.pedretStoneHp = 100;
+            updateArcadeHud(lvl);
           }
         }
 
@@ -4973,14 +5071,14 @@
       const t = Date.now() * 0.003;
       const drainMult = isCurrentStepAutoAdapted() ? 0.55 : (state.difficulty === "suau" ? 0.68 : state.difficulty === "rapid" ? 1.3 : 1.0);
 
-      // J1: 🚂 ENGEGUEM EL TREN DEL CIMENT (Pressió de vapor! Si arriba a 0%, perds!)
+      // J1: 🚂 ENGEGUEM EL TREN DEL CIMENT (Pressió de vapor! Si arriba a 0%, perd 1 Barretina i torna a 45% per continuar practicant!)
       if (arcDef.subMode === "gaudi_train") {
         if (state.arcadeRunning && ent) {
           state.gaudiMeter = Math.max(0, state.gaudiMeter - 0.085 * drainMult);
           if (state.gaudiMeter <= 0) {
-            state.gaudiLoseReason = "💨 Ui! El Tren del Ciment s'ha quedat sense vapor abans d'arribar als Jardins Artigas!";
-            state.arcadeRunning = false;
-            setTimeout(() => endArcadeGame(false), 300);
+            penalizeMistakeOrTimeout(100, true);
+            state.gaudiMeter = 45;
+            updateArcadeHud(lvl);
           }
         }
         const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -5040,20 +5138,19 @@
         return;
       }
 
-      // J2: 🌉 EL PONT DELS ARCS (JARDINS ARTIGAS — 3 pedres de marge sobre el Llobregat!)
+      // J2: 🌉 EL PONT DELS ARCS (JARDINS ARTIGAS — Si la pedra toca l'aigua, baixa l'energia gradualment per donar marge a salvar-la!)
       if (arcDef.subMode === "gaudi_bridge") {
         if (state.arcadeRunning && ent) {
-          ent.y += ent.speed;
-          if (ent.y >= 188) {
-            state.gaudiSplashes.push({ x: ent.x, y: 204, t: 0 });
-            state.gaudiLives = Math.max(0, state.gaudiLives - 1);
-            sfxError();
-            if (state.gaudiLives <= 0) {
-              state.gaudiLoseReason = "🌊 Han caigut 3 pedres al riu Llobregat i l'arc ha cedit! Prem «Repetir» per tornar a bastir el Pont dels Arcs!";
-              state.arcadeRunning = false;
-              endArcadeGame(false);
-              return;
-            } else {
+          if (ent.y < 188) {
+            ent.y += ent.speed;
+          } else {
+            // A l'aigua: esquitxa i va drenant l'energia gradualment perquè tinguis marge d'arreglar-ho!
+            ent.y = 188;
+            if (Math.random() < 0.14) state.gaudiSplashes.push({ x: ent.x, y: 204, t: 0 });
+            state.arcadeEnergy = Math.max(0, state.arcadeEnergy - 0.48 * drainMult);
+            document.getElementById("arcade-energy-fill").style.width = `${Math.max(0, state.arcadeEnergy)}%`;
+            if (state.arcadeEnergy <= 0) {
+              penalizeMistakeOrTimeout(100, true);
               ent.y = 42;
               updateArcadeHud(lvl);
             }
@@ -5108,30 +5205,20 @@
         return;
       }
 
-      // J3: 🧱 CONSTRUCCIÓ TIPUS MINECRAFT · GLORIETA DELS JARDINS ARTIGAS (Mà Esq. S, D, F!)
+      // J3: 🧱 MINECRAFT · SALAMANDRA DE TRENCADÍS D'EN GAUDÍ (Mà Esq. S, D, F · Imatge 100% reconeixible!)
       if (arcDef.subMode === "gaudi_trencadis") {
         if (state.arcadeRunning && ent) {
-          state.gaudiTileTimer = Math.max(0, state.gaudiTileTimer - 0.13 * drainMult);
+          state.gaudiTileTimer = Math.max(0, state.gaudiTileTimer - 0.11 * drainMult);
           if (state.gaudiTileTimer <= 0) {
-            state.gaudiLives = Math.max(0, state.gaudiLives - 1);
-            sfxError();
-            if (state.gaudiLives <= 0) {
-              state.gaudiLoseReason = "🧱 S'han trencat 3 blocs abans de col·locar-los! Prem «Repetir» per reconstruir la Glorieta!";
-              state.arcadeRunning = false;
-              endArcadeGame(false);
-              return;
-            } else {
-              state.gaudiTileTimer = 100;
-              updateArcadeHud(lvl);
-            }
+            penalizeMistakeOrTimeout(100, true);
+            state.gaudiTileTimer = 100;
+            updateArcadeHud(lvl);
           }
         }
-        // Cel blau Minecraft + núvols quadrats pixelats
         ctx.fillStyle = "#60a5fa"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(90, 32, 84, 18); ctx.fillRect(108, 22, 48, 12);
         ctx.fillRect(620, 26, 96, 18); ctx.fillRect(640, 16, 52, 12);
-        // Terra i gespa pixelada estil Minecraft (blocs de 28x28)
         for (let gx = 0; gx < canvas.width; gx += 28) {
           ctx.fillStyle = "#16a34a"; ctx.fillRect(gx, 206, 28, 10);
           ctx.fillStyle = "#15803d"; ctx.fillRect(gx + 6, 212, 8, 6);
@@ -5140,77 +5227,86 @@
           ctx.fillRect(gx + 16, 234, 8, 8);
         }
 
-        // Helper per dibuixar un bloc 3D estil Minecraft (cara frontal + cara superior + vora pixelada)
         const drawVoxelBlock = (bx, by, size, mainCol, topCol, sideCol) => {
-          const d = 8;
+          const d = 6;
           ctx.fillStyle = topCol;
           ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + d, by - d); ctx.lineTo(bx + size + d, by - d); ctx.lineTo(bx + size, by); ctx.closePath(); ctx.fill();
           ctx.fillStyle = sideCol;
           ctx.beginPath(); ctx.moveTo(bx + size, by); ctx.lineTo(bx + size + d, by - d); ctx.lineTo(bx + size + d, by + size - d); ctx.lineTo(bx + size, by + size); ctx.closePath(); ctx.fill();
           ctx.fillStyle = mainCol;
           ctx.fillRect(bx, by, size, size);
-          ctx.strokeStyle = "rgba(15,23,42,0.45)"; ctx.lineWidth = 1.5; ctx.strokeRect(bx, by, size, size);
+          ctx.strokeStyle = "rgba(15,23,42,0.45)"; ctx.lineWidth = 1.4; ctx.strokeRect(bx, by, size, size);
         };
 
-        // 24 blocs en 4 pisos x 6 columnes bastint la Glorieta de Trencadís d'en Gaudí!
-        const VOXEL_PALETTE = [
-          ["#9ca3af", "#d1d5db", "#6b7280"], // Pedra base
-          ["#0284c7", "#38bdf8", "#0369a1"], // Blau trencadís
-          ["#eab308", "#fde047", "#ca8a04"], // Groc sol
-          ["#f97316", "#fb923c", "#c2410c"], // Taronja Gaudí
-          ["#16a34a", "#4ade80", "#15803d"], // Verd Jardins
-          ["#ec4899", "#f472b6", "#be185d"]  // Rosa flor
+        // 24 blocs vòxel formant la SALAMANDRA DE TRENCADÍS D'EN GAUDÍ (cua enrotllada -> potes -> cos ondulat -> cap amb ulls!)
+        const C_BLU = ["#0284c7", "#38bdf8", "#0369a1"];
+        const C_CYN = ["#06b6d4", "#67e8f9", "#0e7490"];
+        const C_YEL = ["#eab308", "#fde047", "#ca8a04"];
+        const C_ORG = ["#f97316", "#fb923c", "#c2410c"];
+        const C_GRN = ["#16a34a", "#4ade80", "#15803d"];
+        const SALAMANDER_BLOCKS = [
+          // Cua enrotllada (esquerra)
+          [0, 1, C_BLU], [0, 2, C_CYN], [1, 2, C_YEL], [1, 1, C_ORG], [2, 1, C_BLU],
+          // Pota posterior + cos esquerre
+          [2, 0, C_GRN], [3, 1, C_CYN], [3, 2, C_YEL], [4, 1, C_ORG], [4, 2, C_BLU],
+          // Llom central de trencadís
+          [5, 1, C_GRN], [5, 2, C_CYN], [5, 3, C_YEL], [6, 1, C_BLU], [6, 2, C_ORG],
+          [6, 3, C_GRN], [7, 1, C_CYN], [7, 2, C_YEL],
+          // Pota anterior + coll + cap amb ulls (dreta!)
+          [7, 0, C_GRN], [8, 1, C_BLU], [8, 2, C_ORG], [9, 2, C_CYN], [9, 3, C_YEL], [10, 2, C_ORG]
         ];
-        const bSize = 36;
-        const startX = 320, baseY = 170;
-        for (let i = 0; i < total; i++) {
-          const col = i % 6, row = Math.floor(i / 6);
-          const bx = startX + col * (bSize + 2);
+        const bSize = 27;
+        const startX = 275, baseY = 179;
+        SALAMANDER_BLOCKS.forEach(([col, row, pal], i) => {
+          const bx = startX + col * (bSize + 1);
           const by = baseY - row * (bSize + 1);
           if (i < state.arcadeCompleted) {
-            const pal = row === 0 ? VOXEL_PALETTE[0] : VOXEL_PALETTE[1 + ((i + row) % 5)];
             drawVoxelBlock(bx, by, bSize, pal[0], pal[1], pal[2]);
-          } else if (i === state.arcadeCompleted) {
-            // Guia parpellejant del següent bloc a col·locar!
-            ctx.strokeStyle = "#fde047"; ctx.lineWidth = 2.5; ctx.setLineDash([4, 4]);
+            // Ull de la salamandra al bloc del cap (índex 22)!
+            if (i === 22) {
+              ctx.fillStyle = "#ffffff"; ctx.fillRect(bx + 12, by + 6, 9, 9);
+              ctx.fillStyle = "#0f172a"; ctx.fillRect(bx + 16, by + 8, 5, 5);
+            }
+          } else {
+            ctx.fillStyle = i === state.arcadeCompleted ? "rgba(253,224,71,0.35)" : "rgba(255,255,255,0.18)";
+            ctx.fillRect(bx, by, bSize, bSize);
+            ctx.strokeStyle = i === state.arcadeCompleted ? "#fde047" : "rgba(255,255,255,0.45)";
+            ctx.lineWidth = i === state.arcadeCompleted ? 2.5 : 1;
             ctx.strokeRect(bx, by, bSize, bSize);
-            ctx.setLineDash([]);
           }
-        }
+        });
 
-        // Constructor quadrat estil Minecraft (en Bit-Steve saltant al costat de l'obra!)
+        // Constructor quadrat estil Minecraft (en Bit-Steve)
         const jumpY = state.arcadeJumpTimer > 0 ? Math.sin((state.arcadeJumpTimer / 18) * Math.PI) * 26 : 0;
-        const sx = 225, sy = 152 - jumpY;
-        ctx.fillStyle = "#1d4ed8"; ctx.fillRect(sx, sy + 26, 22, 28); // Pantalons Steve
-        ctx.fillStyle = "#06b6d4"; ctx.fillRect(sx - 4, sy + 4, 30, 24); // Samarreta cian Steve
-        ctx.fillStyle = "#fde68a"; ctx.fillRect(sx + 1, sy - 16, 20, 20); // Cap quadrat
-        ctx.fillStyle = "#78350f"; ctx.fillRect(sx + 1, sy - 16, 20, 6); // Cabells
+        const sx = 188, sy = 152 - jumpY;
+        ctx.fillStyle = "#1d4ed8"; ctx.fillRect(sx, sy + 26, 22, 28);
+        ctx.fillStyle = "#06b6d4"; ctx.fillRect(sx - 4, sy + 4, 30, 24);
+        ctx.fillStyle = "#fde68a"; ctx.fillRect(sx + 1, sy - 16, 20, 20);
+        ctx.fillStyle = "#78350f"; ctx.fillRect(sx + 1, sy - 16, 20, 6);
         ctx.fillStyle = "#0f172a"; ctx.fillRect(sx + 5, sy - 7, 3, 3); ctx.fillRect(sx + 14, sy - 7, 3, 3);
-        // Bloc nou a la mà preparat per col·locar!
-        drawVoxelBlock(sx + 26, sy + 2, 18, "#facc15", "#fef08a", "#ca8a04");
+        drawVoxelBlock(sx + 26, sy + 2, 16, "#facc15", "#fef08a", "#ca8a04");
 
-        if (ent) drawWordBox(ctx, ent.word, ent.typedIndex, 600, 108, true);
+        if (ent) drawWordBox(ctx, ent.word, ent.typedIndex, 635, 118, true);
 
-        ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 495, 28);
+        ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 520, 28);
         ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🧱 Minecraft Gaudí (${state.arcadeCompleted}/${total} blocs) · ${"🧱".repeat(state.gaudiLives)}`, 22, 28);
-        ctx.fillStyle = "#334155"; ctx.fillRect(345, 17, 150, 14);
+        ctx.fillText(`🦎 Salamandra d'en Gaudí · Minecraft (${state.arcadeCompleted}/${total} blocs)`, 22, 28);
+        ctx.fillStyle = "#334155"; ctx.fillRect(365, 17, 155, 14);
         ctx.fillStyle = state.gaudiTileTimer > 35 ? "#4ade80" : "#ef4444";
-        ctx.fillRect(345, 17, Math.round(1.5 * state.gaudiTileTimer), 14);
+        ctx.fillRect(365, 17, Math.round(1.55 * state.gaudiTileTimer), 14);
         ctx.fillStyle = "#0f172a"; ctx.font = "bold 10px sans-serif";
-        ctx.fillText("⏳ Temps del bloc", 354, 28);
+        ctx.fillText("⏳ Temps del bloc", 374, 28);
         return;
       }
 
-      // J4: 🏮 BOSC DEL CATLLARÀS · ANIMALS AMB ULLS VERMELLS (Mà Dreta J, K, L · Si s'apaga la llum et mengen!)
+      // J4: 🏮 BOSC DEL CATLLARÀS · ANIMALS AMB ULLS VERMELLS (Si s'apaga la llum, ensurt + perd 1 Barretina i segueix!)
       if (arcDef.subMode === "gaudi_lantern") {
         if (state.arcadeRunning && ent) {
           state.gaudiMeter = Math.max(0, state.gaudiMeter - 0.1 * drainMult);
           if (state.gaudiMeter <= 0) {
-            state.gaudiLoseReason = "🐺 Nyam! S'ha apagat la llum del fanalet i les bèsties d'ulls vermells t'han menjat! Prem «Repetir»!";
-            state.arcadeRunning = false;
-            endArcadeGame(false);
-            return;
+            penalizeMistakeOrTimeout(100, true);
+            state.gaudiMeter = 45;
+            updateArcadeHud(lvl);
           }
         }
         const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -5271,46 +5367,95 @@
         return;
       }
 
-      // J5: 🏡 L'ARC PARABÒLIC DEL XALET DEL CATLLARÀS (Vent de muntanya + 3 vides d'estabilitat!)
+      // J5: 🚴 EN BIT EN BICI PUJANT CAP AL XALET DEL CATLLARÀS (Pedala, esquiva obstacles, fa TRUCS sense fallos, punxa roda a 0%!)
       if (arcDef.subMode === "gaudi_xalet") {
         const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        sky.addColorStop(0, "#0369a1"); sky.addColorStop(0.7, "#7dd3fc"); sky.addColorStop(1, "#15803d");
+        sky.addColorStop(0, "#0284c7"); sky.addColorStop(0.62, "#bae6fd"); sky.addColorStop(1, "#bbf7d0");
         ctx.fillStyle = sky; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#166534"; ctx.fillRect(0, 210, canvas.width, 40);
-        // Ratxes de vent del Catllaràs animades
-        ctx.strokeStyle = "rgba(255,255,255,0.45)"; ctx.lineWidth = 2;
-        for (let w = 0; w < 5; w++) {
-          const wx = ((w * 210 + t * 90) % 920) - 40;
-          const wy = 52 + w * 32;
-          ctx.beginPath(); ctx.moveTo(wx, wy); ctx.lineTo(wx + 55, wy); ctx.stroke();
+
+        // Xalet del Catllaràs esperant dalt del cim a la dreta!
+        drawXaletCatllaras(ctx, 775, 168, 1.0, prog >= 0.85, 0);
+
+        // Pista de muntanya en pujada cap al Xalet!
+        ctx.fillStyle = "#15803d";
+        ctx.beginPath(); ctx.moveTo(0, 250); ctx.lineTo(0, 218); ctx.lineTo(880, 152); ctx.lineTo(880, 250); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#b45309";
+        ctx.beginPath(); ctx.moveTo(0, 232); ctx.lineTo(880, 166); ctx.lineTo(880, 188); ctx.lineTo(0, 250); ctx.closePath(); ctx.fill();
+
+        // Pedres / arrels d'obstacle al camí que es van esquivant
+        for (let r = 0; r < 5; r++) {
+          const rx = ((r * 210 - state.arcadeCompleted * 45) % 860 + 860) % 860;
+          const ry = 232 - (rx / 880) * 66;
+          ctx.fillStyle = "#64748b";
+          ctx.beginPath(); ctx.arc(rx, ry, 8, Math.PI, 0); ctx.fill();
         }
-        drawXaletCatllaras(ctx, 440, 216, prog, prog >= 0.95, shakeX);
-        drawSprite(ctx, SPRITES.bitRobot, 220, 170, 2.8);
 
-        if (ent) drawWordBox(ctx, ent.word, ent.typedIndex, 560, 92, true);
+        // En Bit en bicicleta de muntanya pujant per la pista!
+        const bikeX = 110 + Math.round(prog * 530) + shakeX;
+        const baseRoadY = 224 - (bikeX / 880) * 66;
+        let jumpOffset = 0, trickAngle = 0;
+        if (state.bikeTrickTimer > 0) {
+          state.bikeTrickTimer--;
+          const p = 1 - (state.bikeTrickTimer / 38);
+          jumpOffset = Math.sin(p * Math.PI) * 58;
+          if (state.bikeTrick === "🔄 FRONTFLIP!") trickAngle = p * Math.PI * 2;
+          else if (state.bikeTrick === "🔁 BACKFLIP!") trickAngle = -p * Math.PI * 2;
+          else if (state.bikeTrick === "⭐ WHEELIE!") trickAngle = -0.45 * Math.sin(p * Math.PI);
+        }
 
-        ctx.fillStyle = "rgba(15,23,42,0.85)"; ctx.fillRect(14, 10, 440, 28);
+        ctx.save();
+        ctx.translate(bikeX, baseRoadY - 14 - jumpOffset);
+        ctx.rotate(-0.08 + trickAngle);
+        // Rodes de la bici (roda punxada si acaba de punxar!)
+        const isFlat = state.bikeFlatTimer > 0;
+        if (isFlat) state.bikeFlatTimer--;
+        [[-18, 12], [18, 12]].forEach(([wx, wy], wi) => {
+          ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.ellipse(wx, wy + (isFlat && wi === 1 ? 4 : 0), 11, isFlat && wi === 1 ? 5 : 11, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        });
+        // Quadre de la bici (vermell esportiu) + manillar
+        ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(-18, 12); ctx.lineTo(-2, -6); ctx.lineTo(14, -6); ctx.lineTo(18, 12);
+        ctx.moveTo(-2, -6); ctx.lineTo(2, 12); ctx.lineTo(14, -6);
+        ctx.moveTo(12, -12); ctx.lineTo(18, -12);
+        ctx.stroke();
+        // En Bit amb casc groc pedalant!
+        drawSprite(ctx, SPRITES.bitRobot, -14, -36, 2.3);
+        ctx.restore();
+
+        // Rètol del truc o roda punxada!
+        if (state.bikeTrickTimer > 0) {
+          ctx.fillStyle = "#fde047"; ctx.font = "900 18px sans-serif";
+          ctx.fillText(state.bikeTrick || "🚲 SALT!", bikeX - 35, baseRoadY - 76 - jumpOffset);
+        } else if (isFlat) {
+          ctx.fillStyle = "#ef4444"; ctx.font = "900 16px sans-serif";
+          ctx.fillText("💥 RODA PUNXADA! Inflant...", bikeX - 50, baseRoadY - 56);
+        }
+
+        if (ent) drawWordBox(ctx, ent.word, ent.typedIndex, Math.min(650, Math.max(80, bikeX - 20)), 52, true);
+
+        ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 445, 28);
         ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🏡 Xalet del Catllaràs (${state.arcadeCompleted}/${total}) · Estabilitat: ${"❤️".repeat(state.gaudiLives)}`, 22, 28);
+        ctx.fillText(`🚴 Bici al Catllaràs (${state.arcadeCompleted}/${total})`, 22, 28);
+        ctx.fillStyle = "#334155"; ctx.fillRect(265, 17, 175, 14);
+        ctx.fillStyle = state.gaudiMeter > 35 ? "#4ade80" : "#ef4444";
+        ctx.fillRect(265, 17, Math.round(1.75 * state.gaudiMeter), 14);
+        ctx.fillStyle = "#0f172a"; ctx.font = "bold 10px sans-serif";
+        ctx.fillText(`⚡ Energia ${Math.round(state.gaudiMeter)}%`, 276, 28);
         return;
       }
 
-      // J6: 🌌 NIT D'ESTELS AL MIRADOR DEL CATLLARÀS (3 estrelles + estels fugaços!)
+      // J6: 🌌 NIT D'ESTELS AL MIRADOR DEL CATLLARÀS (Sense tallar la partida abans d'hora!)
       if (arcDef.subMode === "gaudi_stars") {
         if (state.arcadeRunning && ent) {
           ent.x -= ent.speed;
           if (ent.x <= 80) {
-            state.gaudiLives = Math.max(0, state.gaudiLives - 1);
-            sfxError();
-            if (state.gaudiLives <= 0) {
-              state.gaudiLoseReason = "🌌 S'han escapat 3 estels fugaços darrere el Pedraforca! Torna-ho a provar!";
-              state.arcadeRunning = false;
-              setTimeout(() => endArcadeGame(false), 300);
-            } else {
-              ent.x = 790;
-              ent.typedIndex = 0;
-              updateArcadeHud(lvl);
-            }
+            penalizeMistakeOrTimeout(100, true);
+            ent.x = 790;
+            updateArcadeHud(lvl);
           }
         }
         const night = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -5653,6 +5798,15 @@
           if (lvl.gameMode === "gaudi") {
             state.gaudiMeter = Math.min(100, (state.gaudiMeter || 100) + 18);
             state.gaudiTileTimer = 100;
+            if (ent.subMode === "gaudi_xalet") {
+              if (state.bikeWordClean !== false) {
+                const TRICKS = ["🚲 SALT!", "🔄 FRONTFLIP!", "🔁 BACKFLIP!", "⭐ WHEELIE!"];
+                state.bikeTrick = TRICKS[state.arcadeCompleted % TRICKS.length];
+                state.bikeTrickTimer = 38;
+                spawnParticles(440, 120, "#fde047");
+              }
+              state.bikeWordClean = true;
+            }
           }
 
           state.arcadeEntities.shift();
@@ -5675,44 +5829,27 @@
 
         if (lvl.gameMode === "gaudi") {
           state.arcadeShake = 10;
-          if (ent.subMode === "gaudi_train") {
+          if (ent.subMode === "gaudi_train" || ent.subMode === "gaudi_lantern") {
             state.gaudiMeter = Math.max(0, state.gaudiMeter - 12);
             if (state.gaudiMeter <= 0) {
-              state.gaudiLoseReason = "💨 Ui! El Tren del Ciment s'ha quedat sense vapor abans d'arribar als Jardins Artigas!";
-              state.arcadeRunning = false;
-              setTimeout(() => endArcadeGame(false), 350);
+              penalizeMistakeOrTimeout(100, true);
+              state.gaudiMeter = 45;
+              updateArcadeHud(lvl);
               return;
             }
-          } else if (ent.subMode === "gaudi_lantern") {
+          } else if (ent.subMode === "gaudi_xalet") {
+            state.bikeWordClean = false;
             state.gaudiMeter = Math.max(0, state.gaudiMeter - 14);
             if (state.gaudiMeter <= 0) {
-              state.gaudiLoseReason = "🌑 S'ha apagat la llum del fanalet al bosc del Catllaràs! Torna-ho a provar!";
-              state.arcadeRunning = false;
-              setTimeout(() => endArcadeGame(false), 350);
+              state.bikeFlatTimer = 42;
+              penalizeMistakeOrTimeout(100, true);
+              state.gaudiMeter = 50;
+              updateArcadeHud(lvl);
               return;
-            }
-          } else if (ent.subMode === "gaudi_bridge" || ent.subMode === "gaudi_trencadis" || ent.subMode === "gaudi_xalet" || ent.subMode === "gaudi_stars") {
-            // Cada 2 errors seguits o en fallar una peça crítica resta 1 vida d'emoció (3 vides, o 4 en NESE adaptat!)
-            state._gaudiErrAcc = (state._gaudiErrAcc || 0) + 1;
-            if (state._gaudiErrAcc >= 2) {
-              state._gaudiErrAcc = 0;
-              state.gaudiLives = Math.max(0, state.gaudiLives - 1);
-              if (ent.subMode === "gaudi_bridge") state.gaudiSplashes.push({ x: ent.x, y: 205, t: 0 });
-              if (state.gaudiLives <= 0) {
-                const reasons = {
-                  gaudi_bridge: "🌊 Han caigut 3 pedres al riu Llobregat i l'arc ha cedit! Tornem a bastir el Pont dels Arcs!",
-                  gaudi_trencadis: "🧱 S'han esquerdats 3 tessel·les abans d'enganxar! Tornem a fer el trencadís!",
-                  gaudi_xalet: "💨 El vent del Catllaràs ha sacsejat massa la bastida! Tornem a aixecar l'arc parabòlic!",
-                  gaudi_stars: "🌌 S'han apagat les 3 estrelles del Mirador del Catllaràs! Torna-ho a provar!"
-                };
-                state.gaudiLoseReason = reasons[ent.subMode] || "Torna-ho a provar!";
-                state.arcadeRunning = false;
-                setTimeout(() => endArcadeGame(false), 350);
-                return;
-              }
             }
           }
           penalizeMistakeOrTimeout(18, false);
+          updateArcadeHud(lvl);
           return;
         }
         if (lvl.gameMode === "castells") {
