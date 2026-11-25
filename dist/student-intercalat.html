@@ -598,10 +598,11 @@
 
         <!-- Pista de cursa / prova activa -->
         <div id="tongue-race-view" style="display:none;position:relative;">
-          <!-- Compte enrere 3 - 2 - 1 - JA! -->
-          <div id="tongue-countdown-overlay" style="display:none;position:absolute;inset:0;background:rgba(15,23,42,0.72);border-radius:12px;z-index:20;align-items:center;justify-content:center;flex-direction:column;color:#fde047;">
-            <div style="font-size:1rem;font-weight:800;color:#ffffff;margin-bottom:0.2rem;">Preparats per a la cursa...</div>
+          <!-- Compte enrere 3 - 2 - 1 - JA! (amb botó Escolta'l que pausa i reinicia des de 3 en acabar l'àudio!) -->
+          <div id="tongue-countdown-overlay" style="display:none;position:absolute;inset:0;background:rgba(15,23,42,0.72);border-radius:12px;z-index:20;align-items:center;justify-content:center;flex-direction:column;color:#fde047;gap:0.5rem;">
+            <div style="font-size:1rem;font-weight:800;color:#ffffff;">Preparats per a la cursa...</div>
             <div id="tongue-countdown-num" style="font-size:4.2rem;font-weight:900;line-height:1;text-shadow:0 4px 16px rgba(0,0,0,0.45);">3</div>
+            <button type="button" id="btn-countdown-listen" style="background:#0284c7;color:#ffffff;border:2px solid #38bdf8;border-radius:999px;padding:0.4rem 1rem;font-weight:900;font-size:0.9rem;cursor:pointer;">🔊 Escolta'l! (pausa el compte)</button>
           </div>
 
           <!-- 2 carrils visuals: TU vs EN BIT (ocult en Mode Prova) -->
@@ -6719,6 +6720,14 @@
 
     document.getElementById("btn-back").onclick = () => {
       state.arcadeRunning = false;
+      if (state.screen === "tongue") {
+        const raceView = document.getElementById("tongue-race-view");
+        if (raceView && raceView.style.display !== "none") {
+          stopTongueRaceTimer();
+          openTongueGarden();
+          return;
+        }
+      }
       if (state.screen === "phases") showScreen("home");
       else showScreen("phases");
     };
@@ -6977,19 +6986,22 @@
       listEl.innerHTML = "";
       items.forEach((it, idx) => {
         const rec = recs[it.id] || {};
-        const passedRace = rec.bestMode === "tortuga" || rec.bestMode === "turbo";
+        const bitLvl = Number(rec.bitLevel || (rec.bestMode === "turbo" ? 3 : rec.bestMode === "tortuga" ? 1 : 0));
+        const nextBitLvl = Math.min(3, bitLvl + 1);
+        const bitSpeedMap = { 1: 4, 2: 8, 3: 15 };
+        const nextBitWpm = bitSpeedMap[nextBitLvl];
+        const passedRace = bitLvl >= 1 || rec.bestMode === "tortuga" || rec.bestMode === "turbo" || rec.bestMode === "bit" || rec.bestMode === "class" || rec.bestMode === "self";
         const prevRec = idx > 0 ? (recs[items[idx - 1].id] || {}) : null;
-        const unlocked = state.freeUnlock || idx === 0 || (prevRec && (prevRec.bestMode === "tortuga" || prevRec.bestMode === "turbo"));
+        const prevPassed = prevRec && (Number(prevRec.bitLevel || 0) >= 1 || prevRec.bestMode === "tortuga" || prevRec.bestMode === "turbo" || prevRec.bestMode === "bit" || prevRec.bestMode === "class" || prevRec.bestMode === "self");
+        const unlocked = state.freeUnlock || idx === 0 || Boolean(prevPassed);
 
         let badgeHtml = "";
         if (!unlocked) {
           badgeHtml = `<span style="font-size:0.75rem;font-weight:800;color:#64748b;">🔒 Bloquejat (supera l'anterior en Cursa)</span>`;
-        } else if (rec.bestMode === "turbo") {
-          badgeHtml = `<span style="font-size:0.78rem;font-weight:900;background:#fef08a;color:#713f12;border:1px solid #eab308;padding:2px 8px;border-radius:99px;">⚡ Turbo · ${rec.bestSec}s · ${rec.bestWpm} PPM · ${rec.bestErrors} fallos</span>`;
-        } else if (rec.bestMode === "tortuga") {
-          badgeHtml = `<span style="font-size:0.78rem;font-weight:900;background:#dcfce7;color:#14532d;border:1px solid #16a34a;padding:2px 8px;border-radius:99px;">🐢 Fet en Cursa Principiant (${rec.bestSec}s · ${rec.bestErrors} fallos)</span>`;
+        } else if (rec.bestWpm > 0) {
+          badgeHtml = `<span style="font-size:0.78rem;font-weight:900;background:#dcfce7;color:#14532d;border:1px solid #16a34a;padding:2px 8px;border-radius:99px;">🏅 Millor marca: ${rec.bestSec}s · ${rec.bestWpm} PPM · Nivell Bit ${bitLvl}/3</span>`;
         } else if (rec.practiced) {
-          badgeHtml = `<span style="font-size:0.75rem;font-weight:800;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:99px;">📝 Prova feta · Guanya una cursa per obrir el següent!</span>`;
+          badgeHtml = `<span style="font-size:0.75rem;font-weight:800;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:99px;">📝 Pràctica feta · Guanya una cursa per obrir el següent!</span>`;
         }
 
         const row = document.createElement("div");
@@ -7006,20 +7018,22 @@
           <div style="display:flex;gap:0.38rem;flex-wrap:wrap;">
             ${unlocked ? `
               <button type="button" class="btn-listen-emb" title="Escoltar" style="font-size:0.8rem;">🔊</button>
-              <button type="button" class="btn-mode-prova" style="font-size:0.8rem;background:#e0f2fe;border-color:#0284c7;color:#0369a1;">📝 Prova</button>
-              <button type="button" class="btn-mode-tortuga" style="font-size:0.8rem;background:#dcfce7;border-color:#16a34a;color:#14532d;">🐢 Cursa (Principiant)</button>
-              <button type="button" class="btn-mode-turbo" style="font-size:0.8rem;background:#fef08a;border-color:#ca8a04;color:#713f12;">⚡ Cursa Turbo</button>
-              ${state.tongueCompetition ? `<button type="button" class="btn-mode-class" style="font-size:0.8rem;background:#ede9fe;border-color:#7c3aed;color:#5b21b6;">🏆 Contra Companys</button>` : ""}
+              <button type="button" class="btn-mode-prova" style="font-size:0.8rem;background:#e0f2fe;border-color:#0284c7;color:#0369a1;">📝 Pràctica</button>
+              <button type="button" class="btn-mode-bit" style="font-size:0.8rem;background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:800;">🤖 Contra en Bit (N${nextBitLvl} · ${nextBitWpm} PPM)</button>
+              ${state.tongueCompetition
+                ? `<button type="button" class="btn-mode-class" style="font-size:0.8rem;background:#ede9fe;border-color:#7c3aed;color:#5b21b6;font-weight:800;">🏆 Contra Companys</button>`
+                : `<button type="button" class="btn-mode-self" style="font-size:0.8rem;background:#fef08a;border-color:#ca8a04;color:#713f12;font-weight:800;">👤 Contra Tu Mateix</button>`}
             ` : `<span style="font-size:1.3rem;">🔒</span>`}
           </div>
         `;
         if (unlocked) {
           row.querySelector(".btn-listen-emb").onclick = () => speakCatalanText(it.text);
           row.querySelector(".btn-mode-prova").onclick = () => startTongueRace(it, "prova");
-          row.querySelector(".btn-mode-tortuga").onclick = () => startTongueRace(it, "tortuga");
-          row.querySelector(".btn-mode-turbo").onclick = () => startTongueRace(it, "turbo");
+          row.querySelector(".btn-mode-bit").onclick = () => startTongueRace(it, "bit", nextBitLvl);
           const classBtn = row.querySelector(".btn-mode-class");
           if (classBtn) classBtn.onclick = () => startClassTongueRace(it);
+          const selfBtn = row.querySelector(".btn-mode-self");
+          if (selfBtn) selfBtn.onclick = () => startTongueRace(it, "self");
         }
         listEl.appendChild(row);
       });
@@ -7038,16 +7052,107 @@
       startTongueRace(item, "class");
     }
 
-    function startTongueRace(item, mode = "prova") {
+    function runTongueCountdown() {
+      const ov = document.getElementById("tongue-countdown-overlay");
+      const numEl = document.getElementById("tongue-countdown-num");
+      const listenBtn = document.getElementById("btn-countdown-listen");
+      if (tongueState.countdownTimerId) {
+        clearInterval(tongueState.countdownTimerId);
+        tongueState.countdownTimerId = null;
+      }
+      tongueState.isCountingDown = true;
+      let count = 3;
+      ov.style.display = "flex";
+      numEl.textContent = "3";
+      sfxTone(440, 120, "square", 0.06);
+
+      if (listenBtn) {
+        listenBtn.onclick = () => {
+          if (!tongueState.activeItem) return;
+          if (tongueState.countdownTimerId) {
+            clearInterval(tongueState.countdownTimerId);
+            tongueState.countdownTimerId = null;
+          }
+          numEl.textContent = "🔊";
+          if ("speechSynthesis" in window) {
+            try {
+              window.speechSynthesis.cancel();
+              const utt = new SpeechSynthesisUtterance(tongueState.activeItem.text);
+              utt.lang = "ca-ES";
+              utt.rate = 0.92;
+              let restarted = false;
+              const restartCd = () => {
+                if (restarted) return;
+                restarted = true;
+                if (state.screen === "tongue" && tongueState.isCountingDown) runTongueCountdown();
+              };
+              utt.onend = restartCd;
+              utt.onerror = restartCd;
+              window.speechSynthesis.speak(utt);
+              setTimeout(restartCd, Math.max(3000, tongueState.activeItem.text.length * 95));
+            } catch {
+              runTongueCountdown();
+            }
+          } else {
+            runTongueCountdown();
+          }
+        };
+      }
+
+      tongueState.countdownTimerId = setInterval(() => {
+        count--;
+        if (count > 0) {
+          numEl.textContent = String(count);
+          sfxTone(440, 120, "square", 0.06);
+        } else if (count === 0) {
+          numEl.textContent = "🏁 JA!";
+          sfxTone(880, 220, "square", 0.08);
+          tongueState.isCountingDown = false;
+          tongueState.startedAtMs = performance.now();
+          const charsPerSec = (Math.max(1, tongueState.speedWpm) * 5) / 60;
+          tongueState.raceTimerId = setInterval(() => {
+            if (!tongueState.activeItem || state.screen !== "tongue") {
+              stopTongueRaceTimer();
+              return;
+            }
+            const elapsedS = (performance.now() - tongueState.startedAtMs) / 1000;
+            tongueState.bitProgress = Math.min(1, (elapsedS * charsPerSec) / Math.max(1, tongueState.activeItem.text.length));
+            document.getElementById("race-bit-runner").style.left = `${6 + tongueState.bitProgress * 86}%`;
+            if (tongueState.selfBestWpm > 0) {
+              const selfCps = (tongueState.selfBestWpm * 5) / 60;
+              const selfProg = Math.min(1, (elapsedS * selfCps) / Math.max(1, tongueState.activeItem.text.length));
+              const sr = document.getElementById("race-self-runner");
+              if (sr) sr.style.left = `${6 + selfProg * 86}%`;
+            }
+          }, 100);
+          setTimeout(() => { ov.style.display = "none"; }, 420);
+          clearInterval(tongueState.countdownTimerId);
+          tongueState.countdownTimerId = null;
+          updateTongueShiftHint();
+        }
+      }, 750);
+    }
+
+    function startTongueRace(item, mode = "prova", bitLevelArg = null) {
       stopTongueRaceTimer();
       tongueState.activeItem = item;
-      tongueState.mode = mode; // "prova" | "tortuga" | "turbo" | "class"
+      tongueState.mode = mode; // "prova" | "bit" | "class" | "self"
       if (mode !== "class") {
         tongueState.rival = null;
         tongueState.classLeaderboard = null;
       }
-      const rivalWpm = (mode === "class" && tongueState.rival && tongueState.rival.wpm > 0) ? tongueState.rival.wpm : 12;
-      tongueState.speedWpm = mode === "class" ? rivalWpm : mode === "turbo" ? 18 : mode === "tortuga" ? 10 : 0;
+      const myRec = loadTongueRecords()[item.id] || {};
+      const curBitLvl = bitLevelArg || Math.min(3, Number(myRec.bitLevel || 0) + 1);
+      tongueState.bitLevel = curBitLvl;
+      const bitSpeeds = { 1: 4, 2: 8, 3: 15 };
+      const bestOwnWpm = Number(myRec.bestWpm || 0);
+      const bestOwnSec = Number(myRec.bestSec || 0);
+      const rivalWpm = (mode === "class" && tongueState.rival && tongueState.rival.wpm > 0) ? tongueState.rival.wpm : (bestOwnWpm || 4);
+
+      tongueState.speedWpm = mode === "bit" ? (bitSpeeds[curBitLvl] || 4) : mode === "class" ? rivalWpm : mode === "self" ? (bestOwnWpm || 4) : 0;
+      tongueState.selfBestWpm = (mode === "class" && bestOwnWpm > 0) ? bestOwnWpm : 0;
+      tongueState.selfBestSec = (mode === "class" && bestOwnSec > 0) ? bestOwnSec : 0;
+
       tongueState.cursor = 0;
       tongueState.errors = 0;
       tongueState.wrongFlash = false;
@@ -7067,21 +7172,21 @@
       const selfLaneEl = document.getElementById("race-self-lane");
       const selfLabelEl = document.getElementById("race-self-label");
       const selfRunnerEl = document.getElementById("race-self-runner");
-      const myRec = getTongueRecords()[item.id] || {};
-      tongueState.selfLastWpm = (mode === "class" && myRec.lastWpm > 0) ? myRec.lastWpm : (mode === "class" && myRec.bestWpm > 0 ? myRec.bestWpm : 0);
-      tongueState.selfLastSec = (mode === "class" && myRec.lastSec > 0) ? myRec.lastSec : (mode === "class" && myRec.bestSec > 0 ? myRec.bestSec : 0);
 
       if (mode === "class" && tongueState.rival) {
-        if (oppLabelEl) oppLabelEl.textContent = tongueState.rival.studentName.toUpperCase();
+        if (oppLabelEl) oppLabelEl.textContent = `${tongueState.rival.studentName.toUpperCase()} (${tongueState.rival.wpm} PPM)`;
         if (oppRunnerEl) oppRunnerEl.textContent = "🏃";
+      } else if (mode === "self") {
+        if (oppLabelEl) oppLabelEl.textContent = bestOwnWpm > 0 ? `EL TEU MILLOR (${bestOwnSec}s · ${bestOwnWpm} PPM)` : "EL TEU PRIMER RÈCORD (4 PPM)";
+        if (oppRunnerEl) oppRunnerEl.textContent = "👤";
       } else {
-        if (oppLabelEl) oppLabelEl.textContent = "EN BIT";
+        if (oppLabelEl) oppLabelEl.textContent = `EN BIT · N${curBitLvl} (${tongueState.speedWpm} PPM)`;
         if (oppRunnerEl) oppRunnerEl.textContent = "🤖";
       }
       if (selfLaneEl) {
-        if (mode === "class" && tongueState.selfLastWpm > 0) {
+        if (mode === "class" && tongueState.selfBestWpm > 0) {
           selfLaneEl.style.display = "block";
-          if (selfLabelEl) selfLabelEl.textContent = `LA TEVA ÚLTIMA (${tongueState.selfLastSec}s · ${tongueState.selfLastWpm} PPM)`;
+          if (selfLabelEl) selfLabelEl.textContent = `EL TEU MILLOR (${tongueState.selfBestSec}s · ${tongueState.selfBestWpm} PPM)`;
           if (selfRunnerEl) selfRunnerEl.style.left = "6%";
         } else {
           selfLaneEl.style.display = "none";
@@ -7090,62 +7195,28 @@
 
       const modeLabel = mode === "class"
         ? (tongueState.rival ? `🏆 COMPETICIÓ vs ${tongueState.rival.studentName} (${tongueState.rival.wpm} PPM)` : "🏆 COMPETICIÓ DE CLASSE (Sigues el 1r rècord!)")
-        : mode === "turbo" ? "⚡ CURSA TURBO (18 PPM)" : mode === "tortuga" ? "🐢 CURSA PRINCIPIANT (10 PPM)" : "📝 MODE PROVA (Pràctica sense temps)";
+        : mode === "self"
+        ? (bestOwnWpm > 0 ? `👤 CONTRA TU MATEIX (Millor: ${bestOwnSec}s · ${bestOwnWpm} PPM)` : "👤 CONTRA TU MATEIX (Marca el teu 1r rècord!)")
+        : mode === "bit"
+        ? `🤖 CONTRA EN BIT · Nivell ${curBitLvl} (${tongueState.speedWpm} PPM)`
+        : "📝 PRÀCTICA (Sense temps)";
       document.getElementById("tongue-active-badge").textContent = `${modeLabel} · ${item.flower} ${item.flowerName}`;
       document.getElementById("tongue-track-box").style.display = mode === "prova" ? "none" : "block";
       document.getElementById("race-player-runner").style.left = "6%";
       document.getElementById("race-bit-runner").style.left = "6%";
+
+      // Renderitza IMMEDIATAMENT el text correcte d'aquest embarbussament (mai en blanc ni el text de l'anterior!)
       renderTongueTape();
 
       if (mode === "prova") {
-        // En Mode Prova comença directament sense compte enrere ni rellotge!
+        document.getElementById("tongue-countdown-overlay").style.display = "none";
         tongueState.isCountingDown = false;
         tongueState.startedAtMs = performance.now();
         updateTongueShiftHint();
         return;
       }
 
-      // En Cursa Principiant i Cursa Turbo: Compte enrere 3 - 2 - 1 - JA! per sortir tots junts!
-      const ov = document.getElementById("tongue-countdown-overlay");
-      const numEl = document.getElementById("tongue-countdown-num");
-      tongueState.isCountingDown = true;
-      let count = 3;
-      ov.style.display = "flex";
-      numEl.textContent = "3";
-      sfxTone(440, 120, "square", 0.06);
-
-      tongueState.countdownTimerId = setInterval(() => {
-        count--;
-        if (count > 0) {
-          numEl.textContent = String(count);
-          sfxTone(440, 120, "square", 0.06);
-        } else if (count === 0) {
-          numEl.textContent = "🏁 JA!";
-          sfxTone(880, 220, "square", 0.08);
-          tongueState.isCountingDown = false;
-          tongueState.startedAtMs = performance.now();
-          const charsPerSec = (tongueState.speedWpm * 5) / 60;
-          tongueState.raceTimerId = setInterval(() => {
-            if (!tongueState.activeItem || state.screen !== "tongue") {
-              stopTongueRaceTimer();
-              return;
-            }
-            const elapsedS = (performance.now() - tongueState.startedAtMs) / 1000;
-            tongueState.bitProgress = Math.min(1, (elapsedS * charsPerSec) / Math.max(1, tongueState.activeItem.text.length));
-            document.getElementById("race-bit-runner").style.left = `${6 + tongueState.bitProgress * 86}%`;
-            if (tongueState.selfLastWpm > 0) {
-              const selfCps = (tongueState.selfLastWpm * 5) / 60;
-              const selfProg = Math.min(1, (elapsedS * selfCps) / Math.max(1, tongueState.activeItem.text.length));
-              const sr = document.getElementById("race-self-runner");
-              if (sr) sr.style.left = `${6 + selfProg * 86}%`;
-            }
-          }, 100);
-          setTimeout(() => { ov.style.display = "none"; }, 420);
-          clearInterval(tongueState.countdownTimerId);
-          tongueState.countdownTimerId = null;
-          updateTongueShiftHint();
-        }
-      }, 750);
+      runTongueCountdown();
     }
 
     function updateTongueShiftHint() {
@@ -7254,49 +7325,51 @@
 
           if (mode === "prova") {
             sfxFanfare();
-            // Mode Prova: marca com a practicat però NO desbloqueja el següent embarbussament!
             recs[it.id] = Object.assign({}, prev, { practiced: true });
             saveTongueRecords(recs);
-            statusEl.innerHTML = `<span style="color:#0369a1;font-size:0.98rem;">📝 Prova completada! (${durS}s · ${tongueState.errors} fallos). Pots repetir la prova o passar a la Cursa!</span>`;
+            const nextBL = Math.min(3, Number(prev.bitLevel || 0) + 1);
+            const bWpm = { 1: 4, 2: 8, 3: 15 }[nextBL];
+            statusEl.innerHTML = `<span style="color:#0369a1;font-size:0.98rem;">📝 Pràctica completada! (${durS}s · ${tongueState.errors} fallos). Ara pots competir contra en Bit o contra la teva marca!</span>`;
             actionsEl.style.display = "flex";
             actionsEl.innerHTML = `
-              <button type="button" id="btn-after-repeat-prova" style="background:#e0f2fe;border-color:#0284c7;color:#0369a1;font-weight:900;">🔄 Repetir Prova</button>
-              <button type="button" id="btn-after-tortuga" style="background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:900;">🐢 Fer Cursa (Principiant) →</button>
-              <button type="button" id="btn-after-turbo" style="background:#fef08a;border-color:#ca8a04;color:#713f12;font-weight:900;">⚡ Fer Cursa Turbo →</button>
+              <button type="button" id="btn-after-repeat-prova" style="background:#e0f2fe;border-color:#0284c7;color:#0369a1;font-weight:900;">🔄 Repetir Pràctica</button>
+              <button type="button" id="btn-after-bit" style="background:#dcfce7;border-color:#16a34a;color:#14532d;font-weight:900;">🤖 Contra en Bit (N${nextBL} · ${bWpm} PPM) →</button>
             `;
             document.getElementById("btn-after-repeat-prova").onclick = () => startTongueRace(it, "prova");
-            document.getElementById("btn-after-tortuga").onclick = () => startTongueRace(it, "tortuga");
-            document.getElementById("btn-after-turbo").onclick = () => startTongueRace(it, "turbo");
-          } else if (!beatBit) {
-            // NO HA GUANYAT LA CURSA -> NO es desbloqueja el següent embarbussament!
+            document.getElementById("btn-after-bit").onclick = () => startTongueRace(it, "bit", nextBL);
+          } else if (!beatBit && mode === "bit") {
+            // NO HA GUANYAT EN BIT -> desa igualment si ha millorat marca, però NO puja nivell ni obre següent!
             sfxErrorHit();
-            const badgeStr = mode === "turbo" ? "⚡ Cursa Turbo" : "🐢 Cursa Principiant";
-            statusEl.innerHTML = `<span style="color:#dc2626;font-size:1rem;">😅 En Bit ha arribat abans a la meta! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos). Has de guanyar la ${badgeStr} per obrir el següent!</span>`;
+            const badgeStr = `🤖 Contra en Bit (N${tongueState.bitLevel} · ${tongueState.speedWpm} PPM)`;
+            statusEl.innerHTML = `<span style="color:#dc2626;font-size:1rem;">😅 En Bit ha arribat abans a la meta! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos). Torna-ho a provar!</span>`;
             actionsEl.style.display = "flex";
             actionsEl.innerHTML = `
               <button type="button" id="btn-after-retry-race" class="primary" style="background:#db2777;border-color:#be185d;">🔄 Repetir ${badgeStr}</button>
-              <button type="button" id="btn-after-back-prova" style="background:#e0f2fe;border-color:#0284c7;color:#0369a1;font-weight:800;">📝 Practicar en Mode Prova</button>
+              <button type="button" id="btn-after-back-prova" style="background:#e0f2fe;border-color:#0284c7;color:#0369a1;font-weight:800;">📝 Tornar a Pràctica</button>
             `;
-            document.getElementById("btn-after-retry-race").onclick = () => startTongueRace(it, mode);
+            document.getElementById("btn-after-retry-race").onclick = () => startTongueRace(it, "bit", tongueState.bitLevel);
             document.getElementById("btn-after-back-prova").onclick = () => startTongueRace(it, "prova");
           } else {
-            // HA GUANYAT LA CURSA! Registra el rècord, fa florir la Flor del Berguedà i desbloqueja el següent!
+            // HA COMPLETAT / GUANYAT LA CURSA! Desa el MILLOR temps (serveix tant per Contra en Bit com per Contra Companys / Tu Mateix!)
             sfxFanfare();
-            const newBestMode = (prev.bestMode === "turbo" || mode === "turbo") ? "turbo" : "tortuga";
-            const prevLastWpm = Number(prev.lastWpm || prev.bestWpm || 0);
-            const prevLastSec = Number(prev.lastSec || prev.bestSec || 0);
+            const newBitLevel = mode === "bit" ? Math.max(Number(prev.bitLevel || 0), tongueState.bitLevel || 1) : Math.max(Number(prev.bitLevel || 0), 1);
+            const prevBestWpm = Number(prev.bestWpm || 0);
+            const prevBestSec = Number(prev.bestSec || 0);
+            const bestWpmNow = Math.max(prevBestWpm, wpm);
+            const bestSecNow = prevBestSec ? Math.min(prevBestSec, durS) : durS;
             recs[it.id] = {
               practiced: true,
-              bestMode: newBestMode,
-              bestWpm: Math.max(prev.bestWpm || 0, wpm),
-              bestSec: prev.bestSec ? Math.min(prev.bestSec, durS) : durS,
+              bestMode: newBitLevel >= 3 ? "turbo" : "tortuga",
+              bitLevel: newBitLevel,
+              bestWpm: bestWpmNow,
+              bestSec: bestSecNow,
               bestErrors: prev.bestErrors !== undefined ? Math.min(prev.bestErrors, tongueState.errors) : tongueState.errors,
               lastSec: durS,
               lastWpm: wpm
             };
             saveTongueRecords(recs);
 
-            const scoreToSave = newBestMode === "turbo" ? 5 : 4;
+            const scoreToSave = newBitLevel >= 3 ? 5 : 4;
             state.stepBarretines[it.id] = Math.max(state.stepBarretines[it.id] || 0, scoreToSave);
             saveProgress();
             const flEl = document.getElementById("header-flowers");
@@ -7305,7 +7378,7 @@
             recordTelemetrySession({
               phaseType: "proverb",
               stepId: it.id,
-              stepLabel: `🗣️ ${mode === "turbo" ? "⚡ Turbo" : "🐢 Cursa"}: «${it.text.slice(0, 24)}…»`,
+              stepLabel: `🗣️ ${mode === "class" ? "🏆 Companys" : mode === "self" ? "👤 Tu Mateix" : `🤖 Bit N${tongueState.bitLevel}`}: «${it.text.slice(0, 24)}…»`,
               wpmNet: wpm,
               accuracyPct: acc,
               errors: tongueState.errors,
@@ -7314,34 +7387,38 @@
               keyStats: {}
             });
 
-            const badgeStr = mode === "class" ? "🏆 Competició de Classe" : mode === "turbo" ? "⚡ Cursa Turbo" : "🐢 Cursa Principiant";
+            const badgeStr = mode === "class" ? "🏆 Competició de Classe" : mode === "self" ? "👤 Contra Tu Mateix" : `🤖 Contra en Bit (N${tongueState.bitLevel} · ${tongueState.speedWpm} PPM)`;
             let rankHtml = "";
+            const selfBeatMsg = prevBestWpm > 0
+              ? (wpm > prevBestWpm || (wpm === prevBestWpm && durS < prevBestSec)
+                ? ` · 🔥 <strong>Nou rècord personal!</strong> (abans: ${prevBestSec}s · ${prevBestWpm} PPM)`
+                : ` · 🏅 El teu millor temps: ${bestSecNow}s · ${bestWpmNow} PPM`)
+              : "";
             if (mode === "class") {
               const myName = (window.MecanoGoogleAuth && window.MecanoGoogleAuth.getSavedUser() && window.MecanoGoogleAuth.getSavedUser().name) || "Tu";
               const board = (tongueState.classLeaderboard || []).filter(r => r.studentName !== myName);
-              board.push({ studentName: myName, wpm, sec: durS, errors: tongueState.errors, isMe: true });
+              board.push({ studentName: myName, wpm: bestWpmNow, sec: bestSecNow, errors: tongueState.errors, isMe: true });
               board.sort((a, b) => (b.wpm - a.wpm) || (a.sec - b.sec));
               const myPos = board.findIndex(r => r.isMe) + 1;
               const medals = ["🥇", "🥈", "🥉"];
-              const topStr = board.slice(0, 3).map((r, i) => `${medals[i] || `#${i + 1}`} ${r.studentName} (${r.wpm} PPM · ${r.sec}s)`).join(" · ");
-              const selfBeatMsg = prevLastWpm > 0
-                ? (wpm > prevLastWpm || (wpm === prevLastWpm && durS < prevLastSec)
-                  ? ` · 🔥 <strong>Has superat la teva última marca!</strong> (abans: ${prevLastSec}s · ${prevLastWpm} PPM)`
-                  : ` · 👤 La teva última marca era: ${prevLastSec}s · ${prevLastWpm} PPM`)
-                : "";
+              const topStr = board.slice(0, 4).map((r, i) => `${medals[i] || `#${i + 1}`} ${r.studentName} (${r.wpm} PPM · ${r.sec}s)`).join(" · ");
               rankHtml = `<div style="margin-top:0.35rem;font-size:0.9rem;color:#5b21b6;background:#ede9fe;padding:0.35rem 0.65rem;border-radius:8px;">🏅 Has quedat en <strong>#${myPos} posició</strong> de ${board.length} alumnes!${selfBeatMsg}<br/><span style="font-size:0.78rem;">${topStr}</span></div>`;
+            } else if (selfBeatMsg) {
+              rankHtml = `<div style="margin-top:0.3rem;font-size:0.86rem;color:#1e40af;">${selfBeatMsg}</div>`;
             }
-            statusEl.innerHTML = `<span style="color:#15803d;font-size:1.02rem;">🏆 ${badgeStr} guanyada! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos) · Has fet florir ${it.flower} ${it.flowerName}!</span>${rankHtml}`;
+            const nextBL = Math.min(3, newBitLevel + 1);
+            const nextBWpm = { 1: 4, 2: 8, 3: 15 }[nextBL];
+            statusEl.innerHTML = `<span style="color:#15803d;font-size:1.02rem;">🏆 ${badgeStr} completada! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos) · Has fet florir ${it.flower} ${it.flowerName}!</span>${rankHtml}`;
             actionsEl.style.display = "flex";
             actionsEl.innerHTML = `
-              <button type="button" id="btn-after-repeat-race" style="background:#e0f2fe;border-color:#0284c7;color:#0c4a6e;font-weight:900;">🔄 Repetir aquest embarbussament</button>
-              <button type="button" id="btn-after-list" class="primary" style="background:#db2777;border-color:#be185d;">➡️ Tornar al Jardí (Següent embarbussament)</button>
-              ${mode === "tortuga" ? `<button type="button" id="btn-after-try-turbo" style="background:#fef08a;border-color:#ca8a04;color:#713f12;font-weight:900;">⚡ Provar en Turbo!</button>` : ""}
+              <button type="button" id="btn-after-repeat-race" style="background:#e0f2fe;border-color:#0284c7;color:#0c4a6e;font-weight:900;">🔄 Repetir</button>
+              ${mode === "bit" && newBitLevel < 3 ? `<button type="button" id="btn-after-next-bit" style="background:#fef08a;border-color:#ca8a04;color:#713f12;font-weight:900;">⚡ Següent Nivell Bit (N${nextBL} · ${nextBWpm} PPM)!</button>` : ""}
+              <button type="button" id="btn-after-list" class="primary" style="background:#db2777;border-color:#be185d;">➡️ Tornar al Jardí</button>
             `;
-            document.getElementById("btn-after-repeat-race").onclick = () => startTongueRace(it, mode);
+            document.getElementById("btn-after-repeat-race").onclick = () => startTongueRace(it, mode, tongueState.bitLevel);
+            const nextBitBtn = document.getElementById("btn-after-next-bit");
+            if (nextBitBtn) nextBitBtn.onclick = () => startTongueRace(it, "bit", nextBL);
             document.getElementById("btn-after-list").onclick = openTongueGarden;
-            const tryTurbo = document.getElementById("btn-after-try-turbo");
-            if (tryTurbo) tryTurbo.onclick = () => startTongueRace(it, "turbo");
           }
 
           tongueState.activeItem = null;
