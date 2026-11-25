@@ -588,7 +588,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;">
           <div>
             <h2 id="tongue-garden-title" style="margin:0;color:#9d174d;font-size:1.2rem;">🗣️ Jardí d'Embarbussaments</h2>
-            <div style="font-size:0.8rem;color:#64748b;">Primer fes <strong>📝 Prova</strong> si vols practicar, i guanya la <strong>🐢 Cursa</strong> o <strong>⚡ Turbo</strong> per obrir el següent!</div>
+            <div style="font-size:0.8rem;color:#64748b;">Primer fes <strong>📝 Pràctica</strong> si vols entrenar, i competeix <strong>🤖 Contra en Bit (4 · 8 · 15 PPM)</strong> o contra la teva millor marca / companys!</div>
           </div>
           <div id="tongue-garden-flowers" style="display:flex;gap:0.35rem;font-size:1.45rem;background:#fdf2f8;padding:0.3rem 0.7rem;border-radius:999px;border:1.5px solid #fbcfe8;"></div>
         </div>
@@ -607,20 +607,20 @@
 
           <!-- 2 carrils visuals: TU vs EN BIT (ocult en Mode Prova) -->
           <div id="tongue-track-box" style="background:linear-gradient(180deg,#dcfce7 0%,#bbf7d0 100%);border:2px solid #16a34a;border-radius:12px;padding:0.65rem 0.9rem;margin-bottom:0.75rem;">
-            <div style="position:relative;height:34px;border-bottom:2px dashed rgba(21,128,61,0.35);margin-bottom:0.35rem;">
-              <span style="position:absolute;left:0;top:6px;font-size:0.74rem;font-weight:900;color:#14532d;">TU</span>
-              <span style="position:absolute;right:2px;top:4px;font-size:1.1rem;">🏁</span>
-              <div id="race-player-runner" style="position:absolute;left:6%;top:2px;font-size:1.45rem;transition:left 0.1s linear;">🧑‍🎓</div>
+            <div style="position:relative;height:42px;border-bottom:2px dashed rgba(21,128,61,0.35);margin-bottom:0.35rem;">
+              <span style="position:absolute;left:0;top:-1px;font-size:0.72rem;font-weight:900;color:#14532d;">TU</span>
+              <span style="position:absolute;right:2px;top:12px;font-size:1.1rem;">🏁</span>
+              <div id="race-player-runner" style="position:absolute;left:6%;top:12px;font-size:1.4rem;transition:left 0.1s linear;">🧑‍🎓</div>
             </div>
-            <div style="position:relative;height:34px;">
-              <span id="race-opponent-label" style="position:absolute;left:0;top:6px;font-size:0.74rem;font-weight:900;color:#1e40af;">EN BIT</span>
-              <span style="position:absolute;right:2px;top:4px;font-size:1.1rem;">🏁</span>
-              <div id="race-bit-runner" style="position:absolute;left:6%;top:2px;font-size:1.45rem;transition:left 0.15s linear;">🤖</div>
+            <div style="position:relative;height:42px;">
+              <span id="race-opponent-label" style="position:absolute;left:0;top:-1px;font-size:0.72rem;font-weight:900;color:#1e40af;">EN BIT</span>
+              <span style="position:absolute;right:2px;top:12px;font-size:1.1rem;">🏁</span>
+              <div id="race-bit-runner" style="position:absolute;left:6%;top:12px;font-size:1.4rem;transition:left 0.15s linear;">🤖</div>
             </div>
-            <div id="race-self-lane" style="display:none;position:relative;height:34px;border-top:2px dashed rgba(124,58,237,0.35);margin-top:0.35rem;">
-              <span id="race-self-label" style="position:absolute;left:0;top:6px;font-size:0.74rem;font-weight:900;color:#6d28d9;">ÚLTIMA MARCA</span>
-              <span style="position:absolute;right:2px;top:4px;font-size:1.1rem;">🏁</span>
-              <div id="race-self-runner" style="position:absolute;left:6%;top:2px;font-size:1.35rem;opacity:0.8;transition:left 0.15s linear;">👤</div>
+            <div id="race-self-lane" style="display:none;position:relative;height:42px;border-top:2px dashed rgba(124,58,237,0.35);margin-top:0.35rem;">
+              <span id="race-self-label" style="position:absolute;left:0;top:-1px;font-size:0.72rem;font-weight:900;color:#6d28d9;">EL TEU MILLOR</span>
+              <span style="position:absolute;right:2px;top:12px;font-size:1.1rem;">🏁</span>
+              <div id="race-self-runner" style="position:absolute;left:6%;top:12px;font-size:1.35rem;opacity:0.85;transition:left 0.15s linear;">👤</div>
             </div>
           </div>
 
@@ -1495,6 +1495,8 @@
               if (myCfg.minBarretines) state.minBarretinesReq = Number(myCfg.minBarretines);
               if (myCfg.tongueCompetition === "0" || myCfg.tongueCompetition === false) state.tongueCompetition = false;
               else if (myCfg.tongueCompetition === "1" || myCfg.tongueCompetition === true) state.tongueCompetition = true;
+              if (myCfg.shortSession === "1" || myCfg.shortSession === true) state.shortSession = true;
+              else if (myCfg.shortSession === "0" || myCfg.shortSession === false) state.shortSession = false;
               const dv = document.getElementById("val-difficulty");
               const dl = { suau: "🐢 Suau", normal: "🦊 Normal", rapid: "⚡ Ràpid" };
               if (dv) dv.textContent = dl[state.difficulty] || "🦊 Normal";
@@ -1593,6 +1595,7 @@
       if (state.usedVoiceThisSession) tags.push("🔊 Veu");
       if (state.highContrast) tags.push("👁️ Alt contrast");
       if (state.dyslexia || state.fontScale > 1) tags.push("🔤 Lletra gran/Dislèxia");
+      if (state.shortSession) tags.push("📏 Sessió curta (12)");
       return tags;
     }
     function getMinBarretinesRequired() {
@@ -2150,7 +2153,7 @@
         } else if (state.stepId === "L03.G5") {
           cap.textContent = "🏡 Bastim l'arc parabòlic de pedra del Xalet del Catllaràs malgrat el vent de muntanya!";
         } else if (state.stepId === "L03.G6") {
-          cap.textContent = "🌌 Nit d'estels al Mirador del Catllaràs! Caça els estels fugaços amb els 6 dits!";
+          cap.textContent = "🦅 Vol d'Àliga des del Xalet del Catllaràs fins al Pedraforca! Travessa els anells daurats!";
         } else if (state.stepId === "L03.EXTRA") {
           cap.textContent = "🌊🌈 La Font Màgica de Colors d'en Gaudí! Barreja colors (S, D, F) i tria la forma (J, K, L)!";
         } else {
@@ -2760,11 +2763,11 @@
               <path d="M320,415 Q380,315 445,250 T520,175" fill="none" stroke="#38bdf8" stroke-width="26" opacity="0.88"/>
               <path d="M365,265 Q415,215 465,265" fill="none" stroke="#d6d3d1" stroke-width="12"/>
               <path d="M378,265 Q415,232 452,265" fill="none" stroke="#78716c" stroke-width="5"/>
-              <!-- Xalet del Catllaràs d'Antoni Gaudí (dreta: icònic arc parabòlic de pedra!) -->
-              <path d="M725,222 Q790,72 855,222 Z" fill="#d6d3d1" stroke="#44403c" stroke-width="3.5"/>
-              <path d="M744,222 Q790,104 836,222 Z" fill="#fef3c7" stroke="#92400e" stroke-width="2.5"/>
-              <rect x="777" y="182" width="26" height="40" rx="12" fill="#78350f"/>
-              <polygon points="790,128 776,154 804,154" fill="#0284c7" stroke="#78350f" stroke-width="2"/>
+              <!-- Xalet del Catllaràs d'Antoni Gaudí (dreta: desplaçat lleugerament a l'esquerra perquè la Clau 🔑 quedi neta!) -->
+              <path d="M695,222 Q760,72 825,222 Z" fill="#d6d3d1" stroke="#44403c" stroke-width="3.5"/>
+              <path d="M714,222 Q760,104 806,222 Z" fill="#fef3c7" stroke="#92400e" stroke-width="2.5"/>
+              <rect x="747" y="182" width="26" height="40" rx="12" fill="#78350f"/>
+              <polygon points="760,128 746,154 774,154" fill="#0284c7" stroke="#78350f" stroke-width="2"/>
               <!-- Camí principal 2D i branca rosa Extra -->
               <path d="" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="9" stroke-linecap="round" stroke-dasharray="1 16"/>
               <path d="" fill="none" stroke="#f472b6" stroke-width="6" stroke-linecap="round" stroke-dasharray="9 9"/>
@@ -2784,7 +2787,7 @@
             { id: "L03.D6", phaseType: "drill", label: "Missió 11", icon: "11", x: 83.5, y: 68 },
             { id: "L03.G6", phaseType: "arcade", label: "Missió 12", icon: "12", x: 89.5, y: 32 },
             { id: "L03.PROVERB", phaseType: "proverb", label: "🔑", icon: "🔑", x: 95.5, y: 52, isKey: true },
-            { id: "L03.EXTRA", phaseType: "arcade", label: "🌸 Extra", icon: "📐", x: 91, y: 84, isExtra: true }
+            { id: "L03.EXTRA", phaseType: "arcade", label: "🌸 Extra", icon: "🌈", x: 91, y: 84, isExtra: true }
           ];
           const mainPts3 = mapNodes.filter(n => !n.isExtra).map(n => ({ x: Math.round(n.x * 9), y: Math.round(n.y * 4.1) }));
           const l03PathD = mainPts3.map((pt, i) => (i === 0 ? `M${pt.x},${pt.y}` : `L${pt.x},${pt.y}`)).join(" ");
@@ -3166,7 +3169,7 @@
           berga_grallers: "🎺 Toca el Toc de Castells amb les 4 lletres (D, F, J, K) quan les notes arribin a la línia daurada!",
           berga_pinya: "🧱 Forma la pinya dels Castellers de Berga barrejant les 4 lletres (D, F, J, K)!",
           dual_climbers: "🏰 Diada Castellera! Construeix 4 castells seguits (Pilar de 4, Torre de 6, 3 de 7 i 4 de 8) fins a l'Enxaneta!",
-          berga_guitar_hero_pro: "🎸 Guitar Hero PRO! Clava la tecla exacta quan la nota passa per la línia daurada per fer Combo! Pots triar 8, 15 o 25 PPM.",
+          berga_guitar_hero_pro: "🎸 Guitar Hero PRO! Clava la tecla exacta quan la nota passa per la línia daurada per fer Combo! Pots triar 2, 4 o 8 PPM.",
           gaudi_train: "🚂 Engega el Tren del Ciment (S i L)! Escriu seguit perquè la pressió del vapor no baixi a zero!",
           gaudi_bridge: "🌉 Basteix el Pont dels Arcs dels Jardins Artigas (S i L)! Si una pedra toca l'aigua, baixa l'energia fins que la salvis!",
           gaudi_trencadis: "🧱 Construeix la Salamandra de Trencadís d'en Gaudí estil Minecraft amb la mà esquerra (S, D, F)!",
@@ -3385,14 +3388,17 @@
           sfxTone(880, 200, "square", 0.08);
         }
       }, 650);
-      state.arcadeTotal = arcDef.totalTargets || 10;
+      const baseTargets = arcDef.totalTargets || 10;
+      state.arcadeTotal = (state.shortSession && baseTargets >= 20 && baseTargets <= 24) ? 12 : baseTargets;
+      state.milestoneBanner = "";
+      state.milestoneBannerTimer = 0;
       state.climbFromStep = 0;
       state.climbJumpProgress = 1;
       state.recycledFlying = [];
       state.binFlashTimers = [0, 0, 0, 0];
       const arcCanvas = document.getElementById("arcade-canvas");
       if (arcCanvas) {
-        arcCanvas.height = (arcDef.subMode === "pedraforca_recycle" || arcDef.subMode === "berga_equip") ? 340 : 250;
+        arcCanvas.height = (arcDef.subMode === "pedraforca_recycle" || arcDef.subMode === "berga_equip") ? 290 : 250;
       }
       const speakBtn = document.getElementById("btn-speak-arcade");
       if (speakBtn) {
@@ -3838,23 +3844,25 @@
             ? "🎈 J1 · Vol en globus pel Berguedà seguint el riu Llobregat! Escriu les parelles D i K!"
             : ent.subMode === "berga_grallers"
             ? "🎺 J4 · Els Grallers de Berga! Només Mà Dreta (K + J): fes sonar el Toc de Castells!"
+            : ent.subMode === "berga_guitar_hero_pro"
+            ? "🎸 Extra · Guitar Hero PRO! Clava la tecla exacta a la línia daurada per sumar punts i ratxa (2, 4 o 8 PPM)!"
             : ent.subMode === "berga_pinya"
             ? "🧱 J5 · Fem la Pinya a Berga! Coordina la mà esquerra (D+F) i la mà dreta (K+J)!"
-            : "🏰 J6 · Gran Castell de Berga! Puja 2 castellers alhora combinant les 4 lletres (D, K, F, J)!";
+            : "🏰 J6 · Diada Castellera a Berga! Construeix 4 castells consecutius combinant les 4 lletres (D, K, F, J)!";
         } else if (lvl.gameMode === "gaudi") {
           hintEl.textContent = ent.subMode === "gaudi_train"
             ? "🚂 J1 · Tren del Ciment (S i L): escriu ràpid perquè el vapor no baixi a 0% abans d'arribar als Jardins Artigas!"
             : ent.subMode === "gaudi_bridge"
-            ? "🌉 J2 · Pont dels Arcs (Grups de 3 · S i L): encaixa les pedres sobre el Llobregat! Si cauen 3 pedres al riu, perds!"
+            ? "🌉 J2 · Pont dels Arcs (Grups de 3 · S i L): encaixa les pedres sobre el Llobregat! Si toca l'aigua, baixa l'energia!"
             : ent.subMode === "gaudi_trencadis"
-            ? "🧱 J3 · Construcció Minecraft (Mà Esq. S, D, F): col·loca blocs 3D de la Glorieta abans que s'acabi el temps! (3 blocs)"
+            ? "🧱 J3 · Salamandra d'en Gaudí (Mà Esq. S, D, F): col·loca blocs 3D abans que s'acabi el temps!"
             : ent.subMode === "gaudi_lantern"
             ? "🏮 J4 · Bosc del Catllaràs (Mà Dreta J, K, L): mantén encesa la llum o els animals d'ulls vermells se t'acostaran!"
             : ent.subMode === "gaudi_xalet"
-            ? "🏡 J5 · Xalet del Catllaràs (6 dits): basteix l'arc parabòlic d'en Gaudí! Vigila els 3 cops de vent de muntanya!"
+            ? "🚴 J5 · Bici cap al Xalet del Catllaràs (6 dits): pedala sense errors per fer trucs! Si falles frenes de cop!"
             : ent.subMode === "gaudi_stars"
-            ? "🌌 J6 · Mirador del Catllaràs (6 dits): caça els estels fugaços abans que marxin darrere el Pedraforca! (3 estrelles)"
-            : "📐 Extra · Plànols d'en Gaudí! Escriu el MIRALL SIMÈTRIC de l'esquerra (ex: s - d | d s)!";
+            ? "🦅 J6 · Vol d'Àliga des del Catllaràs (6 dits): passa pels anells daurats i agafa corrents tèrmiques amb ratxa!"
+            : "🌊🌈 Extra · Font Màgica d'en Gaudí! Barreja colors (S Vermell, D Groc, F Blau) i tria la forma (J Baix, K Alt, L Arc)!";
         } else if (lvl.gameMode === "sardana") {
           hintEl.textContent = "🎵 Segueix la melodia de la cobla i completa les notes dins del Cercle Daurat!";
         } else if (lvl.gameMode === "patum") {
@@ -3955,6 +3963,18 @@
         if (p.life > 0) remP.push(p);
       }
       state.arcadeParticles = remP;
+
+      // Micro-fites positives cada 8 objectius (motivació per a 3r–4t i TDAH en rondes de 24!)
+      if (state.milestoneBannerTimer > 0) {
+        state.milestoneBannerTimer--;
+        ctx.fillStyle = "rgba(22, 163, 74, 0.92)";
+        ctx.fillRect(290, 44, 300, 32);
+        ctx.strokeStyle = "#fde047"; ctx.lineWidth = 2.5;
+        ctx.strokeRect(290, 44, 300, 32);
+        ctx.fillStyle = "#ffffff"; ctx.font = "900 14px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(state.milestoneBanner || "🌟 MOLT BÉ!", 440, 65);
+        ctx.textAlign = "left";
+      }
 
       // Overlay visual del Compte Enrere 3 - 2 - 1 abans de començar cada joc!
       if (state.arcadeCountdown > 0) {
@@ -6319,6 +6339,19 @@
           state.arcadeEntities.shift();
           state.arcadeCompleted++;
 
+          // Micro-fites positives cada 8 encerts en jocs llargs (>= 18 objectius)!
+          if (state.arcadeTotal >= 18 && state.arcadeTotal <= 26) {
+            if (state.arcadeCompleted === 8) {
+              state.milestoneBanner = "🌟 1/3 FET! MOLT BÉ, SEGUEIX AIXÍ!";
+              state.milestoneBannerTimer = 85;
+              spawnParticles(440, 65, "#fde047");
+            } else if (state.arcadeCompleted === 16) {
+              state.milestoneBanner = "🔥 2/3 FET! JA QUEDA MOLT POC!";
+              state.milestoneBannerTimer = 85;
+              spawnParticles(440, 65, "#4ade80");
+            }
+          }
+
           if (state.arcadeCompleted >= state.arcadeTotal) {
             state.arcadeRunning = false;
             setTimeout(() => endArcadeGame(true), 400);
@@ -6353,7 +6386,8 @@
           } else if (ent.subMode === "gaudi_xalet") {
             state.bikeWordClean = false;
             state.bikeSpeed = Math.max(0.4, (state.bikeSpeed || 2.0) * 0.25);
-            state.bikeSkidTimer = 22;
+            state.bikeSkidTimer = 36;
+            spawnParticles(220, 212, "#f97316");
             state.gaudiMeter = Math.max(0, state.gaudiMeter - 14);
             if (state.gaudiMeter <= 0) {
               state.bikeFlatTimer = 42;
@@ -6533,6 +6567,16 @@
 
       const expectedChar = state.cursor < state.sequence.length ? state.sequence[state.cursor] : null;
       renderSupportKeyboardAndHands(expectedChar);
+      if (state.phaseType === "proverb" && expectedChar) {
+        const subEl = document.getElementById("tape-subtitle");
+        if (subEl) {
+          if (expectedChar !== expectedChar.toLowerCase() && expectedChar === expectedChar.toUpperCase()) {
+            subEl.innerHTML = `<span style="color:#b45309;background:#fef08a;padding:2px 8px;border-radius:6px;font-weight:900;">⬆️ Compte! La següent lletra és MAJÚSCULA (prem Shift + ${expectedChar})!</span>`;
+          } else {
+            subEl.textContent = "Respecta les MAJÚSCULES, minúscules, accents i puntuació! Pots activar el 🔊 Dictat paraula a paraula!";
+          }
+        }
+      }
     }
 
     function renderSupportKeyboardAndHands(expectedChar) {
@@ -6584,7 +6628,7 @@
       const activeFinger = targetKey ? targetKey.finger : null;
       document.getElementById("hands-caption").innerHTML = activeFinger
         ? FINGERS[activeFinger].labelCa
-        : "Completat!";
+        : (state.screen === "play" && state.phaseType === "arcade" ? "🧠 Pensa la combinació!" : "Completat!");
 
       const allFingers = [
         { id: "L-pinky", x: 10, y: 35, h: 42 },

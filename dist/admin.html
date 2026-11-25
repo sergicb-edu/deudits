@@ -725,6 +725,7 @@
             const diff = sc.difficulty || defaultTeacherCfg.difficulty || "normal";
             const minb = Number(sc.minBarretines || defaultTeacherCfg.minBarretines || 3);
             const comp = sc.tongueCompetition !== undefined && sc.tongueCompetition !== null ? String(sc.tongueCompetition) : "global";
+            const shortS = sc.shortSession === "1" || sc.shortSession === true ? "1" : "0";
             const safeStu = stu.replace(/"/g, "&quot;");
             return `
               <td>
@@ -740,6 +741,10 @@
                     <option value="3" ${minb === 3 ? "selected" : ""}>Mín. 3 Barretines</option>
                     <option value="4" ${minb === 4 ? "selected" : ""}>Mín. 4 Barretines</option>
                     <option value="5" ${minb === 5 ? "selected" : ""}>Mín. 5 Barretines</option>
+                  </select>
+                  <select class="stu-len-sel" data-stu="${safeStu}" style="font-size:0.75rem;padding:2px 5px;border-radius:6px;border:1px solid #86efac;font-weight:700;">
+                    <option value="0" ${shortS === "0" ? "selected" : ""}>📏 Sessió: Estàndard (24)</option>
+                    <option value="1" ${shortS === "1" ? "selected" : ""}>🌱 Sessió: Curta NESE (12)</option>
                   </select>
                   <select class="stu-comp-sel" data-stu="${safeStu}" style="font-size:0.75rem;padding:2px 5px;border-radius:6px;border:1px solid #c4b5fd;font-weight:700;">
                     <option value="global" ${comp === "global" ? "selected" : ""}>🗣️ Companys: Seguir global</option>
@@ -780,12 +785,14 @@
       async function savePerStudentCfg(stu) {
         const diffEl = tbody.querySelector(`.stu-diff-sel[data-stu="${CSS.escape(stu)}"]`);
         const minbEl = tbody.querySelector(`.stu-minb-sel[data-stu="${CSS.escape(stu)}"]`);
+        const lenEl  = tbody.querySelector(`.stu-len-sel[data-stu="${CSS.escape(stu)}"]`);
         const compEl = tbody.querySelector(`.stu-comp-sel[data-stu="${CSS.escape(stu)}"]`);
         const stEl = tbody.querySelector(`.stu-cfg-status[data-stu="${CSS.escape(stu)}"]`);
         if (!diffEl || !minbEl) return;
         const cfgObj = {
           difficulty: diffEl.value,
           minBarretines: Number(minbEl.value || 3),
+          shortSession: lenEl ? lenEl.value : "0",
           tongueCompetition: compEl ? compEl.value : "global"
         };
         if (stEl) { stEl.style.color = "#1d4ed8"; stEl.textContent = "⏳ Desant..."; }
@@ -803,7 +810,7 @@
           if (stEl) { stEl.style.color = "#dc2626"; stEl.textContent = "⚠️ Error en desar"; }
         }
       }
-      tbody.querySelectorAll(".stu-diff-sel, .stu-minb-sel, .stu-comp-sel").forEach(sel => {
+      tbody.querySelectorAll(".stu-diff-sel, .stu-minb-sel, .stu-len-sel, .stu-comp-sel").forEach(sel => {
         sel.onchange = () => savePerStudentCfg(sel.dataset.stu);
       });
     }
