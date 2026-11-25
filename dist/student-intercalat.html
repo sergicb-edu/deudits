@@ -1431,17 +1431,18 @@
     }
 
     // Partitura COMPLETA i EXACTA del Toc de Castells (1a Gralla, nota per nota!):
-    // sol'=G4(392.00), si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa=F5(698.46), sol=G5(783.99)
-    const G4 = 392.00, B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99;
+    // En notació de gralla, sol' = SOL AGUT (G5 = 783.99 Hz)!
+    // si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa=F5(698.46), sol/sol'=G5(783.99)
+    const B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99;
     const MELODY_TOC_DE_CASTELLS = [
-      // Entrada: sol' sol' sol'
-      G4, G4, G4,
+      // Entrada: sol' sol' sol' (SOL AGUT!)
+      G5, G5, G5,
       // Inici: re mi fa mi re do re · do si re sol' re si · re do si do mi re mi do re si
       D5, E5, F5, E5, D5, C5, D5,
-      C5, B4, D5, G4, D5, B4,
+      C5, B4, D5, G5, D5, B4,
       D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
       // Desenvolupament: si re sol' sol' re si do si do · re si mi re mi do re si do re · si do re mi re___ · sol mi re mi___
-      B4, D5, G4, G4, D5, B4, C5, B4, C5,
+      B4, D5, G5, G5, D5, B4, C5, B4, C5,
       D5, B4, E5, D5, E5, C5, D5, B4, C5, D5,
       B4, C5, D5, E5, D5,
       G5, E5, D5, E5,
@@ -1457,6 +1458,20 @@
       // Timbre brillant i reconeixible de gralla catalana
       sfxTone(freq, ms, "sawtooth", 0.075);
       sfxTone(freq * 2, Math.round(ms * 0.7), "triangle", 0.028);
+    }
+
+    function playTocDeCastellsPreview() {
+      // Reprodueix el fragment d'entrada i inici del Toc de Castells amb el ritme real!
+      const preview = [
+        [G5, 110], [G5, 110], [G5, 220],
+        [D5, 130], [E5, 130], [F5, 130], [E5, 130], [D5, 130], [C5, 130], [D5, 260],
+        [C5, 130], [B4, 130], [D5, 130], [G5, 220], [D5, 130], [B4, 240]
+      ];
+      let delay = 0;
+      preview.forEach(([freq, dur]) => {
+        setTimeout(() => sfxGrallaNote(freq, dur), delay);
+        delay += dur + 25;
+      });
     }
 
     function playTocDeCastellsPujada() {
@@ -2792,7 +2807,15 @@
       }
       const speakBtn = document.getElementById("btn-speak-arcade");
       if (speakBtn) {
-        speakBtn.style.display = (arcDef.subMode === "pedraforca_recycle" || arcDef.subMode === "berga_equip") ? "inline-flex" : "none";
+        if (arcDef.subMode === "pedraforca_recycle" || arcDef.subMode === "berga_equip") {
+          speakBtn.style.display = "inline-flex";
+          speakBtn.textContent = "🔊 Escoltar";
+        } else if (arcDef.subMode === "berga_grallers" || arcDef.subMode === "berga_pinya" || arcDef.subMode === "dual_climbers") {
+          speakBtn.style.display = "inline-flex";
+          speakBtn.textContent = "🎺 Escoltar Toc";
+        } else {
+          speakBtn.style.display = "none";
+        }
       }
       state.arcadeEntities = [];
       state.dodgedAsteroids = [];
@@ -5092,11 +5115,14 @@
       speakArcadeBtn.onclick = () => {
         const ent = getPrimaryEntity();
         if (ent && ent.itemName && "speechSynthesis" in window) {
+          state.usedVoiceThisSession = true;
           window.speechSynthesis.cancel();
           const utt = new SpeechSynthesisUtterance(ent.itemName);
           utt.lang = "ca-ES";
           utt.rate = 0.92;
           window.speechSynthesis.speak(utt);
+        } else {
+          playTocDeCastellsPreview();
         }
       };
     }
