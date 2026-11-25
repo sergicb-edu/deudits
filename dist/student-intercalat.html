@@ -933,7 +933,7 @@
           { id: "L03.G4", label: "J4: 🏮 Bosc del Catllaràs · Ulls Vermells (Mà Dreta J, K, L)", subMode: "gaudi_lantern", totalTargets: 24, isExtra: false },
           { id: "L03.G5", label: "J5: 🏡 L'Arc Parabòlic del Xalet del Catllaràs (Alternança 6 Dits)", subMode: "gaudi_xalet", totalTargets: 24, isExtra: false },
           { id: "L03.G6", label: "J6: 🦅 Vol d'Àliga des del Catllaràs al Pedraforca (6 Dits)", subMode: "gaudi_stars", totalTargets: 24, isExtra: false },
-          { id: "L03.EXTRA", label: "⭐ EXTRA: 📐 Els Plànols Simètrics d'en Gaudí (Raonament!)", subMode: "gaudi_blueprint", totalTargets: 12, isExtra: true }
+          { id: "L03.EXTRA", label: "⭐ EXTRA: 🚴 Parc de Trucs al Catllaràs · 6 Controls (S,D,F,J,K,L!)", subMode: "gaudi_blueprint", totalTargets: 16, isExtra: true }
         ]
       },
       {
@@ -3274,7 +3274,25 @@
       state.pedretSplashTimer = 0;
       state.castellBanner = "";
       state.castellBannerTimer = 0;
+      state.castellBalance = 100;
+      state.castellFallTimer = 0;
+      state.castellCompletedPreview = null;
+      state.cleanStreak = 0;
+      state.wordHadError = false;
+      state.bikeSpeed = 2.2;
+      state.bikeScroll = 0;
+      state.bikeSkidTimer = 0;
+      state.parkComboBuffer = {};
+      state.parkScore = 0;
+      state.parkActionText = "";
+      state.parkActionTimer = 0;
       if (!state.ghTargetPpm || ![2, 4, 8].includes(state.ghTargetPpm)) state.ghTargetPpm = 2;
+
+      // A Guitar Hero PRO no cal barra d'energia, només puntuació i ratxa!
+      const energyBarWrap = document.getElementById("arcade-energy-fill") && document.getElementById("arcade-energy-fill").parentElement;
+      if (energyBarWrap) {
+        energyBarWrap.style.display = arcDef.subMode === "berga_guitar_hero_pro" ? "none" : "";
+      }
 
       // Selector de 3 velocitats (8, 15, 25 PPM) només a Guitar Hero PRO!
       const ghBar = document.getElementById("gh-speed-bar");
@@ -3625,34 +3643,42 @@
           }];
         }
       } else if (lvl.gameMode === "gaudi") {
-        // NIVELL 3: EL TREN DEL CIMENT I L'UNIVERS GAUDÍ AL BERGUEDÀ (6 jocs amb emoció + Extra de simetria!)
+        // NIVELL 3: EL TREN DEL CIMENT I L'UNIVERS GAUDÍ AL BERGUEDÀ (6 jocs amb emoció + Extra Parc de Trucs 6 Controls!)
         if (arcDef.subMode === "gaudi_blueprint") {
-          const PUZZLES = [
-            { left: "s - d", ans: "ds", hint: "Mirall simètric de l'arc!" },
-            { left: "s - l", ans: "ls", hint: "Mirall simètric de l'arc!" },
-            { left: "d - f", ans: "fd", hint: "Mirall simètric de l'arc!" },
-            { left: "j - k", ans: "kj", hint: "Mirall simètric de l'arc!" },
-            { left: "k - l", ans: "lk", hint: "Mirall simètric de l'arc!" },
-            { left: "s - d - f", ans: "fds", hint: "Mirall simètric de 3 pedres!" },
-            { left: "j - k - l", ans: "lkj", hint: "Mirall simètric de 3 pedres!" },
-            { left: "s - l - s", ans: "sls", hint: "Arc simètric del Catllaràs!" },
-            { left: "d - k - f", ans: "fkd", hint: "Mirall simètric de 3 pedres!" },
-            { left: "l - j - d", ans: "djl", hint: "Mirall simètric de 3 pedres!" },
-            { left: "f - s - k", ans: "ksf", hint: "Clau de volta simètrica!" },
-            { left: "s - f - l", ans: "lfs", hint: "Últim plànol d'en Gaudí!" }
+          const OBSTACLES = [
+            { icon: "🌿", title: "Branca baixa! Ajup-te!", req: ["s"], trick: "⬇️ AJUPIT!" },
+            { icon: "🪨", title: "Roca al camí! Salta!", req: ["d"], trick: "⬆️ SALT!" },
+            { icon: "⛰️", title: "Pujada forta! Turbo!", req: ["f"], trick: "🚀 TURBO!" },
+            { icon: "🕳️", title: "Barranc ample! Super-Salt (Salta + Turbo)!", req: ["d", "f"], trick: "⚡ SUPER-SALT!" },
+            { icon: "📐", title: "Rampa Backflip! (Salta + Enrere)!", req: ["d", "j"], trick: "🔁 BACKFLIP!" },
+            { icon: "📐", title: "Rampa Frontflip! (Salta + Endavant)!", req: ["d", "k"], trick: "🔄 FRONTFLIP!" },
+            { icon: "🌀", title: "Anell d'aire! Turbo-Espiral (Turbo + Girar)!", req: ["f", "l"], trick: "🌀 TURBO-ESPIRAL!" },
+            { icon: "🌿", title: "Dues branques! Ajup-te ràpid!", req: ["s"], trick: "⬇️ AJUPIT!" },
+            { icon: "🪨", title: "Pedra grossa! Salta!", req: ["d"], trick: "⬆️ SALT!" },
+            { icon: "🕳️", title: "Riuet al sender! Super-Salt (Salta + Turbo)!", req: ["d", "f"], trick: "⚡ SUPER-SALT!" },
+            { icon: "📐", title: "Mega Rampa! Backflip (Salta + Enrere)!", req: ["d", "j"], trick: "🔁 MEGA BACKFLIP!" },
+            { icon: "📐", title: "Salt del Xalet! Frontflip (Salta + Endavant)!", req: ["d", "k"], trick: "🔄 MEGA FRONTFLIP!" },
+            { icon: "🌀", title: "Corrent d'aire! Turbo-Espiral (Turbo + Girar)!", req: ["f", "l"], trick: "🌀 ESPIRAL PRO!" },
+            { icon: "⛰️", title: "Última pujada! Turbo!", req: ["f"], trick: "🚀 TURBO MÀXIM!" },
+            { icon: "📐", title: "Rampa final! Backflip (Salta + Enrere)!", req: ["d", "j"], trick: "🏆 BACKFLIP FINAL!" },
+            { icon: "🏁", title: "Meta del Catllaràs! Turbo-Espiral (Turbo + Girar)!", req: ["f", "l"], trick: "🎉 ARRIBADA ÈPICA!" }
           ];
-          const p = PUZZLES[state.arcadeCompleted % PUZZLES.length];
+          const ob = OBSTACLES[state.arcadeCompleted % OBSTACLES.length];
+          state.parkComboBuffer = {};
           state.arcadeEntities = [{
             id: Date.now(),
-            word: p.ans,
+            word: ob.req.join(""),
+            reqKeys: ob.req,
             typedIndex: 0,
+            isParkTrick: true,
             isLogicCode: true,
-            sequenceText: `${p.left}  |  [ ? ]`,
-            logicHint: p.hint,
+            obsIcon: ob.icon,
+            obsTitle: ob.title,
+            obsTrick: ob.trick,
             subMode: "gaudi_blueprint",
-            x: 420,
-            y: 120,
-            speed: 0
+            x: 780,
+            y: 168,
+            speed: 1.55 * getSpeedMultiplier()
           }];
         } else {
           const rawW = generateWordByAct(lvl, state.arcadeCompleted, state.arcadeTotal, arcDef.subMode);
@@ -3721,7 +3747,11 @@
       const hintEl = document.getElementById("arcade-hint-text");
 
       if (ent) {
-        if (ent.isLogicCode) {
+          if (ent.isParkTrick) {
+            const done = Object.keys(state.parkComboBuffer || {}).map(k => k.toUpperCase()).join("+");
+            wordEl.innerHTML = `${ent.obsIcon} ${ent.obsTitle} <span style="color:#4ade80;margin-left:6px;">${done ? `[${done}]` : ""}</span>`;
+            renderSupportKeyboardAndHands(null);
+          } else if (ent.isLogicCode) {
           const done = ent.word.slice(0, ent.typedIndex);
           wordEl.innerHTML = `🧩 Dedueix què falta al [ ? ] <span style="color:#4ade80;">${done}</span>`;
           renderSupportKeyboardAndHands(null);
@@ -5025,24 +5055,54 @@
         drawCastellerBerga(baseX + i * 16, 210 + (Math.abs(i) % 2) * 3, 0.85, false, false);
       }
 
-      // DIADA CASTELLERA A BERGA (24 encerts = 4 castells consecutius! Cada encert puja 1 fila real!)
-      // 1) Pilar de 4 (4 pisos, 1 per pis) · 2) Torre de 6 (6 pisos, 2 per pis) · 3) 3 de 7 (7 pisos, 3 per pis) · 4) 4 de 8 + Enxaneta (7 pisos, 4 per pis)!
+      // DIADA CASTELLERA A BERGA (24 encerts = 4 castells consecutius + Barra d'equilibri que fa trontollar i caure de costat!)
       const DIADA = [
         { name: "Pilar de 4", cols: 1, floors: 4, start: 0 },
         { name: "Torre de 6", cols: 2, floors: 6, start: 4 },
         { name: "3 de 7", cols: 3, floors: 7, start: 10 },
         { name: "4 de 8", cols: 4, floors: 7, start: 17 }
       ];
-      const curCastell = DIADA.find(c => state.arcadeCompleted < c.start + c.floors) || DIADA[DIADA.length - 1];
-      const builtFloors = Math.min(curCastell.floors, Math.max(0, state.arcadeCompleted - curCastell.start));
+      // Barra d'equilibri del castell (baixa lentament; si arriba a 0%, el castell cau de costat!)
+      const castDrain = isCurrentStepAutoAdapted() ? 0.055 : (state.difficulty === "suau" ? 0.075 : state.difficulty === "rapid" ? 0.14 : 0.1);
+      if (state.arcadeRunning && ent && state.castellBannerTimer <= 0 && state.castellFallTimer <= 0) {
+        state.castellBalance = Math.max(0, (state.castellBalance !== undefined ? state.castellBalance : 100) - castDrain);
+        if (state.castellBalance <= 0) {
+          state.castellFallTimer = 46;
+          penalizeMistakeOrTimeout(100, true);
+          state.castellBalance = 55;
+          updateArcadeHud(lvl);
+        }
+      }
+
+      // Si s'acaba de completar un castell, MANTENIM VISIBLE el castell carregat amb l'Enxaneta mentre surt el rètol!
+      const showingFinished = state.castellBannerTimer > 0 && state.castellCompletedPreview;
+      const curCastell = showingFinished
+        ? state.castellCompletedPreview
+        : (DIADA.find(c => state.arcadeCompleted < c.start + c.floors) || DIADA[DIADA.length - 1]);
+      const builtFloors = showingFinished
+        ? curCastell.floors
+        : Math.min(curCastell.floors, Math.max(0, state.arcadeCompleted - curCastell.start));
       const floorStepY = Math.min(27, Math.floor(150 / curCastell.floors));
 
+      // Inclinació/trontoll segons equilibri (i caiguda de costat si castellFallTimer > 0!)
+      let tiltAngle = 0;
+      if (state.castellFallTimer > 0) {
+        state.castellFallTimer--;
+        const fallP = Math.sin((state.castellFallTimer / 46) * Math.PI);
+        tiltAngle = fallP * 1.15;
+      } else if (!showingFinished && (state.castellBalance || 100) < 55) {
+        const instab = (55 - state.castellBalance) / 55;
+        tiltAngle = Math.sin(performance.now() * 0.015) * (0.08 + instab * 0.28);
+      }
+
+      ctx.save();
+      ctx.translate(baseX, 208);
+      ctx.rotate(tiltAngle);
       for (let f = 1; f <= builtFloors; f++) {
-        const fy = 205 - f * floorStepY;
-        const fx = baseX + sway * (f * 0.25);
+        const fy = -f * floorStepY;
+        const fx = sway * (f * 0.22);
         const isLastTop = (f === curCastell.floors);
         if (isLastTop) {
-          // Enxaneta amb casc groc fent l'aleta al cim!
           drawCastellerBerga(fx, fy - 4, 0.8, true, true);
         } else {
           const cols = curCastell.cols;
@@ -5051,6 +5111,15 @@
             drawCastellerBerga(fx + offset, fy, 0.84, false, false);
           }
         }
+      }
+      ctx.restore();
+
+      if (state.castellFallTimer > 0) {
+        ctx.fillStyle = "#ef4444";
+        ctx.font = "900 18px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("💥 LLENYA! El castell ha caigut de costat! Tornem-hi!", 440, 82);
+        ctx.textAlign = "left";
       }
 
       // 2 Castellers pujant pels costats (Esquerra = D/F, Dreta = K/J) amb saltironet!
@@ -5063,11 +5132,17 @@
         drawWordBox(ctx, ent.word, ent.typedIndex, baseX - 44, 18, true);
       }
 
-      ctx.fillStyle = "rgba(15,23,42,0.82)";
-      ctx.fillRect(14, 12, 390, 24);
+      ctx.fillStyle = "rgba(15,23,42,0.85)";
+      ctx.fillRect(14, 12, 540, 26);
       ctx.fillStyle = "#fde047";
       ctx.font = "bold 12px sans-serif";
-      ctx.fillText(`🏰 Diada a Berga · ${curCastell.name} (Fila ${builtFloors}/${curCastell.floors}) · Total ${state.arcadeCompleted}/${state.arcadeTotal}`, 22, 28);
+      const streakStrC = state.cleanStreak >= 2 ? ` · 🔥 RATXA x${state.cleanStreak}` : "";
+      ctx.fillText(`🏰 ${curCastell.name} (Fila ${builtFloors}/${curCastell.floors})${streakStrC}`, 22, 29);
+      ctx.fillStyle = "#334155"; ctx.fillRect(390, 18, 152, 13);
+      ctx.fillStyle = (state.castellBalance || 100) > 40 ? "#4ade80" : "#ef4444";
+      ctx.fillRect(390, 18, Math.round(1.52 * (state.castellBalance || 100)), 13);
+      ctx.fillStyle = "#0f172a"; ctx.font = "bold 10px sans-serif";
+      ctx.fillText("⚖️ Equilibri", 398, 28);
 
       // Medalles persistents dels 4 castells completats (perquè quedi claríssim que cada castell s'ha DESCARREGAT amb èxit!)
       const badges = [
@@ -5426,16 +5501,18 @@
         drawVoxelBlock(6, -6, 15, "#facc15", "#fef08a", "#ca8a04");
         ctx.restore();
 
-        if (ent) drawWordBox(ctx, ent.word, ent.typedIndex, 635, 118, true);
+        // Les lletres a teclejar apareixen directament SOBRE el bloc que en Bit-Steve té a les mans!
+        if (ent) drawWordBox(ctx, ent.word, ent.typedIndex, Math.min(720, Math.max(40, sx + 14)), Math.max(42, sy - 38), true);
 
-        ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 520, 28);
+        ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 560, 28);
         ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🦎 Salamandra d'en Gaudí · Minecraft (${state.arcadeCompleted}/${total} blocs)`, 22, 28);
-        ctx.fillStyle = "#334155"; ctx.fillRect(365, 17, 155, 14);
+        const stM = state.cleanStreak >= 2 ? ` · 🔥 RATXA x${state.cleanStreak}` : "";
+        ctx.fillText(`🦎 Salamandra Gaudí (${state.arcadeCompleted}/${total})${stM}`, 22, 28);
+        ctx.fillStyle = "#334155"; ctx.fillRect(395, 17, 165, 14);
         ctx.fillStyle = state.gaudiTileTimer > 35 ? "#4ade80" : "#ef4444";
-        ctx.fillRect(365, 17, Math.round(1.55 * state.gaudiTileTimer), 14);
+        ctx.fillRect(395, 17, Math.round(1.65 * state.gaudiTileTimer), 14);
         ctx.fillStyle = "#0f172a"; ctx.font = "bold 10px sans-serif";
-        ctx.fillText("⏳ Temps del bloc", 374, 28);
+        ctx.fillText("⏳ Temps del bloc", 406, 28);
         return;
       }
 
@@ -5507,37 +5584,49 @@
         return;
       }
 
-      // J5: 🚴 EN BIT EN BICI PUJANT CAP AL XALET DEL CATLLARÀS (Pedala, esquiva obstacles, fa TRUCS sense fallos, punxa roda a 0%!)
+      // J5: 🚴 JOC DE PLATAFORMES EN BICI CAP AL XALET DEL CATLLARÀS (Avança amb scrolling real, accelera en encertar, frena de cop en fallar, fa trucs!)
       if (arcDef.subMode === "gaudi_xalet") {
+        if (state.arcadeRunning) {
+          state.bikeSpeed = Math.max(1.2, (state.bikeSpeed || 2.0) * 0.992);
+          state.bikeScroll = (state.bikeScroll || 0) + state.bikeSpeed;
+        }
         const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
         sky.addColorStop(0, "#0284c7"); sky.addColorStop(0.62, "#bae6fd"); sky.addColorStop(1, "#bbf7d0");
         ctx.fillStyle = sky; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Xalet del Catllaràs esperant dalt del cim a la dreta!
-        drawXaletCatllaras(ctx, 775, 168, 1.0, prog >= 0.85, 0);
+        // Muntanyes i pins passant en paral·laxi real (estil joc de bicis!)
+        const sc = state.bikeScroll || 0;
+        ctx.fillStyle = "#166534";
+        for (let m = -1; m < 5; m++) {
+          const mx = m * 260 - ((sc * 0.25) % 260);
+          ctx.beginPath(); ctx.moveTo(mx, 210); ctx.lineTo(mx + 130, 88); ctx.lineTo(mx + 260, 210); ctx.fill();
+        }
+        // Xalet del Catllaràs apropant-se cada cop més a mesura que avances!
+        const xaletDistX = 960 - prog * 230;
+        if (xaletDistX < 920) drawXaletCatllaras(ctx, xaletDistX, 176, 1.0, prog >= 0.85, 0);
 
-        // Pista de muntanya en pujada cap al Xalet!
-        ctx.fillStyle = "#15803d";
-        ctx.beginPath(); ctx.moveTo(0, 250); ctx.lineTo(0, 218); ctx.lineTo(880, 152); ctx.lineTo(880, 250); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = "#b45309";
-        ctx.beginPath(); ctx.moveTo(0, 232); ctx.lineTo(880, 166); ctx.lineTo(880, 188); ctx.lineTo(0, 250); ctx.closePath(); ctx.fill();
-
-        // Pedres / arrels d'obstacle al camí que es van esquivant
-        for (let r = 0; r < 5; r++) {
-          const rx = ((r * 210 - state.arcadeCompleted * 45) % 860 + 860) % 860;
-          const ry = 232 - (rx / 880) * 66;
-          ctx.fillStyle = "#64748b";
-          ctx.beginPath(); ctx.arc(rx, ry, 8, Math.PI, 0); ctx.fill();
+        // Pista de terra amb línies de velocitat + rampes i pedres passant ràpid cap enrere!
+        ctx.fillStyle = "#15803d"; ctx.fillRect(0, 198, canvas.width, 52);
+        ctx.fillStyle = "#b45309"; ctx.fillRect(0, 210, canvas.width, 32);
+        ctx.fillStyle = "#fde68a";
+        for (let d = 0; d < 14; d++) {
+          const dx = ((d * 80 - (sc * 1.4)) % 1120 + 1120) % 1120 - 80;
+          ctx.fillRect(dx, 224, 34, 4);
+        }
+        for (let r = 0; r < 4; r++) {
+          const rx = ((r * 260 - (sc * 1.4)) % 1040 + 1040) % 1040 - 60;
+          ctx.fillStyle = "#78350f";
+          ctx.beginPath(); ctx.moveTo(rx, 214); ctx.lineTo(rx + 36, 214); ctx.lineTo(rx + 36, 196); ctx.closePath(); ctx.fill();
         }
 
-        // En Bit en bicicleta de muntanya pujant per la pista!
-        const bikeX = 110 + Math.round(prog * 530) + shakeX;
-        const baseRoadY = 224 - (bikeX / 880) * 66;
+        // En Bit en bici de muntanya (rodes amb radis girant segons bikeScroll!)
+        const bikeX = 210 + Math.min(180, (state.bikeSpeed - 1.2) * 28) + shakeX;
+        const baseRoadY = 212;
         let jumpOffset = 0, trickAngle = 0;
         if (state.bikeTrickTimer > 0) {
           state.bikeTrickTimer--;
           const p = 1 - (state.bikeTrickTimer / 38);
-          jumpOffset = Math.sin(p * Math.PI) * 58;
+          jumpOffset = Math.sin(p * Math.PI) * 64;
           if (state.bikeTrick === "🔄 FRONTFLIP!") trickAngle = p * Math.PI * 2;
           else if (state.bikeTrick === "🔁 BACKFLIP!") trickAngle = -p * Math.PI * 2;
           else if (state.bikeTrick === "⭐ WHEELIE!") trickAngle = -0.45 * Math.sin(p * Math.PI);
@@ -5545,46 +5634,55 @@
 
         ctx.save();
         ctx.translate(bikeX, baseRoadY - 14 - jumpOffset);
-        ctx.rotate(-0.08 + trickAngle);
-        // Rodes de la bici (roda punxada si acaba de punxar!)
+        ctx.rotate(trickAngle);
         const isFlat = state.bikeFlatTimer > 0;
         if (isFlat) state.bikeFlatTimer--;
+        const wheelAng = (sc * 0.14);
         [[-18, 12], [18, 12]].forEach(([wx, wy], wi) => {
           ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 4;
           ctx.beginPath();
-          ctx.ellipse(wx, wy + (isFlat && wi === 1 ? 4 : 0), 11, isFlat && wi === 1 ? 5 : 11, 0, 0, Math.PI * 2);
+          ctx.ellipse(wx, wy + (isFlat && wi === 1 ? 4 : 0), 12, isFlat && wi === 1 ? 5 : 12, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          // Radis girant!
+          ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(wx + Math.cos(wheelAng) * 9, wy + Math.sin(wheelAng) * 9);
+          ctx.lineTo(wx - Math.cos(wheelAng) * 9, wy - Math.sin(wheelAng) * 9);
           ctx.stroke();
         });
-        // Quadre de la bici (vermell esportiu) + manillar
         ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 3.5;
         ctx.beginPath();
         ctx.moveTo(-18, 12); ctx.lineTo(-2, -6); ctx.lineTo(14, -6); ctx.lineTo(18, 12);
         ctx.moveTo(-2, -6); ctx.lineTo(2, 12); ctx.lineTo(14, -6);
         ctx.moveTo(12, -12); ctx.lineTo(18, -12);
         ctx.stroke();
-        // En Bit amb casc groc pedalant!
         drawSprite(ctx, SPRITES.bitRobot, -14, -36, 2.3);
         ctx.restore();
 
-        // Rètol del truc o roda punxada!
+        if (state.bikeSkidTimer > 0) {
+          state.bikeSkidTimer--;
+          ctx.fillStyle = "#f97316"; ctx.font = "900 15px sans-serif";
+          ctx.fillText("🛑 FRENADA!", bikeX - 75, baseRoadY - 26);
+        }
         if (state.bikeTrickTimer > 0) {
           ctx.fillStyle = "#fde047"; ctx.font = "900 18px sans-serif";
-          ctx.fillText(state.bikeTrick || "🚲 SALT!", bikeX - 35, baseRoadY - 76 - jumpOffset);
+          ctx.fillText(state.bikeTrick || "🚲 SALT!", bikeX - 35, baseRoadY - 82 - jumpOffset);
         } else if (isFlat) {
           ctx.fillStyle = "#ef4444"; ctx.font = "900 16px sans-serif";
           ctx.fillText("💥 RODA PUNXADA! Inflant...", bikeX - 50, baseRoadY - 56);
         }
 
-        if (ent) drawWordBox(ctx, ent.word, ent.typedIndex, Math.min(650, Math.max(80, bikeX - 20)), 52, true);
+        if (ent) drawWordBox(ctx, ent.word, ent.typedIndex, Math.min(640, Math.max(120, bikeX + 45)), 56, true);
 
-        ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 445, 28);
+        ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 520, 28);
         ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🚴 Bici al Catllaràs (${state.arcadeCompleted}/${total})`, 22, 28);
-        ctx.fillStyle = "#334155"; ctx.fillRect(265, 17, 175, 14);
+        const stB = state.cleanStreak >= 2 ? ` · 🔥 RATXA x${state.cleanStreak}` : "";
+        ctx.fillText(`🚴 Bici (${state.arcadeCompleted}/${total}) · ${Math.round(state.bikeSpeed * 8)} km/h${stB}`, 22, 28);
+        ctx.fillStyle = "#334155"; ctx.fillRect(350, 17, 175, 14);
         ctx.fillStyle = state.gaudiMeter > 35 ? "#4ade80" : "#ef4444";
-        ctx.fillRect(265, 17, Math.round(1.75 * state.gaudiMeter), 14);
+        ctx.fillRect(350, 17, Math.round(1.75 * state.gaudiMeter), 14);
         ctx.fillStyle = "#0f172a"; ctx.font = "bold 10px sans-serif";
-        ctx.fillText(`⚡ Energia ${Math.round(state.gaudiMeter)}%`, 276, 28);
+        ctx.fillText(`⚡ Energia ${Math.round(state.gaudiMeter)}%`, 360, 28);
         return;
       }
 
@@ -5640,27 +5738,56 @@
         return;
       }
 
-      // EXTRA: 📐 ELS PLÀNOLS SIMÈTRICS D'EN GAUDÍ (Raonament arquitectònic!)
-      ctx.fillStyle = "#1e3a8a"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "rgba(147,197,253,0.18)"; ctx.lineWidth = 1;
-      for (let gx = 0; gx < canvas.width; gx += 25) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, canvas.height); ctx.stroke(); }
-      for (let gy = 0; gy < canvas.height; gy += 25) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(canvas.width, gy); ctx.stroke(); }
-      // Eix de simetria vertical al centre
-      ctx.strokeStyle = "#fde047"; ctx.lineWidth = 2.5; ctx.setLineDash([6, 6]);
-      ctx.beginPath(); ctx.moveTo(440, 44); ctx.lineTo(440, 206); ctx.stroke();
-      ctx.setLineDash([]);
-      if (ent) {
-        ctx.fillStyle = "rgba(15,23,42,0.86)"; ctx.fillRect(150, 74, 580, 92);
-        ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 3; ctx.strokeRect(150, 74, 580, 92);
-        ctx.fillStyle = "#ffffff"; ctx.font = "900 28px monospace"; ctx.textAlign = "center";
-        ctx.fillText(ent.sequenceText || "", 440, 122);
-        ctx.fillStyle = "#93c5fd"; ctx.font = "bold 13px sans-serif";
-        ctx.fillText(`📐 ${ent.logicHint || "Escriu el mirall simètric!"}`, 440, 152);
-        ctx.textAlign = "left";
+      // EXTRA (OPCIÓ 2 VALIDADA): 🚴🏔️ PARC DE TRUCS AL CATLLARÀS · 6 CONTROLS COMBINABLES (S, D, F, J, K, L)!
+      if (state.arcadeRunning && ent) {
+        ent.x -= ent.speed;
+        if (ent.x <= 155) {
+          // Obstacle superat amb ensurt (perd 1 Barretina i passa al següent per continuar practicant!)
+          penalizeMistakeOrTimeout(100, true);
+          state.cleanStreak = 0;
+          state.arcadeEntities.shift();
+          state.arcadeCompleted++;
+          if (state.arcadeCompleted >= state.arcadeTotal) {
+            state.arcadeRunning = false;
+            setTimeout(() => endArcadeGame(true), 350);
+          } else {
+            spawnEntitiesForCurrentMode(lvl);
+          }
+        }
       }
-      ctx.fillStyle = "rgba(15,23,42,0.85)"; ctx.fillRect(14, 10, 390, 26);
+      const psky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      psky.addColorStop(0, "#0f172a"); psky.addColorStop(0.6, "#1e3a8a"); psky.addColorStop(1, "#14532d");
+      ctx.fillStyle = psky; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawXaletCatllaras(ctx, 770, 198, 1.0, true, 0);
+      ctx.fillStyle = "#78350f"; ctx.fillRect(0, 196, canvas.width, 28);
+      // En Bit en bici a l'esquerra fent la maniobra!
+      const pJump = state.parkActionTimer > 0 ? Math.sin((state.parkActionTimer / 34) * Math.PI) * 52 : 0;
+      const pDuck = state.parkActionText && state.parkActionText.includes("AJUPIT") && state.parkActionTimer > 0 ? 14 : 0;
+      if (state.parkActionTimer > 0) state.parkActionTimer--;
+      ctx.font = "34px sans-serif";
+      ctx.fillText("🚴", 132, 192 - pJump + pDuck);
+      if (state.parkActionTimer > 0) {
+        ctx.fillStyle = "#4ade80"; ctx.font = "900 17px sans-serif";
+        ctx.fillText(state.parkActionText, 110, 134 - pJump);
+      }
+      // Obstacle apropant-se des de la dreta amb la pista d'acció (sense regalar les lletres — has de pensar el control!)
+      if (ent) {
+        ctx.font = "36px sans-serif";
+        ctx.fillText(ent.obsIcon || "🪨", ent.x, 192);
+        ctx.fillStyle = "rgba(15,23,42,0.88)";
+        ctx.fillRect(Math.max(220, Math.min(540, ent.x - 110)), 62, 310, 44);
+        ctx.strokeStyle = "#fde047"; ctx.lineWidth = 2;
+        ctx.strokeRect(Math.max(220, Math.min(540, ent.x - 110)), 62, 310, 44);
+        ctx.fillStyle = "#fde047"; ctx.font = "900 13px sans-serif";
+        ctx.fillText(ent.obsTitle || "", Math.max(230, Math.min(550, ent.x - 100)), 89);
+      }
+      // Barra llegenda dels 6 CONTROLS COMBINABLES a baix!
+      ctx.fillStyle = "rgba(15,23,42,0.92)"; ctx.fillRect(0, 224, canvas.width, 26);
+      ctx.fillStyle = "#38bdf8"; ctx.font = "bold 11px sans-serif";
+      ctx.fillText("S: Ajupir  ·  D: Saltar  ·  F: Turbo   |   J: Enrere  ·  K: Endavant  ·  L: Girar   (Combina'ls alhora!)", 18, 241);
+      ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 440, 26);
       ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-      ctx.fillText(`📐 Plànols Simètrics d'en Gaudí: ${state.arcadeCompleted} / ${total}`, 22, 27);
+      ctx.fillText(`🚴 Parc de Trucs (${state.arcadeCompleted}/${total}) · ${state.parkScore || 0} pts ${state.cleanStreak >= 2 ? `· 🔥 x${state.cleanStreak}` : ""}`, 22, 27);
     }
 
     function tickAndDrawSardana(ctx, canvas, lvl, shakeX) {
@@ -5831,6 +5958,45 @@
         return;
       }
 
+      // EXTRA N3: PARC DE TRUCS 6 CONTROLS (accepta tecles per separat o combinacions simultànies en qualsevol ordre!)
+      if (ent.isParkTrick) {
+        const nowMs = performance.now();
+        state.arcadeTotalPresses++;
+        if (ent.reqKeys.includes(typedChar)) {
+          state.parkComboBuffer = state.parkComboBuffer || {};
+          // Neteja tecles premudes fa > 900ms
+          Object.keys(state.parkComboBuffer).forEach(k => { if (nowMs - state.parkComboBuffer[k] > 900) delete state.parkComboBuffer[k]; });
+          state.parkComboBuffer[typedChar] = nowMs;
+          sfxTone(660, 70, "square", 0.06);
+          if (ent.reqKeys.every(rk => state.parkComboBuffer[rk])) {
+            state.cleanStreak = (state.cleanStreak || 0) + 1;
+            const mult = Math.min(4, 1 + Math.floor(state.cleanStreak / 2));
+            state.parkScore = (state.parkScore || 0) + 100 * mult;
+            state.parkActionText = `${ent.obsTrick} +${100 * mult}`;
+            state.parkActionTimer = 34;
+            sfxActionSuccess();
+            spawnParticles(160, 160, "#fde047");
+            state.arcadeEntities.shift();
+            state.arcadeCompleted++;
+            if (state.arcadeCompleted >= state.arcadeTotal) {
+              state.arcadeRunning = false;
+              setTimeout(() => endArcadeGame(true), 400);
+            } else {
+              spawnEntitiesForCurrentMode(lvl);
+            }
+          } else {
+            updateArcadeHud(lvl);
+          }
+        } else {
+          state.arcadeErrors++;
+          state.cleanStreak = 0;
+          state.parkComboBuffer = {};
+          penalizeMistakeOrTimeout(18, false);
+          updateArcadeHud(lvl);
+        }
+        return;
+      }
+
       state.arcadeTotalPresses++;
       const expected = ent.word[ent.typedIndex].toLowerCase();
       if (!state.arcadeKeyErrors[expected]) state.arcadeKeyErrors[expected] = { hits: 0, errors: 0 };
@@ -5873,33 +6039,44 @@
           if (lvl.rightKeys.includes(typedChar)) state.rightClimberStep++;
         }
 
+        if (lvl.gameMode === "gaudi" && ent.subMode === "gaudi_xalet") {
+          // A la bici, cada lletra encertada accelera la bici!
+          state.bikeSpeed = Math.min(7.5, (state.bikeSpeed || 2.0) + 1.15);
+        }
+
         if (ent.typedIndex >= ent.word.length) {
-          // A J4/J5/J6 silenciëm el 'ding-dong' perquè només soni la melodia neta del Toc de Castells!
+          // Ratxa universal: si fas la paraula sense errors suma ratxa; amb >=2 seguides la barra puja el DOBLE (+44% vs +22%)!
+          if (!state.wordHadError) state.cleanStreak = (state.cleanStreak || 0) + 1;
+          else state.cleanStreak = 0;
+          state.wordHadError = false;
+          const barBoost = state.cleanStreak >= 2 ? 44 : 22;
+
+          // A J4/J5/J6/EXTRA silenciëm el 'ding-dong' perquè només soni la melodia neta del Toc de Castells!
           const isCastellsMusicStep = (lvl.gameMode === "castells" && ["L02.G4", "L02.G5", "L02.G6", "L02.EXTRA"].includes(state.stepId));
           if (!isCastellsMusicStep) sfxActionSuccess();
           spawnParticles(ent.x || 120, ent.y || 120, "#fde047");
           state.arcadeAngle += 0.8;
           state.arcadeJumpTimer = 18;
-          state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 10);
+          state.arcadeEnergy = Math.min(100, state.arcadeEnergy + 12);
 
           if (lvl.gameMode === "castells" && ent.subMode === "pedret_bridge") {
-            // La pedra vella cau xipollejant al Llobregat en saltar a la següent!
             const oldSx = 95 + (state.arcadeCompleted / Math.max(1, state.arcadeTotal)) * 690;
             state.pedretFallenStones = state.pedretFallenStones || [];
             state.pedretFallenStones.push({ x: oldSx, y: 148, vy: 1.8 });
-            state.pedretStoneHp = 100;
+            state.pedretStoneHp = Math.min(100, (state.pedretStoneHp || 0) + barBoost);
           }
           if (lvl.gameMode === "castells" && ent.subMode === "dual_climbers") {
-            // Celebració clara en completar cadascun dels 4 castells (Pilar de 4, Torre de 6, 3 de 7, 4 de 8)!
+            state.castellBalance = Math.min(100, (state.castellBalance || 0) + barBoost);
             const nextDone = state.arcadeCompleted + 1;
             const milestones = {
-              4: "🎉 PILAR DE 4 DESCARREGAT! Següent: TORRE DE 6!",
-              10: "🎉 TORRE DE 6 DESCARREGADA! Següent: 3 DE 7!",
-              17: "🎉 3 DE 7 DESCARREGAT! Últim repte: 4 DE 8!",
-              24: "🏆 4 DE 8 CORONAT AMB L'ENXANETA!"
+              4:  { msg: "🎉 PILAR DE 4 DESCARREGAT! Següent: TORRE DE 6!", prev: { name: "Pilar de 4", cols: 1, floors: 4, start: 0 } },
+              10: { msg: "🎉 TORRE DE 6 DESCARREGADA! Següent: 3 DE 7!",   prev: { name: "Torre de 6", cols: 2, floors: 6, start: 4 } },
+              17: { msg: "🎉 3 DE 7 DESCARREGAT! Últim repte: 4 DE 8!",    prev: { name: "3 de 7", cols: 3, floors: 7, start: 10 } },
+              24: { msg: "🏆 4 DE 8 CORONAT AMB L'ENXANETA!",              prev: { name: "4 de 8", cols: 4, floors: 7, start: 17 } }
             };
             if (milestones[nextDone]) {
-              state.castellBanner = milestones[nextDone];
+              state.castellBanner = milestones[nextDone].msg;
+              state.castellCompletedPreview = milestones[nextDone].prev;
               state.castellBannerTimer = 140;
               sfxFanfare();
               spawnParticles(440, 80, "#fde047");
@@ -5953,14 +6130,14 @@
           }
 
           if (lvl.gameMode === "gaudi") {
-            state.gaudiMeter = Math.min(100, (state.gaudiMeter || 100) + 18);
-            state.gaudiTileTimer = 100;
+            state.gaudiMeter = Math.min(100, (state.gaudiMeter || 0) + barBoost);
+            state.gaudiTileTimer = Math.min(100, (state.gaudiTileTimer || 0) + barBoost);
             if (ent.subMode === "gaudi_xalet") {
               if (state.bikeWordClean !== false) {
                 const TRICKS = ["🚲 SALT!", "🔄 FRONTFLIP!", "🔁 BACKFLIP!", "⭐ WHEELIE!"];
                 state.bikeTrick = TRICKS[state.arcadeCompleted % TRICKS.length];
                 state.bikeTrickTimer = 38;
-                spawnParticles(440, 120, "#fde047");
+                spawnParticles(280, 140, "#fde047");
               }
               state.bikeWordClean = true;
             }
@@ -5983,19 +6160,25 @@
       } else {
         state.arcadeErrors++;
         state.arcadeKeyErrors[expected].errors++;
+        state.wordHadError = true;
+        state.cleanStreak = 0;
 
         if (lvl.gameMode === "gaudi") {
           state.arcadeShake = 10;
           if (ent.subMode === "gaudi_train" || ent.subMode === "gaudi_lantern") {
-            state.gaudiMeter = Math.max(0, state.gaudiMeter - 12);
+            state.gaudiMeter = Math.max(0, state.gaudiMeter - 14);
             if (state.gaudiMeter <= 0) {
               penalizeMistakeOrTimeout(100, true);
               state.gaudiMeter = 45;
               updateArcadeHud(lvl);
               return;
             }
+          } else if (ent.subMode === "gaudi_trencadis") {
+            state.gaudiTileTimer = Math.max(0, (state.gaudiTileTimer || 100) - 15);
           } else if (ent.subMode === "gaudi_xalet") {
             state.bikeWordClean = false;
+            state.bikeSpeed = Math.max(0.4, (state.bikeSpeed || 2.0) * 0.25);
+            state.bikeSkidTimer = 22;
             state.gaudiMeter = Math.max(0, state.gaudiMeter - 14);
             if (state.gaudiMeter <= 0) {
               state.bikeFlatTimer = 42;
@@ -6032,6 +6215,7 @@
             state.pedretStoneHp = Math.max(0, (state.pedretStoneHp !== undefined ? state.pedretStoneHp : 100) - 18);
           }
           if (ent.subMode === "dual_climbers" || ent.subMode === "hand_blocks") {
+            state.castellBalance = Math.max(0, (state.castellBalance !== undefined ? state.castellBalance : 100) - 15);
             if (isRightExpected) state.rightClimberStep = Math.max(0, state.rightClimberStep - 1);
             else state.leftClimberStep = Math.max(0, state.leftClimberStep - 1);
           }
@@ -6055,10 +6239,12 @@
       const arcDef = getActiveArcadeDef(lvl);
       const isAdapted = isCurrentStepAutoAdapted();
       let earnedB = survived ? state.arcadeLives : 0;
-      // Topall de Barretines al Guitar Hero PRO segons velocitat (2 PPM -> màx 3★, 4 PPM -> màx 4★, 8 PPM -> màx 5★)!
+      // Topall i càlcul per puntuació al Guitar Hero PRO (Perfectes + Bé vs Fallades, sense barra d'energia!)
       if (arcDef.subMode === "berga_guitar_hero_pro") {
+        const hitRatio = Math.max(0, (state.arcadeTotal - (state.ghMisses || 0)) / Math.max(1, state.arcadeTotal));
+        const rawGhStars = hitRatio >= 0.92 ? 5 : hitRatio >= 0.80 ? 4 : hitRatio >= 0.65 ? 3 : hitRatio >= 0.45 ? 2 : 1;
         const ghCap = state.ghTargetPpm === 2 ? 3 : state.ghTargetPpm === 4 ? 4 : 5;
-        if (earnedB > ghCap) earnedB = ghCap;
+        earnedB = Math.min(rawGhStars, ghCap);
       }
       // Si s'ha activat el mode adaptat (velocitat reduïda després de 3 intents), màxim 3 Barretines!
       if (isAdapted && earnedB > 3) earnedB = 3;
