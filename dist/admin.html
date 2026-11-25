@@ -819,9 +819,12 @@
         return;
       }
 
-      // sessions ve ordenada de més nova [0] a més antiga [length-1]
-      const latest = sessions[0];
-      const first = sessions[sessions.length - 1];
+      // Prioritza les Proves Clau (🔑 *.PROVERB) perquè són l'indicador real més fidel d'evolució!
+      const keySessions = sessions.filter(s => String(s.stepId || "").endsWith(".PROVERB"));
+      const evoPool = keySessions.length > 0 ? keySessions : sessions;
+      const isKeyMode = keySessions.length > 0;
+      const latest = evoPool[0];
+      const first = evoPool[evoPool.length - 1];
       const diffWpm = Number(((latest.wpmNet || 0) - (first.wpmNet || 0)).toFixed(1));
       const diffAcc = Math.round((latest.accuracyPct || 0) - (first.accuracyPct || 0));
       const firstBand = getSpeedBand(first.wpmNet || 0);
@@ -829,35 +832,36 @@
 
       compEl.innerHTML = `
         <div class="evo-box">
-          <div class="lbl">Primera sessió</div>
+          <div class="lbl">${isKeyMode ? "🔑 1a Prova Clau" : "Primera sessió"}</div>
           <div class="val">${first.wpmNet || 0} PPM</div>
           <span class="level-pill ${firstBand.cls}">${firstBand.label}</span>
           <div style="font-size:0.74rem;color:var(--muted);margin-top:0.2rem;">Precisió: ${first.accuracyPct || 0}%</div>
         </div>
         <div class="evo-box">
-          <div class="lbl">Última sessió</div>
+          <div class="lbl">${isKeyMode ? "🔑 Última Prova Clau" : "Última sessió"}</div>
           <div class="val">${latest.wpmNet || 0} PPM</div>
           <span class="level-pill ${latestBand.cls}">${latestBand.label}</span>
           <div style="font-size:0.74rem;color:var(--muted);margin-top:0.2rem;">Precisió: ${latest.accuracyPct || 0}%</div>
         </div>
         <div class="evo-box">
-          <div class="lbl">Progrés total</div>
+          <div class="lbl">${isKeyMode ? "📈 Evolució Proves Clau" : "Progrés total"}</div>
           <div class="val" style="color:${diffWpm >= 0 ? "#15803d" : "#b45309"};">${diffWpm >= 0 ? "+" : ""}${diffWpm} PPM</div>
           <div style="font-size:0.78rem;font-weight:800;color:${diffAcc >= 0 ? "#15803d" : "#b45309"};">Precisió: ${diffAcc >= 0 ? "+" : ""}${diffAcc}%</div>
         </div>
       `;
 
-      const recent = sessions.slice(0, 6).reverse();
-      listEl.innerHTML = recent.map((s, i) => {
+      const recent = (isKeyMode ? keySessions.slice(0, 8) : sessions.slice(0, 6)).reverse();
+      listEl.innerHTML = (isKeyMode ? `<div style="font-size:0.78rem;font-weight:800;color:#854d0e;margin-bottom:0.35rem;">🔑 Històric de Proves Clau (velocitat i precisió reals):</div>` : "") + recent.map((s, i) => {
         const sb = getSpeedBand(s.wpmNet || 0);
         const pctWidth = Math.min(100, Math.max(10, Math.round(((s.wpmNet || 0) / 30) * 100)));
+        const cleanLbl = String(s.stepLabel || s.stepId).replace(/Dita:/gi, "🔑 Prova Clau:");
         return `
           <div style="display:flex;align-items:center;gap:0.5rem;margin:0.35rem 0;font-size:0.78rem;">
-            <span style="min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;">${s.stepLabel || s.stepId}</span>
+            <span style="min-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;">${cleanLbl}</span>
             <div style="flex:1;height:14px;background:#e2e8f0;border-radius:999px;overflow:hidden;">
-              <div style="width:${pctWidth}%;height:100%;background:#2563eb;border-radius:999px;"></div>
+              <div style="width:${pctWidth}%;height:100%;background:${isKeyMode ? "#eab308" : "#2563eb"};border-radius:999px;"></div>
             </div>
-            <strong style="min-width:52px;text-align:right;">${s.wpmNet || 0} PPM</strong>
+            <strong style="min-width:95px;text-align:right;">${s.wpmNet || 0} PPM · ${s.accuracyPct || 0}%</strong>
             <span class="level-pill ${sb.cls}">${sb.label}</span>
           </div>
         `;

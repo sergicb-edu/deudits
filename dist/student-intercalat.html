@@ -703,7 +703,7 @@
             <span id="tape-subtitle" style="font-size:0.88rem;opacity:0.85;"></span>
           </div>
           <div style="display:flex;gap:0.4rem;">
-            <button type="button" id="btn-speak-proverb" style="display:none;">🔊 Escoltar dita</button>
+            <button type="button" id="btn-speak-proverb" style="display:none;">🔊 Dictat (paraula a paraula)</button>
             <button type="button" id="btn-restart-tape">🔄 Reiniciar</button>
           </div>
         </div>
@@ -2391,6 +2391,28 @@
           ctx.beginPath(); ctx.moveTo(300, 105); ctx.quadraticCurveTo(250, 25 - Math.sin(t * 0.15) * 12, 200, 128); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(300, 105); ctx.quadraticCurveTo(350, 25 - Math.sin(t * 0.15) * 12, 400, 128); ctx.stroke();
           ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif"; ctx.fillText("🌊🌈 Font Màgica de Colors d'en Gaudí!", 185, 22);
+        } else if (lvl.id === "L03") {
+          // Mini-animació pròpia del Nivell 3 (Pràctiques P1..P6 i Clau 🔑): Tren del Ciment pujant cap al Xalet del Catllaràs!
+          const g3 = ctx.createLinearGradient(0, 0, 0, 165);
+          g3.addColorStop(0, "#0284c7"); g3.addColorStop(0.65, "#bae6fd"); g3.addColorStop(1, "#15803d");
+          ctx.fillStyle = g3; ctx.fillRect(0, 0, 600, 165);
+          ctx.fillStyle = "#166534"; ctx.fillRect(0, 126, 600, 39);
+          ctx.fillStyle = "#78350f"; ctx.fillRect(0, 122, 600, 7);
+          const tx = 55 + (t * 1.4) % 340;
+          ctx.fillStyle = "#15803d"; ctx.fillRect(tx, 88, 68, 28);
+          ctx.fillStyle = "#b91c1c"; ctx.fillRect(tx + 4, 72, 22, 18);
+          ctx.fillStyle = "#1e293b"; ctx.fillRect(tx + 50, 70, 10, 20);
+          ctx.fillStyle = "#0f172a"; ctx.beginPath(); ctx.arc(tx + 16, 118, 7, 0, Math.PI * 2); ctx.arc(tx + 50, 118, 7, 0, Math.PI * 2); ctx.fill();
+          // Xalet del Catllaràs a la dreta + Clau daurada si és PROVERB!
+          ctx.fillStyle = "#d6d3d1"; ctx.beginPath(); ctx.moveTo(470, 128); ctx.quadraticCurveTo(525, 20, 580, 128); ctx.fill();
+          ctx.fillStyle = "#fef3c7"; ctx.beginPath(); ctx.moveTo(486, 128); ctx.quadraticCurveTo(525, 42, 564, 128); ctx.fill();
+          ctx.fillStyle = "#78350f"; ctx.fillRect(514, 98, 22, 30);
+          if (state.stepId === "L03.PROVERB") {
+            ctx.font = "34px sans-serif";
+            ctx.fillText("🔑", 275, 58 + Math.sin(t * 0.12) * 8);
+          }
+          ctx.fillStyle = "#0f172a"; ctx.font = "bold 12px sans-serif";
+          ctx.fillText("🚂 Tren del Ciment → 🏡 Xalet del Catllaràs", 14, 22);
         } else {
           // Nivell 2 (J6 / P) o fallback: Castells a la Plaça de Berga!
           ctx.fillStyle = "#172554";
@@ -3249,9 +3271,11 @@
           document.getElementById("btn-speak-proverb").style.display = "none";
           state.sequence = curItem.text;
         } else {
-          document.getElementById("tape-title").textContent = `📜 Dita Catalana: «${lvl.proverbCa}»`;
-          document.getElementById("tape-subtitle").textContent = lvl.proverbMeaningCa;
+          document.getElementById("tape-title").textContent = `🔑 Prova Clau (Nivell ${lvl.order})`;
+          document.getElementById("tape-subtitle").textContent = "Respecta les MAJÚSCULES, minúscules, accents i puntuació! Pots activar el 🔊 Dictat paraula a paraula!";
           document.getElementById("btn-speak-proverb").style.display = "inline-block";
+          state.dictationMode = false;
+          document.getElementById("btn-speak-proverb").textContent = "🔊 Dictat (paraula a paraula)";
           state.sequence = lvl.proverbCa;
         }
         state.cursor = 0;
@@ -3306,6 +3330,12 @@
       state.parkScore = 0;
       state.parkActionText = "";
       state.parkActionTimer = 0;
+      state.gliderAlt = 78;
+      state.gliderScroll = 0;
+      state.gliderTrick = "";
+      state.gliderTrickTimer = 0;
+      state.gliderCrashTimer = 0;
+      state.gliderRingPassTimer = 0;
       if (!state.ghTargetPpm || ![2, 4, 8].includes(state.ghTargetPpm)) state.ghTargetPpm = 2;
 
       // A Guitar Hero PRO no cal barra d'energia, sinó marcador gran de Punts + Ratxa!
@@ -5721,13 +5751,23 @@
         return;
       }
 
-      // J6 (OPCIÓ 3 VALIDADA): 🦅🏔️ VOL D'ÀLIGA / ALA DELTA DES DEL XALET DEL CATLLARÀS FINS AL PEDRAFORCA!
+      // J6: 🦅🏔️ VOL D'ÀLIGA / ALA DELTA DES DEL CATLLARÀS AL PEDRAFORCA (Avança, passa per dins dels anells, perd alçada i xoca si falles, corrents tèrmiques + acrobàcies amb ratxa!)
       if (arcDef.subMode === "gaudi_stars") {
+        const gDrain = isCurrentStepAutoAdapted() ? 0.055 : (state.difficulty === "suau" ? 0.075 : state.difficulty === "rapid" ? 0.14 : 0.1);
         if (state.arcadeRunning && ent) {
+          state.gliderScroll = (state.gliderScroll || 0) + 2.4;
+          state.gliderAlt = Math.max(0, (state.gliderAlt !== undefined ? state.gliderAlt : 78) - gDrain);
           ent.x -= ent.speed;
           if (ent.x <= 85) {
             penalizeMistakeOrTimeout(100, true);
+            state.gliderAlt = Math.max(0, state.gliderAlt - 18);
             ent.x = 800;
+            updateArcadeHud(lvl);
+          }
+          if (state.gliderAlt <= 0) {
+            state.gliderCrashTimer = 36;
+            penalizeMistakeOrTimeout(100, true);
+            state.gliderAlt = 50;
             updateArcadeHud(lvl);
           }
         }
@@ -5735,41 +5775,78 @@
         sky.addColorStop(0, "#0284c7"); sky.addColorStop(0.55, "#7dd3fc"); sky.addColorStop(1, "#dcfce7");
         ctx.fillStyle = sky; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Vall del Llobregat, Xalet del Catllaràs quedant enrere a l'esquerra i Pedraforca apropant-se a la dreta!
+        const gsc = state.gliderScroll || 0;
         const xaletX = 95 - prog * 130;
         if (xaletX > -120) drawXaletCatllaras(ctx, xaletX, 238, 1.0, false, 0);
         drawPedraforcaSilhouette(ctx, 560 - prog * 140, 238, 360, 145, true);
         ctx.fillStyle = "#16a34a"; ctx.fillRect(0, 224, canvas.width, 26);
-        ctx.fillStyle = "#38bdf8"; ctx.fillRect(0, 234, canvas.width, 16);
-
+        // Pins de la vall passant per sota (on pots xocar si perds alçada!)
+        for (let p = 0; p < 12; p++) {
+          const px = ((p * 88 - gsc * 1.1) % 1056 + 1056) % 1056 - 40;
+          ctx.fillStyle = "#14532d";
+          ctx.beginPath(); ctx.moveTo(px, 230); ctx.lineTo(px + 18, 194); ctx.lineTo(px + 36, 230); ctx.fill();
+        }
         // Núvols passant ràpid en paral·laxi
         ctx.fillStyle = "rgba(255,255,255,0.75)";
         for (let c = 0; c < 4; c++) {
-          const cx = ((c * 240 - t * 38) % 940 + 940) % 940 - 60;
+          const cx = ((c * 240 - gsc * 0.6) % 940 + 940) % 940 - 60;
           ctx.beginPath(); ctx.arc(cx, 48 + (c % 2) * 32, 18, 0, Math.PI * 2); ctx.arc(cx + 22, 46 + (c % 2) * 32, 22, 0, Math.PI * 2); ctx.fill();
         }
 
-        // En Bit planant en ALA DELTA daurada/vermella + Àliga acompanyant-lo!
-        const gliderY = ent ? (ent.y + Math.sin(t * 2.2) * 7) : 105;
-        const gx = 140 + shakeX;
-        // Ala delta triangular
-        ctx.fillStyle = "#ef4444"; ctx.strokeStyle = "#fde047"; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(gx - 28, gliderY - 12); ctx.lineTo(gx + 34, gliderY - 2); ctx.lineTo(gx - 18, gliderY + 10); ctx.closePath(); ctx.fill(); ctx.stroke();
-        drawSprite(ctx, SPRITES.bitRobot, gx - 12, gliderY + 2, 2.2);
-        ctx.font = "24px sans-serif"; ctx.fillText("🦅", gx + 38, gliderY - 16 + Math.sin(t * 3) * 5);
+        // L'ala delta avança progressivament per la pantalla i puja/baixa segons state.gliderAlt!
+        const gx = 135 + Math.round(prog * 220) + (state.gliderRingPassTimer > 0 ? 28 : 0) + shakeX;
+        const baseAltY = 186 - ((state.gliderAlt !== undefined ? state.gliderAlt : 78) / 100) * 124;
+        let gliderRot = 0;
+        if (state.gliderRingPassTimer > 0) state.gliderRingPassTimer--;
+        if (state.gliderTrickTimer > 0) {
+          state.gliderTrickTimer--;
+          const p = 1 - (state.gliderTrickTimer / 38);
+          gliderRot = p * Math.PI * 2;
+          // Corrent tèrmica daurada pujant des de terra!
+          ctx.strokeStyle = "rgba(253,224,71,0.55)"; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.moveTo(gx, 225); ctx.quadraticCurveTo(gx + 18, 150, gx, baseAltY); ctx.stroke();
+        }
+        const gliderY = baseAltY + Math.sin(t * 2.2) * 5;
 
+        // Dibuixa l'anell daurat darrere/davant de l'ala delta (quan encertes passa per dins!)
         if (ent) {
-          // Anell daurat flotant al cel per travessar-lo!
           ctx.strokeStyle = "#facc15"; ctx.lineWidth = 6;
           ctx.beginPath(); ctx.ellipse(ent.x, ent.y + 12, 16, 36, 0, 0, Math.PI * 2); ctx.stroke();
           ctx.strokeStyle = "#fef08a"; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.ellipse(ent.x, ent.y + 12, 11, 28, 0, 0, Math.PI * 2); ctx.stroke();
+        }
+
+        ctx.save();
+        ctx.translate(gx, gliderY);
+        ctx.rotate(gliderRot);
+        ctx.fillStyle = "#ef4444"; ctx.strokeStyle = "#fde047"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(-28, -12); ctx.lineTo(34, -2); ctx.lineTo(-18, 10); ctx.closePath(); ctx.fill(); ctx.stroke();
+        drawSprite(ctx, SPRITES.bitRobot, -12, 2, 2.2);
+        ctx.restore();
+        ctx.font = "24px sans-serif"; ctx.fillText("🦅", gx + 38, gliderY - 16 + Math.sin(t * 3) * 5);
+
+        if (state.gliderTrickTimer > 0) {
+          ctx.fillStyle = "#fde047"; ctx.font = "900 17px sans-serif";
+          ctx.fillText(state.gliderTrick || "☀️ CORRENT TÈRMICA!", gx - 40, Math.max(46, gliderY - 34));
+        } else if (state.gliderCrashTimer > 0) {
+          state.gliderCrashTimer--;
+          ctx.fillStyle = "#ef4444"; ctx.font = "900 16px sans-serif";
+          ctx.fillText("🌲 XOC ALS PINS! Remuntant!", gx - 40, 172);
+        }
+
+        if (ent) {
           drawWordBox(ctx, ent.word, ent.typedIndex, Math.max(40, Math.min(720, ent.x - 28)), Math.max(38, ent.y - 44), true);
         }
 
-        ctx.fillStyle = "rgba(15,23,42,0.86)"; ctx.fillRect(14, 10, 440, 28);
+        ctx.fillStyle = "rgba(15,23,42,0.88)"; ctx.fillRect(14, 10, 540, 28);
         ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🦅 Vol d'Àliga · Catllaràs → Pedraforca (${state.arcadeCompleted}/${total} anells)`, 22, 28);
+        const stG = state.cleanStreak >= 2 ? ` · 🔥 RATXA x${state.cleanStreak}` : "";
+        ctx.fillText(`🦅 Vol d'Àliga (${state.arcadeCompleted}/${total} anells)${stG}`, 22, 28);
+        ctx.fillStyle = "#334155"; ctx.fillRect(375, 17, 165, 14);
+        ctx.fillStyle = (state.gliderAlt || 0) > 35 ? "#38bdf8" : "#ef4444";
+        ctx.fillRect(375, 17, Math.round(1.65 * (state.gliderAlt || 0)), 14);
+        ctx.fillStyle = "#0f172a"; ctx.font = "bold 10px sans-serif";
+        ctx.fillText(`⛰️ Alçada ${Math.round(state.gliderAlt || 0)}%`, 384, 28);
         return;
       }
 
@@ -6048,8 +6125,8 @@
         state.arcadeTotalPresses++;
         if (ent.reqKeys.includes(typedChar)) {
           state.parkComboBuffer = state.parkComboBuffer || {};
-          // Neteja tecles premudes fa > 900ms
-          Object.keys(state.parkComboBuffer).forEach(k => { if (nowMs - state.parkComboBuffer[k] > 900) delete state.parkComboBuffer[k]; });
+          // Neteja tecles premudes fa > 5000ms (marge ampli perquè l'alumne pugui pensar i prémer tranquil·lament!)
+          Object.keys(state.parkComboBuffer).forEach(k => { if (nowMs - state.parkComboBuffer[k] > 5000) delete state.parkComboBuffer[k]; });
           state.parkComboBuffer[typedChar] = nowMs;
           sfxTone(660, 70, "square", 0.06);
           if (ent.reqKeys.every(rk => state.parkComboBuffer[rk])) {
@@ -6218,6 +6295,16 @@
           if (lvl.gameMode === "gaudi") {
             state.gaudiMeter = Math.min(100, (state.gaudiMeter || 0) + barBoost);
             state.gaudiTileTimer = Math.min(100, (state.gaudiTileTimer || 0) + barBoost);
+            if (ent.subMode === "gaudi_stars") {
+              state.gliderAlt = Math.min(100, (state.gliderAlt || 0) + barBoost);
+              state.gliderRingPassTimer = 18;
+              if (state.cleanStreak >= 2) {
+                const AIR_TRICKS = ["☀️ CORRENT TÈRMICA · 🌀 LOOPING!", "☀️ CORRENT TÈRMICA · 🔄 TONELL!", "🦅 VOL D'ÀLIGA PRO!"];
+                state.gliderTrick = AIR_TRICKS[state.arcadeCompleted % AIR_TRICKS.length];
+                state.gliderTrickTimer = 38;
+                spawnParticles(320, 90, "#fde047");
+              }
+            }
             if (ent.subMode === "gaudi_xalet") {
               if (state.bikeWordClean !== false) {
                 const TRICKS = ["🚲 SALT!", "🔄 FRONTFLIP!", "🔁 BACKFLIP!", "⭐ WHEELIE!"];
@@ -6261,6 +6348,8 @@
             }
           } else if (ent.subMode === "gaudi_trencadis") {
             state.gaudiTileTimer = Math.max(0, (state.gaudiTileTimer || 100) - 15);
+          } else if (ent.subMode === "gaudi_stars") {
+            state.gliderAlt = Math.max(0, (state.gliderAlt !== undefined ? state.gliderAlt : 78) - 14);
           } else if (ent.subMode === "gaudi_xalet") {
             state.bikeWordClean = false;
             state.bikeSpeed = Math.max(0.4, (state.bikeSpeed || 2.0) * 0.25);
@@ -6611,7 +6700,7 @@
         title: state.phaseType === "diagnostic"
           ? `${assignedDiag.icon} ${assignedDiag.name}!`
           : state.phaseType === "proverb"
-          ? `📜 Dita Catalana completada! (${b} / 5 Barretines)`
+          ? `🔑 Prova Clau completada! (${b} / 5 Barretines)`
           : `⌨️ Pràctica completada! (${b} / 5 Barretines)`,
         barretines: b,
         msg: state.phaseType === "diagnostic"
@@ -6777,7 +6866,10 @@
 
       const expected = state.sequence[state.cursor].normalize("NFC");
       const expectedLower = expected.toLowerCase();
-      const correct = (ev.key === " " ? " " : typed) === expectedLower;
+      // A les Proves Clau (proverb) es respecten estrictament les MAJÚSCULES i minúscules!
+      const correct = state.phaseType === "proverb"
+        ? (ev.key === " " ? " " : typedNorm) === expected
+        : (ev.key === " " ? " " : typed) === expectedLower;
       if (!state.tapeKeyStats[expectedLower]) state.tapeKeyStats[expectedLower] = { hits: 0, errors: 0 };
 
       if (correct) {
@@ -6788,8 +6880,14 @@
         state.cursor++;
         sfxTone(expected === " " ? 587.33 : 440 + (state.cursor % 5) * 30, 45, "triangle", 0.05);
 
+        // Si el mode DICTAT està actiu a la Prova Clau, dicta la següent paraula just quan acaba l'anterior (després d'espai)!
+        if (state.phaseType === "proverb" && state.dictationMode && expected === " " && state.cursor < state.sequence.length) {
+          speakCurrentDictationWord();
+        }
+
         renderTapeView();
         if (state.cursor >= state.sequence.length) {
+          state.dictationMode = false;
           finishTapePhase();
         }
       } else {
@@ -6924,14 +7022,33 @@
       closeAlbumBtn.onclick = () => { albumModal.style.display = "none"; };
     }
 
+    function speakCurrentDictationWord() {
+      if (!("speechSynthesis" in window) || !state.sequence) return;
+      const rest = state.sequence.slice(state.cursor);
+      const nextWord = rest.split(" ")[0];
+      if (!nextWord) return;
+      state.usedVoiceThisSession = true;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(nextWord);
+      u.lang = "ca-ES";
+      u.rate = 0.85;
+      window.speechSynthesis.speak(u);
+    }
+
     document.getElementById("btn-speak-proverb").onclick = () => {
-      const lvl = LEVELS.find(l => l.id === state.levelId) || LEVELS[0];
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(lvl.proverbCa);
-        u.lang = "ca-ES";
-        u.rate = 0.85;
-        window.speechSynthesis.speak(u);
+      state.dictationMode = !state.dictationMode;
+      const btn = document.getElementById("btn-speak-proverb");
+      if (state.dictationMode) {
+        btn.textContent = "🔊 Dictat ACTIU (repetir paraula)";
+        btn.style.background = "#dcfce7";
+        btn.style.borderColor = "#16a34a";
+        btn.style.color = "#14532d";
+        speakCurrentDictationWord();
+      } else {
+        btn.textContent = "🔊 Dictat (paraula a paraula)";
+        btn.style.background = "";
+        btn.style.borderColor = "";
+        btn.style.color = "";
       }
     };
 
