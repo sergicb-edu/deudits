@@ -850,7 +850,7 @@
         reviewKeys: ["f", "j"],
         gameMode: "castells",
         gameTitle: "🏰 Castellers de Berga",
-        gameDesc: "J1: Vol en globus pel Berguedà. J2: Els Grallers. J3: Fem la Pinya. J4: Pugem el Castell!",
+        gameDesc: "J1: Globus pel Llobregat · J2: Pont de Pedret · J3: Rovellons · J4: Grallers · J5: Pinya · J6: Castell de Berga!",
         proverbCa: "Deu dits, dues mans té en Dídac, el didot Amadeu.",
         proverbMeaningCa: "Clau del Nivell 2: el famós embarbussament «Deu dits» ple de D!",
         drills: [
@@ -1430,15 +1430,14 @@
       return state.minBarretinesReq || 3;
     }
 
-    // Partitura COMPLETA i EXACTA del Toc de Castells (1a Gralla, nota per nota!):
-    // En notació de gralla, sol' = SOL AGUT (G5 = 783.99 Hz)!
-    // si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa=F5(698.46), sol/sol'=G5(783.99)
-    const B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99;
+    // Partitura COMPLETA i EXACTA del Toc de Castells en SOL MAJOR (1a Gralla, FA# = Fs5!):
+    // si=B4(493.88), do=C5(523.25), re=D5(587.33), mi=E5(659.25), fa#=Fs5(739.99), sol/sol'=G5(783.99)
+    const B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, Fs5 = 739.99, G5 = 783.99;
     const MELODY_TOC_DE_CASTELLS = [
-      // Entrada: sol' sol' sol' (SOL AGUT!)
+      // Entrada: sol' sol' sol'
       G5, G5, G5,
-      // Inici: re mi fa mi re do re · do si re sol' re si · re do si do mi re mi do re si
-      D5, E5, F5, E5, D5, C5, D5,
+      // Inici: re mi fa# mi re do re · do si re sol' re si · re do si do mi re mi do re si
+      D5, E5, Fs5, E5, D5, C5, D5,
       C5, B4, D5, G5, D5, B4,
       D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
       // Desenvolupament: si re sol' sol' re si do si do · re si mi re mi do re si do re · si do re mi re___ · sol mi re mi___
@@ -1447,7 +1446,7 @@
       B4, C5, D5, E5, D5,
       G5, E5, D5, E5,
       // Repetició / Enllaç:
-      G5, F5, E5, D5, C5, B4, D5, G5, D5, B4,
+      G5, Fs5, E5, D5, C5, B4, D5, G5, D5, B4,
       D5, C5, B4, C5, E5, D5, E5, C5, D5, B4,
       B4, D5, G5, G5, D5, B4, C5, B4, C5, D5, B4,
       E5, D5, E5, C5, D5, B4, C5, D5,
@@ -1455,35 +1454,47 @@
     ];
 
     function sfxGrallaNote(freq, ms = 170) {
-      // Timbre brillant i reconeixible de gralla catalana
-      sfxTone(freq, ms, "sawtooth", 0.075);
-      sfxTone(freq * 2, Math.round(ms * 0.7), "triangle", 0.028);
+      // Timbre brillant, afinat i reconeixible de gralla catalana (Sol Major)
+      sfxTone(freq, ms, "triangle", 0.095);
+      sfxTone(freq, Math.round(ms * 0.85), "sawtooth", 0.042);
+      sfxTone(freq * 2, Math.round(ms * 0.6), "sine", 0.022);
     }
 
+    let _tocPreviewTimers = [];
     function playTocDeCastellsPreview() {
-      // Reprodueix el fragment d'entrada i inici del Toc de Castells amb el ritme real!
+      // Atura qualsevol previsualització anterior i reprodueix el Toc de Castells en Sol Major (FA#) amb el ritme real!
+      _tocPreviewTimers.forEach(id => clearTimeout(id));
+      _tocPreviewTimers = [];
       const preview = [
-        [G5, 110], [G5, 110], [G5, 220],
-        [D5, 130], [E5, 130], [F5, 130], [E5, 130], [D5, 130], [C5, 130], [D5, 260],
-        [C5, 130], [B4, 130], [D5, 130], [G5, 220], [D5, 130], [B4, 240]
+        // Entrada: sol' sol' sol'
+        [G5, 130], [G5, 130], [G5, 320],
+        // Inici: re mi fa# mi re do re
+        [D5, 125], [E5, 125], [Fs5, 125], [E5, 125], [D5, 125], [C5, 125], [D5, 300],
+        // do si re sol' re si
+        [C5, 125], [B4, 125], [D5, 140], [G5, 250], [D5, 135], [B4, 260],
+        // re do si do mi re mi do re si
+        [D5, 125], [C5, 125], [B4, 125], [C5, 135], [E5, 150], [D5, 125], [E5, 125], [C5, 125], [D5, 125], [B4, 260],
+        // si re sol' sol' re si do si do
+        [B4, 125], [D5, 125], [G5, 220], [G5, 220], [D5, 125], [B4, 140], [C5, 125], [B4, 125], [C5, 280]
       ];
       let delay = 0;
       preview.forEach(([freq, dur]) => {
-        setTimeout(() => sfxGrallaNote(freq, dur), delay);
-        delay += dur + 25;
+        const id = setTimeout(() => sfxGrallaNote(freq, dur), delay);
+        _tocPreviewTimers.push(id);
+        delay += dur + 22;
       });
     }
 
     function playTocDeCastellsPujada() {
-      // ALETA EXACTA de la partitura (quan l'enxaneta fa l'aleta!):
+      // ALETA EXACTA de la partitura en Sol Major (FA# = Fs5) quan l'enxaneta fa l'aleta!
       const notes = [
-        // re mi re mi re mi re · sol___ fa______ mi_____
-        [D5, 100], [E5, 100], [D5, 100], [E5, 100], [D5, 100], [E5, 100], [D5, 110],
-        [G5, 290], [F5, 420], [E5, 340],
-        // re mi fa sol fa mi re mi fa mi re · do si do re mi re
-        [D5, 95], [E5, 95], [F5, 95], [G5, 115], [F5, 95], [E5, 95], [D5, 95],
-        [E5, 95], [F5, 95], [E5, 95], [D5, 110],
-        [C5, 95], [B4, 95], [C5, 95], [D5, 95], [E5, 95], [D5, 260]
+        // re mi re mi re mi re · sol___ fa#______ mi_____
+        [D5, 100], [E5, 100], [D5, 100], [E5, 100], [D5, 100], [E5, 100], [D5, 115],
+        [G5, 300], [Fs5, 440], [E5, 350],
+        // re mi fa# sol fa# mi re mi fa# mi re · do si do re mi re
+        [D5, 95], [E5, 95], [Fs5, 95], [G5, 125], [Fs5, 95], [E5, 95], [D5, 95],
+        [E5, 95], [Fs5, 95], [E5, 95], [D5, 115],
+        [C5, 95], [B4, 95], [C5, 95], [D5, 95], [E5, 95], [D5, 280]
       ];
       let delay = 0;
       notes.forEach(([freq, dur]) => {
@@ -1493,12 +1504,13 @@
     }
 
     function playGameNote(gameMode) {
+      const idx = state.melodyCursor;
       state.melodyCursor++;
       const castellsSteps = ["L02.G4", "L02.G5", "L02.G6"];
       if (gameMode === "castells" && castellsSteps.includes(state.stepId)) {
-        // A tots els jocs castellers (Grallers, Pinya i Castell) sona el Toc de Castells nota a nota!
-        const f = MELODY_TOC_DE_CASTELLS[state.melodyCursor % MELODY_TOC_DE_CASTELLS.length];
-        sfxGrallaNote(f, 165);
+        // A tots els jocs castellers (Grallers, Pinya i Castell) sona el Toc de Castells nota a nota des de l'entrada!
+        const f = MELODY_TOC_DE_CASTELLS[idx % MELODY_TOC_DE_CASTELLS.length];
+        sfxGrallaNote(f, 170);
       } else if (gameMode === "patum") {
         const f = MELODY_PATUM_TIRABOL[state.melodyCursor % MELODY_PATUM_TIRABOL.length];
         sfxTone(f, 95, "square", 0.065);
@@ -3136,16 +3148,16 @@
           hintEl.textContent = ent.subMode === "bergueda_logic_code"
             ? "🧩 El Codi Secret del Berguedà! Observa la sèrie lògica, dedueix quines lletres falten al [ ? ] i escriu-les!"
             : ent.subMode === "pedret_bridge"
-            ? "🌉 Pont de Pedret! Només Mà Esquerra (D + F): cada bloc fa saltar en Bit d'una pedra a la següent!"
+            ? "🌉 J2 · Pont de Pedret! Grups de 3 lletres (D i K): cada bloc fa saltar en Bit d'una pedra a la següent!"
             : ent.subMode === "bergueda_mushrooms"
-            ? "🍄 Collita de Rovellons! Només Mà Dreta (K + J): escriu el codi del rovelló abans que s'amagui al bosc!"
+            ? "🍄 J3 · Collita de Rovellons! Només Mà Esquerra (D + F): escriu el codi del rovelló abans que s'amagui al bosc!"
             : ent.subMode === "bergueda_balloon"
-            ? "🎈 Vol en globus pel Berguedà seguint el riu Llobregat fins a Berga! Escriu les parelles D i K!"
+            ? "🎈 J1 · Vol en globus pel Berguedà seguint el riu Llobregat! Escriu les parelles D i K!"
             : ent.subMode === "berga_grallers"
-            ? "🎺 Els Grallers de Berga! Completa les notes musicals de 3 lletres (D i K) per fer sonar la festa!"
+            ? "🎺 J4 · Els Grallers de Berga! Només Mà Dreta (K + J): fes sonar el Toc de Castells!"
             : ent.subMode === "berga_pinya"
-            ? "🧱 Fem la Pinya a Berga! Coordina la mà esquerra (D+F) i la mà dreta (K+J)!"
-            : "🏰 Gran Castell de Berga! Puja 2 castellers alhora combinant les 4 lletres (D, K, F, J)!";
+            ? "🧱 J5 · Fem la Pinya a Berga! Coordina la mà esquerra (D+F) i la mà dreta (K+J)!"
+            : "🏰 J6 · Gran Castell de Berga! Puja 2 castellers alhora combinant les 4 lletres (D, K, F, J)!";
         } else if (lvl.gameMode === "sardana") {
           hintEl.textContent = "🎵 Segueix la melodia de la cobla i completa les notes dins del Cercle Daurat!";
         } else if (lvl.gameMode === "patum") {
@@ -3667,7 +3679,7 @@
         ctx.fillStyle = "rgba(15,23,42,0.78)";
         ctx.fillRect(14, 10, 320, 24);
         ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🌉 Pont de Pedret (Mà Esq. D+F): pedra ${state.arcadeCompleted}/${total}`, 22, 26);
+        ctx.fillText(`🌉 J2 · Pont de Pedret (D+K): pedra ${state.arcadeCompleted}/${total}`, 22, 26);
         return;
       }
 
@@ -3758,7 +3770,7 @@
         ctx.fillStyle = "rgba(15,23,42,0.78)";
         ctx.fillRect(14, 10, 325, 24);
         ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🍄 Rovellons al cistell (Mà Dreta K+J): ${state.arcadeCompleted}/${state.arcadeTotal}`, 22, 26);
+        ctx.fillText(`🍄 J3 · Rovellons al cistell (Mà Esq. D+F): ${state.arcadeCompleted}/${state.arcadeTotal}`, 22, 26);
         return;
       }
 
