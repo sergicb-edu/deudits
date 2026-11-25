@@ -738,9 +738,9 @@
           <span id="arcade-hint-text" style="font-size:0.8rem;color:#cbd5e1;"></span>
           <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
             <div id="gh-speed-bar" style="display:none;gap:0.25rem;align-items:center;">
-              <button type="button" class="gh-spd-btn" data-ppm="8" style="font-size:0.74rem;padding:0.2rem 0.48rem;">🟠 8 PPM</button>
-              <button type="button" class="gh-spd-btn" data-ppm="15" style="font-size:0.74rem;padding:0.2rem 0.48rem;">🟡 15 PPM</button>
-              <button type="button" class="gh-spd-btn" data-ppm="25" style="font-size:0.74rem;padding:0.2rem 0.48rem;">🟢 25 PPM</button>
+              <button type="button" class="gh-spd-btn" data-ppm="2" style="font-size:0.74rem;padding:0.2rem 0.48rem;">🐢 2 PPM (3★)</button>
+              <button type="button" class="gh-spd-btn" data-ppm="4" style="font-size:0.74rem;padding:0.2rem 0.48rem;">🦊 4 PPM (4★)</button>
+              <button type="button" class="gh-spd-btn" data-ppm="8" style="font-size:0.74rem;padding:0.2rem 0.48rem;">⚡ 8 PPM (5★)</button>
             </div>
             <button type="button" id="btn-speak-arcade" style="display:none;">🔊 Escoltar</button>
             <button type="button" id="btn-restart-arcade">🔄 Reiniciar joc</button>
@@ -768,6 +768,7 @@
         <div id="res-thermometer"></div>
         <div style="display:flex;justify-content:center;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
           <button type="button" id="btn-res-repeat">🔄 Repetir</button>
+          <button type="button" id="btn-res-faster" style="display:none;background:#fef08a;border-color:#ca8a04;color:#713f12;font-weight:900;">⚡ Repetir més ràpid!</button>
           <button type="button" id="btn-res-next" class="primary">➡️ Següent repte</button>
         </div>
       </div>
@@ -2252,8 +2253,116 @@
 
           const astX = 390 - (t % 180) * 1.3;
           drawSprite(ctx, SPRITES.meteor, astX, 62, 3);
+        } else if (state.stepId === "L02.G1") {
+          // Mini-animació real N2 J1: Vol en Globus pel Llobregat
+          const sky = ctx.createLinearGradient(0, 0, 0, 165);
+          sky.addColorStop(0, "#0284c7"); sky.addColorStop(0.7, "#bae6fd"); sky.addColorStop(1, "#16a34a");
+          ctx.fillStyle = sky; ctx.fillRect(0, 0, 600, 165);
+          ctx.fillStyle = "#38bdf8"; ctx.fillRect(0, 138, 600, 27);
+          const bx = 90 + (t * 1.4) % 420, by = 52 + Math.sin(t * 0.08) * 10;
+          ctx.fillStyle = "#ef4444"; ctx.beginPath(); ctx.arc(bx, by, 22, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#facc15"; ctx.beginPath(); ctx.ellipse(bx, by, 10, 22, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#92400e"; ctx.fillRect(bx - 10, by + 22, 20, 13);
+          drawSprite(ctx, SPRITES.bitRobot, bx - 9, by + 12, 1.8);
+        } else if (state.stepId === "L02.G2") {
+          // Mini-animació real N2 J2: Pont de Pedret amb pedres que cauen al riu!
+          ctx.fillStyle = "#7dd3fc"; ctx.fillRect(0, 0, 600, 165);
+          ctx.fillStyle = "#0284c7"; ctx.fillRect(0, 125, 600, 40);
+          for (let i = 0; i < 6; i++) {
+            const sx = 80 + i * 85;
+            const fallen = i < Math.floor((t % 180) / 30);
+            ctx.fillStyle = fallen ? "#64748b" : "#facc15";
+            ctx.fillRect(sx, fallen ? 132 + (t % 30) : 96, 46, 12);
+          }
+          const bitIdx = Math.floor((t % 180) / 30);
+          drawSprite(ctx, SPRITES.bitRobot, 88 + bitIdx * 85, 62 - Math.abs(Math.sin(t * 0.2)) * 12, 2.5);
+        } else if (state.stepId === "L02.G3") {
+          // Mini-animació real N2 J3: Collita de Rovellons al bosc!
+          ctx.fillStyle = "#166534"; ctx.fillRect(0, 0, 600, 165);
+          ctx.fillStyle = "#4d7c0f"; ctx.fillRect(0, 118, 600, 47);
+          for (let i = 0; i < 4; i++) {
+            const mx = 110 + i * 125, my = 112 - Math.abs(Math.sin(t * 0.08 + i)) * 16;
+            ctx.fillStyle = "#fde68a"; ctx.fillRect(mx - 5, my + 8, 10, 14);
+            ctx.fillStyle = "#ea580c"; ctx.beginPath(); ctx.arc(mx, my + 8, 16, Math.PI, 0); ctx.fill();
+          }
+          drawSprite(ctx, SPRITES.bitRobot, 42, 92, 2.8);
+          ctx.font = "28px sans-serif"; ctx.fillText("🧺", 95, 134);
+        } else if (state.stepId === "L02.G4" || state.stepId === "L02.EXTRA") {
+          // Mini-animació real N2 J4 / EXTRA: Pentagrama Guitar Hero del Toc de Castells!
+          ctx.fillStyle = state.stepId === "L02.EXTRA" ? "#3b0764" : "#1e1b4b"; ctx.fillRect(0, 0, 600, 165);
+          ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = 2;
+          for (let l = 0; l < 5; l++) { ctx.beginPath(); ctx.moveTo(30, 42 + l * 18); ctx.lineTo(570, 42 + l * 18); ctx.stroke(); }
+          ctx.strokeStyle = "#facc15"; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.moveTo(130, 32); ctx.lineTo(130, 132); ctx.stroke();
+          const cols = ["#4ade80", "#fb923c", "#facc15", "#38bdf8"];
+          const lets = ["D", "F", "J", "K"];
+          for (let i = 0; i < 5; i++) {
+            const nx = 560 - ((t * 2.4 + i * 105) % 480);
+            const ny = 52 + (i % 4) * 18;
+            ctx.fillStyle = cols[i % 4]; ctx.beginPath(); ctx.arc(nx, ny, 13, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#0f172a"; ctx.font = "900 12px sans-serif"; ctx.fillText(lets[i % 4], nx - 4, ny + 4);
+          }
+          ctx.font = "28px sans-serif"; ctx.fillText(state.stepId === "L02.EXTRA" ? "🎸" : "🎺", 52, 94);
+        } else if (state.stepId === "L02.G5") {
+          // Mini-animació real N2 J5: Pinya en cercle a Berga!
+          ctx.fillStyle = "#1e3a8a"; ctx.fillRect(0, 0, 600, 165);
+          for (let i = 0; i < 12; i++) {
+            const ang = (i / 12) * Math.PI * 2 + t * 0.02;
+            const px = 300 + Math.cos(ang) * 78, py = 86 + Math.sin(ang) * 42;
+            ctx.fillStyle = "#1d4ed8"; ctx.beginPath(); ctx.arc(px, py, 11, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#fde68a"; ctx.beginPath(); ctx.arc(px, py - 3, 5, 0, Math.PI * 2); ctx.fill();
+          }
+          ctx.fillStyle = "#fde047"; ctx.font = "bold 12px sans-serif"; ctx.fillText("🧱 Pinya dels Castellers de Berga!", 200, 22);
+        } else if (state.stepId === "L03.G1") {
+          // Mini-animació real N3 J1: Tren del Ciment amb fum!
+          ctx.fillStyle = "#7dd3fc"; ctx.fillRect(0, 0, 600, 165);
+          ctx.fillStyle = "#15803d"; ctx.fillRect(0, 126, 600, 39);
+          ctx.fillStyle = "#78350f"; ctx.fillRect(0, 122, 600, 8);
+          const tx = 60 + (t * 1.8) % 420;
+          ctx.fillStyle = "#15803d"; ctx.fillRect(tx, 84, 78, 32);
+          ctx.fillStyle = "#b91c1c"; ctx.fillRect(tx + 4, 66, 26, 20);
+          ctx.fillStyle = "#1e293b"; ctx.fillRect(tx + 58, 64, 12, 22);
+          ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.beginPath(); ctx.arc(tx + 62, 52 - (t % 16), 9, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#0f172a"; ctx.beginPath(); ctx.arc(tx + 18, 120, 8, 0, Math.PI * 2); ctx.arc(tx + 58, 120, 8, 0, Math.PI * 2); ctx.fill();
+        } else if (state.stepId === "L03.G2") {
+          // Mini-animació real N3 J2: Pont dels Arcs dels Jardins Artigas!
+          ctx.fillStyle = "#bae6fd"; ctx.fillRect(0, 0, 600, 165);
+          ctx.fillStyle = "#0284c7"; ctx.fillRect(0, 122, 600, 43);
+          ctx.strokeStyle = "#a8a29e"; ctx.lineWidth = 14;
+          ctx.beginPath(); ctx.arc(300, 140, 110, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke();
+          ctx.fillStyle = "#d6d3d1"; ctx.fillRect(284, 24 + (t % 90), 32, 18);
+        } else if (state.stepId === "L03.G3") {
+          // Mini-animació real N3 J3: Salamandra Minecraft d'en Gaudí!
+          ctx.fillStyle = "#60a5fa"; ctx.fillRect(0, 0, 600, 165);
+          ctx.fillStyle = "#16a34a"; ctx.fillRect(0, 128, 600, 12);
+          ctx.fillStyle = "#78350f"; ctx.fillRect(0, 140, 600, 25);
+          const cols = ["#0284c7", "#eab308", "#f97316", "#16a34a", "#06b6d4"];
+          const nShown = 2 + Math.floor((t % 120) / 14);
+          for (let i = 0; i < Math.min(8, nShown); i++) {
+            ctx.fillStyle = cols[i % cols.length];
+            ctx.fillRect(190 + i * 26, 98 - (i % 2) * 14, 24, 24);
+            ctx.strokeStyle = "#0f172a"; ctx.strokeRect(190 + i * 26, 98 - (i % 2) * 14, 24, 24);
+          }
+          drawSprite(ctx, SPRITES.bitRobot, 120, 86 - Math.abs(Math.sin(t * 0.16)) * 16, 2.5);
+        } else if (state.stepId === "L03.G4") {
+          // Mini-animació real N3 J4: Bosc del Catllaràs amb fanalet i ulls vermells!
+          ctx.fillStyle = "#020617"; ctx.fillRect(0, 0, 600, 165);
+          const g = ctx.createRadialGradient(260, 102, 8, 260, 102, 95);
+          g.addColorStop(0, "rgba(253,224,71,0.5)"); g.addColorStop(1, "rgba(2,6,23,0)");
+          ctx.fillStyle = g; ctx.fillRect(0, 0, 600, 165);
+          drawSprite(ctx, SPRITES.bitRobot, 225, 84, 2.8);
+          ctx.font = "22px sans-serif"; ctx.fillText("🏮", 268, 104);
+          const ex = 480 - (t % 90);
+          ctx.fillStyle = "#ef4444"; ctx.beginPath(); ctx.arc(ex, 104, 4, 0, Math.PI * 2); ctx.arc(ex + 14, 104, 4, 0, Math.PI * 2); ctx.fill();
+        } else if (state.stepId === "L03.G5") {
+          // Mini-animació real N3 J5: Bici pujant cap al Xalet del Catllaràs fent salts!
+          ctx.fillStyle = "#bae6fd"; ctx.fillRect(0, 0, 600, 165);
+          ctx.fillStyle = "#15803d"; ctx.beginPath(); ctx.moveTo(0, 165); ctx.lineTo(0, 140); ctx.lineTo(600, 92); ctx.lineTo(600, 165); ctx.fill();
+          const bx = 90 + (t * 2) % 360, by = 126 - (bx / 600) * 44 - Math.abs(Math.sin(t * 0.12)) * 28;
+          ctx.font = "30px sans-serif"; ctx.fillText("🚴", bx, by);
+          ctx.fillStyle = "#d6d3d1"; ctx.beginPath(); ctx.moveTo(490, 108); ctx.quadraticCurveTo(530, 14, 570, 108); ctx.fill();
         } else {
-          // Nivell 2: Del Pedraforca al fons esquerre fins als Castells de Vilafranca a la dreta!
+          // Nivell 2 (J6 / P) o fallback: Castells a la Plaça de Berga!
           ctx.fillStyle = "#172554";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           drawPedraforcaSilhouette(ctx, 18, 138, 125, 62, false);
@@ -3147,7 +3256,7 @@
       state.pedretSplashTimer = 0;
       state.castellBanner = "";
       state.castellBannerTimer = 0;
-      if (!state.ghTargetPpm) state.ghTargetPpm = 8;
+      if (!state.ghTargetPpm || ![2, 4, 8].includes(state.ghTargetPpm)) state.ghTargetPpm = 2;
 
       // Selector de 3 velocitats (8, 15, 25 PPM) només a Guitar Hero PRO!
       const ghBar = document.getElementById("gh-speed-bar");
@@ -3463,9 +3572,9 @@
             const entX = (isPro ? 460 : 460) + Math.round(cumBeats * pxPerBeat);
             const entY = TOC_STAFF_Y[freq] || 93;
             cumBeats += beats;
-            // Velocitat real segons la rúbrica (8 PPM En inici, 15 PPM En procés, 25 PPM Assolit)!
-            const proSpeedMap = { 8: 1.05, 15: 1.85, 25: 2.85 };
-            const proSpeed = proSpeedMap[state.ghTargetPpm || 8] || 1.05;
+            // Velocitat real accessible (2 PPM màx 3★, 4 PPM màx 4★, 8 PPM màx 5★)!
+            const proSpeedMap = { 2: 0.48, 4: 0.78, 8: 1.15 };
+            const proSpeed = proSpeedMap[state.ghTargetPpm || 2] || 0.48;
             return {
               id: Date.now() + idx,
               word: letter,
@@ -5870,6 +5979,10 @@
           }
           const isRightExpected = lvl.rightKeys.includes(expected);
           triggerFallingClimber(isRightExpected ? "right" : "left");
+          if (ent.subMode === "pedret_bridge") {
+            // Al Pont de Pedret, cada error fa baixar més ràpid la pedra i la barra de la pedra!
+            state.pedretStoneHp = Math.max(0, (state.pedretStoneHp !== undefined ? state.pedretStoneHp : 100) - 18);
+          }
           if (ent.subMode === "dual_climbers" || ent.subMode === "hand_blocks") {
             if (isRightExpected) state.rightClimberStep = Math.max(0, state.rightClimberStep - 1);
             else state.leftClimberStep = Math.max(0, state.leftClimberStep - 1);
@@ -5894,6 +6007,11 @@
       const arcDef = getActiveArcadeDef(lvl);
       const isAdapted = isCurrentStepAutoAdapted();
       let earnedB = survived ? state.arcadeLives : 0;
+      // Topall de Barretines al Guitar Hero PRO segons velocitat (2 PPM -> màx 3★, 4 PPM -> màx 4★, 8 PPM -> màx 5★)!
+      if (arcDef.subMode === "berga_guitar_hero_pro") {
+        const ghCap = state.ghTargetPpm === 2 ? 3 : state.ghTargetPpm === 4 ? 4 : 5;
+        if (earnedB > ghCap) earnedB = ghCap;
+      }
       // Si s'ha activat el mode adaptat (velocitat reduïda després de 3 intents), màxim 3 Barretines!
       if (isAdapted && earnedB > 3) earnedB = 3;
 
@@ -6209,6 +6327,23 @@
       } else {
         nextBtn.style.display = "none";
         nextBtn.disabled = true;
+      }
+
+      // Botó «Repetir a més velocitat» quan acabes Guitar Hero PRO a 2 PPM o 4 PPM!
+      const fasterBtn = document.getElementById("btn-res-faster");
+      if (fasterBtn) {
+        if (state.stepId === "L02.EXTRA" && (state.ghTargetPpm === 2 || state.ghTargetPpm === 4)) {
+          const nextPpm = state.ghTargetPpm === 2 ? 4 : 8;
+          const nextCap = nextPpm === 4 ? 4 : 5;
+          fasterBtn.style.display = "inline-flex";
+          fasterBtn.textContent = `⚡ Repetir a ${nextPpm} PPM (màx ${nextCap}★)`;
+          fasterBtn.onclick = () => {
+            state.ghTargetPpm = nextPpm;
+            launchActiveStep();
+          };
+        } else {
+          fasterBtn.style.display = "none";
+        }
       }
 
       const thBox = document.getElementById("res-thermometer");
