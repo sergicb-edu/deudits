@@ -865,11 +865,11 @@
         arcades: [
           { id: "L02.G1", label: "J1: 🎈 Vol en Globus pel Llobregat (D i K)", subMode: "bergueda_balloon", totalTargets: 20, isExtra: false },
           { id: "L02.G2", label: "J2: 🌉 Creuem el Pont de Pedret (Grups de 3 D i K)", subMode: "pedret_bridge", totalTargets: 20, isExtra: false },
-          { id: "L02.G3", label: "J3: 🍄 Collita de Rovellons al Bosc (Mà Esq. D+F)", subMode: "bergueda_mushrooms", totalTargets: 20, isExtra: false },
-          { id: "L02.G4", label: "J4: 🎺 Els Grallers de Berga · Guitar Hero (Mà Dreta K+J)", subMode: "berga_grallers", totalTargets: 44, isExtra: false },
-          { id: "L02.G5", label: "J5: 🧱 Fem la Pinya a Berga (Alternança)", subMode: "berga_pinya", totalTargets: 20, isExtra: false },
-          { id: "L02.G6", label: "J6: 🏰 Pugem el Castell de Berga (4 Lletres)", subMode: "dual_climbers", totalTargets: 24, isExtra: false },
-          { id: "L02.EXTRA", label: "⭐ EXTRA: 🧩 El Codi Secret del Berguedà (Sèries lògiques!)", subMode: "bergueda_logic_code", totalTargets: 10, isExtra: true }
+          { id: "L02.G3", label: "J3: 🍄 Collita de Rovellons (12 Esq. D+F · 12 Dreta K+J)", subMode: "bergueda_mushrooms", totalTargets: 24, isExtra: false },
+          { id: "L02.G4", label: "J4: 🎺 Els Grallers de Berga (4 Lletres D, F, J, K)", subMode: "berga_grallers", totalTargets: 44, isExtra: false },
+          { id: "L02.G5", label: "J5: 🧱 Fem la Pinya a Berga (Barreja 4 Lletres)", subMode: "berga_pinya", totalTargets: 24, isExtra: false },
+          { id: "L02.G6", label: "J6: 🏰 Diada Castellera a Berga (4 Castells + Enxaneta!)", subMode: "dual_climbers", totalTargets: 24, isExtra: false },
+          { id: "L02.EXTRA", label: "⭐ EXTRA: 🎸 Guitar Hero PRO · Clava el Toc de Castells!", subMode: "berga_guitar_hero_pro", totalTargets: 44, isExtra: true }
         ]
       },
       {
@@ -1567,7 +1567,7 @@
     function playGameNote(gameMode, customFreq, customBeats) {
       const idx = Math.max(0, state.melodyCursor);
       state.melodyCursor = idx + 1;
-      const castellsSteps = ["L02.G4", "L02.G5", "L02.G6"];
+      const castellsSteps = ["L02.G4", "L02.G5", "L02.G6", "L02.EXTRA"];
       if (gameMode === "castells" && castellsSteps.includes(state.stepId)) {
         // A tots els jocs castellers (Grallers, Pinya i Castell) sona el Toc de Castells amb durada real!
         const notePair = TOC_DE_CASTELLS_SCORE[idx % TOC_DE_CASTELLS_SCORE.length];
@@ -1689,33 +1689,28 @@
           return randomCombo(4, state._lastArcadeWord);
         }
         if (subMode === "bergueda_mushrooms") {
-          const L = lvl.leftKeys;
-          const warmup = [`${L[0]}${L[1]}`, `${L[1]}${L[0]}`, `${L[0]}${L[1]}${L[0]}`, `${L[1]}${L[0]}${L[1]}`];
-          if (stepIndex < warmup.length) return warmup[stepIndex];
-          const wLen = stepIndex < 7 ? 3 : 4;
+          // J3: Primers 12 = Mà Esquerra (D+F), Segons 12 = Mà Dreta (K+J)!
+          const pool = stepIndex < 12 ? lvl.leftKeys : lvl.rightKeys;
+          const localIdx = stepIndex < 12 ? stepIndex : (stepIndex - 12);
+          const warmup = [`${pool[0]}${pool[1]}`, `${pool[1]}${pool[0]}`, `${pool[0]}${pool[1]}${pool[0]}`, `${pool[1]}${pool[0]}${pool[1]}`];
+          if (localIdx < warmup.length) return warmup[localIdx];
+          const wLen = localIdx < 8 ? 3 : 4;
           let s = "";
-          for (let c = 0; c < wLen; c++) s += L[Math.floor(rng() * L.length)];
+          for (let c = 0; c < wLen; c++) s += pool[Math.floor(rng() * pool.length)];
           return s;
         }
-        if (subMode === "berga_grallers") {
-          const R = lvl.rightKeys;
-          const warmup = [`${R[0]}${R[1]}`, `${R[1]}${R[0]}`, `${R[0]}${R[1]}${R[0]}`, `${R[1]}${R[0]}${R[1]}`];
-          if (stepIndex < warmup.length) return warmup[stepIndex];
-          const wLen = stepIndex < 7 ? 3 : 4;
-          let s = "";
-          for (let c = 0; c < wLen; c++) s += R[Math.floor(rng() * R.length)];
-          return s;
+        if (subMode === "berga_grallers" || subMode === "berga_guitar_hero_pro") {
+          const all4 = [...lvl.leftKeys, ...lvl.rightKeys];
+          return all4[stepIndex % all4.length];
         }
         if (subMode === "berga_pinya") {
-          const useLeft = stepIndex % 2 === 0;
-          const handPool = useLeft ? lvl.leftKeys : lvl.rightKeys;
-          const warmup = useLeft
-            ? [`${handPool[0]}${handPool[1]}`, `${handPool[1]}${handPool[0]}${handPool[1]}`]
-            : [`${handPool[0]}${handPool[1]}`, `${handPool[1]}${handPool[0]}${handPool[1]}`];
-          if (stepIndex < 4) return warmup[Math.floor(stepIndex / 2) % warmup.length];
-          const wLen = stepIndex < 7 ? 3 : 4;
+          // J5: Barreja de les 4 lletres (D, F, J, K) tot plegat!
+          const all4 = [...lvl.leftKeys, ...lvl.rightKeys];
+          const warmup = ["dfkj", "kjdf", "dkfj", "fjdk"];
+          if (stepIndex < warmup.length) return warmup[stepIndex];
+          const wLen = stepIndex < 12 ? 3 : 4;
           let s = "";
-          for (let c = 0; c < wLen; c++) s += handPool[Math.floor(rng() * handPool.length)];
+          for (let c = 0; c < wLen; c++) s += all4[Math.floor(rng() * all4.length)];
           return s;
         }
         if (subMode === "dual_climbers" && lvl.id === "L02") {
@@ -3011,9 +3006,6 @@
         if (arcDef.subMode === "pedraforca_recycle" || arcDef.subMode === "berga_equip") {
           speakBtn.style.display = "inline-flex";
           speakBtn.textContent = "🔊 Escoltar";
-        } else if (arcDef.subMode === "berga_grallers" || arcDef.subMode === "berga_pinya" || arcDef.subMode === "dual_climbers") {
-          speakBtn.style.display = "inline-flex";
-          speakBtn.textContent = "🎺 Escoltar Toc";
         } else {
           speakBtn.style.display = "none";
         }
@@ -3254,26 +3246,39 @@
               window.speechSynthesis.speak(utt);
             } catch {}
           }
-        } else if (arcDef.subMode === "berga_grallers") {
-          // J4 GUITAR HERO DEL TOC DE CASTELLS: genera totes les 44 notes amb l'espaiat rítmic REAL del PDF!
-          const pxPerBeat = 155;
+        } else if (arcDef.subMode === "berga_grallers" || arcDef.subMode === "berga_guitar_hero_pro") {
+          // J4 (Grallers) i EXTRA (Guitar Hero PRO): totes 4 lletres D, F, J, K sense repetir la mateixa lletra seguida!
+          const isPro = arcDef.subMode === "berga_guitar_hero_pro";
+          const pxPerBeat = isPro ? 165 : 155;
           let cumBeats = 0;
+          let prevLetter = "";
+          state.ghScore = 0;
+          state.ghCombo = 0;
+          state.ghMaxCombo = 0;
+          state.ghPerfects = 0;
+          state.ghMisses = 0;
           state.arcadeEntities = TOC_DE_CASTELLS_SCORE.map(([freq, beats], idx) => {
-            // Mà dreta (K per notes agudes >= E5, J per notes greus <= D5 — intuïtiu i musical!)
-            const letter = freq >= E5 ? "k" : "j";
-            const entX = 460 + Math.round(cumBeats * pxPerBeat);
+            // Mapeig natural de greu a agut amb les 4 lletres (D, F, J, K), evitant repeticions seguides!
+            let letter = freq <= C5 ? "d" : freq <= D5 ? "f" : freq <= E5 ? "j" : "k";
+            if (letter === prevLetter) {
+              const alt = { d: "f", f: "j", j: "k", k: "f" };
+              letter = alt[letter];
+            }
+            prevLetter = letter;
+            const entX = (isPro ? 540 : 460) + Math.round(cumBeats * pxPerBeat);
             const entY = TOC_STAFF_Y[freq] || 93;
             cumBeats += beats;
             return {
               id: Date.now() + idx,
               word: letter,
               typedIndex: 0,
-              subMode: "berga_grallers",
+              subMode: arcDef.subMode,
+              isProRhythm: isPro,
               noteFreq: freq,
               noteBeats: beats,
               x: entX,
               y: entY,
-              speed: 1.55 * getSpeedMultiplier(),
+              speed: isPro ? (pxPerBeat / (TOC_BEAT_MS / 16.67)) : (1.55 * getSpeedMultiplier()),
               progress: 0
             };
           });
@@ -4207,11 +4212,12 @@
         return;
       }
 
-      if (arcDef.subMode === "berga_grallers") {
-        // J4: ELS GRALLERS DE BERGA — MODE GUITAR HERO DEL TOC DE CASTELLS (44 notes amb el ritme real del PDF!)
+      if (arcDef.subMode === "berga_grallers" || arcDef.subMode === "berga_guitar_hero_pro") {
+        // J4 (Grallers · 4 lletres D, F, J, K) i EXTRA (Guitar Hero PRO · ritme estricte amb bonus/penalitzacions!)
+        const isPro = arcDef.subMode === "berga_guitar_hero_pro";
         const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        bg.addColorStop(0, "#1e1b4b");
-        bg.addColorStop(1, "#312e81");
+        bg.addColorStop(0, isPro ? "#0f172a" : "#1e1b4b");
+        bg.addColorStop(1, isPro ? "#4c1d95" : "#312e81");
         ctx.fillStyle = bg;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -4236,45 +4242,71 @@
 
         // Línia daurada de compàs (Zona Guitar Hero a x = 148)
         const hitX = 148;
-        ctx.fillStyle = "rgba(250, 204, 21, 0.16)";
-        ctx.fillRect(hitX - 24, 48, 48, 122);
+        ctx.fillStyle = isPro ? "rgba(250, 204, 21, 0.22)" : "rgba(250, 204, 21, 0.16)";
+        ctx.fillRect(hitX - 26, 46, 52, 126);
         ctx.strokeStyle = "#facc15";
         ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(hitX, 48); ctx.lineTo(hitX, 170); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(hitX, 46); ctx.lineTo(hitX, 172); ctx.stroke();
 
         // Gralla i en Bit a l'esquerra
         ctx.font = "32px sans-serif";
-        ctx.fillText("🎺", 82, 116);
+        ctx.fillText(isPro ? "🎸" : "🎺", 82, 116);
         drawSprite(ctx, SPRITES.bitRobot, 26, 148, 3.0);
 
-        // Moviment suau sincronitzat de tota la cinta de notes (si la primera arriba a hitX, espera suaument!)
+        // Moviment de la cinta de notes:
+        // - A J4 (NESE-friendly): espera suaument a hitX perquè ningú es quedi encallat.
+        // - A EXTRA (Guitar Hero PRO): NO s'atura mai! Si passa de llarg sense prémer-la -> ❌ FORA DE RITME!
         const head = state.arcadeEntities[0];
         if (state.arcadeRunning && head) {
-          const moveDx = head.x > hitX ? Math.min(head.speed, head.x - hitX) : 0;
-          if (moveDx > 0) {
+          if (isPro) {
             for (let i = 0; i < state.arcadeEntities.length; i++) {
-              state.arcadeEntities[i].x -= moveDx;
+              state.arcadeEntities[i].x -= head.speed;
+            }
+            if (head.x < hitX - 58) {
+              // Nota escapada fora de ritme!
+              state.arcadeEntities.shift();
+              state.arcadeCompleted++;
+              state.ghCombo = 0;
+              state.ghMisses = (state.ghMisses || 0) + 1;
+              state.arcadeErrors++;
+              state.grallerFeedback = "❌ FORA DE RITME!";
+              state.grallerFeedbackColor = "#f87171";
+              state.grallerFeedbackTimer = 32;
+              penalizeMistakeOrTimeout(14, false);
+              if (state.arcadeCompleted >= state.arcadeTotal) {
+                state.arcadeRunning = false;
+                setTimeout(() => endArcadeGame(true), 400);
+              } else {
+                updateArcadeHud(lvl);
+              }
+            }
+          } else {
+            const moveDx = head.x > hitX ? Math.min(head.speed, head.x - hitX) : 0;
+            if (moveDx > 0) {
+              for (let i = 0; i < state.arcadeEntities.length; i++) {
+                state.arcadeEntities[i].x -= moveDx;
+              }
             }
           }
         }
 
+        // Colors per les 4 tecles (D=verd, F=taronja, J=groc, K=blau)
+        const KEY_COL = { d: "#4ade80", f: "#fb923c", j: "#facc15", k: "#38bdf8" };
+
         // Dibuixa totes les notes visibles dins del pentagrama
         for (let i = state.arcadeEntities.length - 1; i >= 0; i--) {
           const n = state.arcadeEntities[i];
-          if (n.x < 90 || n.x > 870) continue;
+          if (n.x < 85 || n.x > 870) continue;
           const isCurrent = (i === 0);
-          const isK = n.word === "k";
-          const noteColor = isK ? "#38bdf8" : "#facc15";
+          const noteColor = KEY_COL[n.word] || "#facc15";
           const radius = isCurrent ? 18 : 14;
 
-          // Cua de durada per a notes llargues (>= 0.75 beats)
           if (n.noteBeats >= 0.75) {
             const tailLen = Math.min(220, Math.round(n.noteBeats * 120));
-            ctx.fillStyle = isK ? "rgba(56,189,248,0.35)" : "rgba(250,204,21,0.35)";
+            ctx.fillStyle = "rgba(255,255,255,0.22)";
             ctx.fillRect(n.x, n.y - 7, tailLen, 14);
           }
 
-          // Plica musical
           ctx.strokeStyle = isCurrent ? "#ffffff" : "rgba(255,255,255,0.65)";
           ctx.lineWidth = 2.5;
           ctx.beginPath();
@@ -4282,15 +4314,13 @@
           ctx.lineTo(n.x + radius - 2, n.y - 32);
           ctx.stroke();
 
-          // Halo polsant si és la nota activa esperant a la línia daurada
           if (isCurrent) {
-            ctx.fillStyle = n.x <= hitX + 35 ? "rgba(74, 222, 128, 0.35)" : "rgba(250, 204, 21, 0.28)";
+            ctx.fillStyle = Math.abs(n.x - hitX) <= 30 ? "rgba(74, 222, 128, 0.42)" : "rgba(250, 204, 21, 0.28)";
             ctx.beginPath();
             ctx.arc(n.x, n.y, radius + 9 + Math.sin(Date.now() / 120) * 3, 0, Math.PI * 2);
             ctx.fill();
           }
 
-          // Bola de la nota amb la lletra (K o J) ben clara
           ctx.fillStyle = noteColor;
           ctx.beginPath();
           ctx.arc(n.x, n.y, radius, 0, Math.PI * 2);
@@ -4310,16 +4340,21 @@
 
         if (state.grallerFeedbackTimer > 0) {
           state.grallerFeedbackTimer--;
-          ctx.fillStyle = "#4ade80";
+          ctx.fillStyle = state.grallerFeedbackColor || "#4ade80";
           ctx.font = "900 15px sans-serif";
-          ctx.fillText(state.grallerFeedback || "✨ PERFECTE!", hitX - 36, 42);
+          ctx.fillText(state.grallerFeedback || "✨ PERFECTE!", hitX - 42, 40);
         }
 
-        ctx.fillStyle = "rgba(15,23,42,0.82)";
-        ctx.fillRect(14, 214, 420, 26);
+        ctx.fillStyle = "rgba(15,23,42,0.85)";
+        ctx.fillRect(14, 214, isPro ? 540 : 440, 26);
         ctx.fillStyle = "#fde047";
         ctx.font = "bold 12px sans-serif";
-        ctx.fillText(`🎺 Toc de Castells (Guitar Hero · K agut / J greu): ${state.arcadeCompleted} / ${state.arcadeTotal} notes`, 22, 231);
+        ctx.fillText(
+          isPro
+            ? `🎸 GUITAR HERO PRO · ${state.ghScore || 0} pts · 🔥 Combo x${state.ghCombo || 0} (Màx ${state.ghMaxCombo || 0}) · ${state.arcadeCompleted}/${state.arcadeTotal}`
+            : `🎺 Toc de Castells (D, F, J, K): ${state.arcadeCompleted} / ${state.arcadeTotal} notes`,
+          22, 231
+        );
         return;
       }
 
@@ -4600,17 +4635,31 @@
         drawCastellerBerga(baseX + i * 16, 210 + (Math.abs(i) % 2) * 3, 0.85, false, false);
       }
 
-      // Pisos construïts del Castell (de 1 fins a 5 pisos segons el progrés!)
-      const builtFloors = Math.min(5, Math.floor((state.arcadeCompleted / Math.max(1, state.arcadeTotal)) * 5) + 1);
+      // DIADA CASTELLERA A BERGA (24 encerts = 4 castells consecutius! Cada encert puja 1 fila real!)
+      // 1) Pilar de 4 (4 pisos, 1 per pis) · 2) Torre de 6 (6 pisos, 2 per pis) · 3) 3 de 7 (7 pisos, 3 per pis) · 4) 4 de 8 + Enxaneta (7 pisos, 4 per pis)!
+      const DIADA = [
+        { name: "Pilar de 4", cols: 1, floors: 4, start: 0 },
+        { name: "Torre de 6", cols: 2, floors: 6, start: 4 },
+        { name: "3 de 7", cols: 3, floors: 7, start: 10 },
+        { name: "4 de 8", cols: 4, floors: 7, start: 17 }
+      ];
+      const curCastell = DIADA.find(c => state.arcadeCompleted < c.start + c.floors) || DIADA[DIADA.length - 1];
+      const builtFloors = Math.min(curCastell.floors, Math.max(0, state.arcadeCompleted - curCastell.start));
+      const floorStepY = Math.min(27, Math.floor(150 / curCastell.floors));
+
       for (let f = 1; f <= builtFloors; f++) {
-        const fy = 205 - f * 31;
-        const fx = baseX + sway * (f * 0.35);
-        if (f < 5) {
-          drawCastellerBerga(fx - 14, fy, 0.92, false, false);
-          drawCastellerBerga(fx + 14, fy, 0.92, false, false);
+        const fy = 205 - f * floorStepY;
+        const fx = baseX + sway * (f * 0.25);
+        const isLastTop = (f === curCastell.floors);
+        if (isLastTop) {
+          // Enxaneta amb casc groc fent l'aleta al cim!
+          drawCastellerBerga(fx, fy - 4, 0.8, true, true);
         } else {
-          // Enxaneta al cim fent l'aleta!
-          drawCastellerBerga(fx, fy - 4, 0.82, true, true);
+          const cols = curCastell.cols;
+          for (let c = 0; c < cols; c++) {
+            const offset = (c - (cols - 1) / 2) * 24;
+            drawCastellerBerga(fx + offset, fy, 0.84, false, false);
+          }
         }
       }
 
@@ -4619,16 +4668,16 @@
         const leftClimbY = Math.max(55, 198 - (state.leftClimberStep || 0) * 22);
         const rightClimbY = Math.max(55, 198 - (state.rightClimberStep || 0) * 22);
         const climbHop = Math.abs(Math.sin(performance.now() * 0.012)) * 4;
-        drawCastellerBerga(baseX - 52, leftClimbY - climbHop, 0.9, true, false);
-        drawCastellerBerga(baseX + 52, rightClimbY - climbHop, 0.9, true, false);
+        drawCastellerBerga(baseX - 72, leftClimbY - climbHop, 0.88, true, false);
+        drawCastellerBerga(baseX + 72, rightClimbY - climbHop, 0.88, true, false);
         drawWordBox(ctx, ent.word, ent.typedIndex, baseX - 44, 18, true);
       }
 
-      ctx.fillStyle = "rgba(15,23,42,0.78)";
-      ctx.fillRect(14, 12, 290, 24);
+      ctx.fillStyle = "rgba(15,23,42,0.82)";
+      ctx.fillRect(14, 12, 390, 24);
       ctx.fillStyle = "#fde047";
       ctx.font = "bold 12px sans-serif";
-      ctx.fillText(`🏰 Castell de Berga · Pis ${builtFloors}/5 (${state.arcadeCompleted}/${state.arcadeTotal})`, 22, 28);
+      ctx.fillText(`🏰 Diada a Berga · ${curCastell.name} (Fila ${builtFloors}/${curCastell.floors}) · Total ${state.arcadeCompleted}/${state.arcadeTotal}`, 22, 28);
     }
 
     // 3) MECÀNICA 3: SARDANA A GIRONA
@@ -5225,7 +5274,31 @@
         playGameNote(lvl.gameMode, ent.noteFreq, ent.noteBeats);
         if (ent.subMode === "berga_grallers") {
           state.grallerFeedback = Math.abs(ent.x - 148) <= 45 ? "✨ PERFECTE!" : "🎵 BÉ!";
+          state.grallerFeedbackColor = "#4ade80";
           state.grallerFeedbackTimer = 28;
+        } else if (ent.subMode === "berga_guitar_hero_pro") {
+          const dist = Math.abs(ent.x - 148);
+          if (dist <= 26) {
+            state.ghCombo = (state.ghCombo || 0) + 1;
+            state.ghMaxCombo = Math.max(state.ghMaxCombo || 0, state.ghCombo);
+            state.ghPerfects = (state.ghPerfects || 0) + 1;
+            state.ghScore = (state.ghScore || 0) + 100 * Math.min(4, 1 + Math.floor(state.ghCombo / 5));
+            state.grallerFeedback = `🔥 PERFECTE! +${100 * Math.min(4, 1 + Math.floor(state.ghCombo / 5))}`;
+            state.grallerFeedbackColor = "#4ade80";
+          } else if (dist <= 58) {
+            state.ghCombo = (state.ghCombo || 0) + 1;
+            state.ghMaxCombo = Math.max(state.ghMaxCombo || 0, state.ghCombo);
+            state.ghScore = (state.ghScore || 0) + 50;
+            state.grallerFeedback = "👍 BÉ! +50";
+            state.grallerFeedbackColor = "#fde047";
+          } else {
+            state.ghCombo = 0;
+            state.ghMisses = (state.ghMisses || 0) + 1;
+            state.grallerFeedback = "⚠️ FORA DE RITME!";
+            state.grallerFeedbackColor = "#fb923c";
+            penalizeMistakeOrTimeout(10, false);
+          }
+          state.grallerFeedbackTimer = 30;
         }
 
         if (lvl.gameMode === "castells") {
@@ -5235,7 +5308,7 @@
 
         if (ent.typedIndex >= ent.word.length) {
           // A J4/J5/J6 silenciëm el 'ding-dong' perquè només soni la melodia neta del Toc de Castells!
-          const isCastellsMusicStep = (lvl.gameMode === "castells" && ["L02.G4", "L02.G5", "L02.G6"].includes(state.stepId));
+          const isCastellsMusicStep = (lvl.gameMode === "castells" && ["L02.G4", "L02.G5", "L02.G6", "L02.EXTRA"].includes(state.stepId));
           if (!isCastellsMusicStep) sfxActionSuccess();
           spawnParticles(ent.x || 120, ent.y || 120, "#fde047");
           state.arcadeAngle += 0.8;
@@ -5354,21 +5427,27 @@
         }
         if (lvl.gameMode === "castells") {
           if (ent.subMode === "bergueda_mushrooms") {
-            // Si s'equivoca collint bolets, el bolet s'escapa pel bosc i n'apareix un altre!
+            // El bolet es podreix visualment i perds energia, PERÒ et quedes a la mateixa lletra fins que l'encertis!
             state.mushroomLost = state.mushroomLost || [];
             state.mushroomLost.push({ x: ent.x, y: ent.y, vx: ent.x > 440 ? 4.5 : -4.5, t: 0 });
-            penalizeMistakeOrTimeout(25, false);
-            spawnEntitiesForCurrentMode(lvl);
+            penalizeMistakeOrTimeout(20, false);
+            updateArcadeHud(lvl);
             return;
+          }
+          if (ent.subMode === "berga_guitar_hero_pro") {
+            state.ghCombo = 0;
+            state.ghMisses = (state.ghMisses || 0) + 1;
+            state.grallerFeedback = "❌ TECLA EQUIVOCADA!";
+            state.grallerFeedbackColor = "#f87171";
+            state.grallerFeedbackTimer = 28;
           }
           const isRightExpected = lvl.rightKeys.includes(expected);
           triggerFallingClimber(isRightExpected ? "right" : "left");
           if (ent.subMode === "dual_climbers" || ent.subMode === "hand_blocks") {
             if (isRightExpected) state.rightClimberStep = Math.max(0, state.rightClimberStep - 1);
             else state.leftClimberStep = Math.max(0, state.leftClimberStep - 1);
-          } else {
-            ent.typedIndex = Math.max(0, ent.typedIndex - 1);
           }
+          // MAI retrocedim ent.typedIndex: l'alumne repeteix la mateixa lletra fins que l'encerti!
         }
         if (lvl.gameMode === "meteors") {
           if (ent.isBird) ent.y -= 18;
@@ -5392,7 +5471,7 @@
       if (isAdapted && earnedB > 3) earnedB = 3;
 
       if (survived && earnedB >= getMinBarretinesRequired()) {
-        if (lvl.gameMode === "castells" && (arcDef.subMode === "berga_grallers" || arcDef.subMode === "berga_pinya" || arcDef.subMode === "dual_climbers")) {
+        if (lvl.gameMode === "castells" && (arcDef.subMode === "berga_grallers" || arcDef.subMode === "berga_guitar_hero_pro" || arcDef.subMode === "berga_pinya" || arcDef.subMode === "dual_climbers")) {
           playTocDeCastellsPujada();
         } else {
           sfxFanfare();
@@ -6388,9 +6467,11 @@
             statusEl.innerHTML = `<span style="color:#15803d;font-size:1.02rem;">🏆 ${badgeStr} guanyada! (${durS}s · ${wpm} PPM · ${tongueState.errors} fallos) · Has fet florir ${it.flower} ${it.flowerName}!</span>${rankHtml}`;
             actionsEl.style.display = "flex";
             actionsEl.innerHTML = `
+              <button type="button" id="btn-after-repeat-race" style="background:#e0f2fe;border-color:#0284c7;color:#0c4a6e;font-weight:900;">🔄 Repetir aquest embarbussament</button>
               <button type="button" id="btn-after-list" class="primary" style="background:#db2777;border-color:#be185d;">➡️ Tornar al Jardí (Següent embarbussament)</button>
               ${mode === "tortuga" ? `<button type="button" id="btn-after-try-turbo" style="background:#fef08a;border-color:#ca8a04;color:#713f12;font-weight:900;">⚡ Provar en Turbo!</button>` : ""}
             `;
+            document.getElementById("btn-after-repeat-race").onclick = () => startTongueRace(it, mode);
             document.getElementById("btn-after-list").onclick = openTongueGarden;
             const tryTurbo = document.getElementById("btn-after-try-turbo");
             if (tryTurbo) tryTurbo.onclick = () => startTongueRace(it, "turbo");
