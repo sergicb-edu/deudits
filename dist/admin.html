@@ -479,6 +479,11 @@
         name: "Nivell 2 · Castellers de Berga",
         mandatory: ["L02.D1", "L02.G1", "L02.D2", "L02.G2", "L02.D3", "L02.G3", "L02.D4", "L02.G4", "L02.D5", "L02.G5", "L02.D6", "L02.G6", "L02.PROVERB"],
         extras: ["L02.EXTRA"]
+      },
+      L03: {
+        name: "Nivell 3 · Tren del Ciment i Gaudí",
+        mandatory: ["L03.D1", "L03.G1", "L03.D2", "L03.G2", "L03.D3", "L03.G3", "L03.D4", "L03.G4", "L03.D5", "L03.G5", "L03.D6", "L03.G6", "L03.PROVERB"],
+        extras: ["L03.EXTRA"]
       }
     };
 
@@ -719,6 +724,7 @@
             const sc = (ds.studentConfigs && ds.studentConfigs[stu]) || {};
             const diff = sc.difficulty || defaultTeacherCfg.difficulty || "normal";
             const minb = Number(sc.minBarretines || defaultTeacherCfg.minBarretines || 3);
+            const comp = sc.tongueCompetition !== undefined && sc.tongueCompetition !== null ? String(sc.tongueCompetition) : "global";
             const safeStu = stu.replace(/"/g, "&quot;");
             return `
               <td>
@@ -734,6 +740,11 @@
                     <option value="3" ${minb === 3 ? "selected" : ""}>Mín. 3 Barretines</option>
                     <option value="4" ${minb === 4 ? "selected" : ""}>Mín. 4 Barretines</option>
                     <option value="5" ${minb === 5 ? "selected" : ""}>Mín. 5 Barretines</option>
+                  </select>
+                  <select class="stu-comp-sel" data-stu="${safeStu}" style="font-size:0.75rem;padding:2px 5px;border-radius:6px;border:1px solid #c4b5fd;font-weight:700;">
+                    <option value="global" ${comp === "global" ? "selected" : ""}>🗣️ Cursa: Global</option>
+                    <option value="0" ${comp === "0" ? "selected" : ""}>🤖 Cursa: Contra en Bit</option>
+                    <option value="1" ${comp === "1" ? "selected" : ""}>🏆 Cursa: Companys</option>
                   </select>
                   <span class="stu-cfg-status" data-stu="${safeStu}" style="font-size:0.7rem;font-weight:700;color:#15803d;"></span>
                 </div>
@@ -769,9 +780,14 @@
       async function savePerStudentCfg(stu) {
         const diffEl = tbody.querySelector(`.stu-diff-sel[data-stu="${CSS.escape(stu)}"]`);
         const minbEl = tbody.querySelector(`.stu-minb-sel[data-stu="${CSS.escape(stu)}"]`);
+        const compEl = tbody.querySelector(`.stu-comp-sel[data-stu="${CSS.escape(stu)}"]`);
         const stEl = tbody.querySelector(`.stu-cfg-status[data-stu="${CSS.escape(stu)}"]`);
         if (!diffEl || !minbEl) return;
-        const cfgObj = { difficulty: diffEl.value, minBarretines: Number(minbEl.value || 3) };
+        const cfgObj = {
+          difficulty: diffEl.value,
+          minBarretines: Number(minbEl.value || 3),
+          tongueCompetition: compEl ? compEl.value : "global"
+        };
         if (stEl) { stEl.style.color = "#1d4ed8"; stEl.textContent = "⏳ Desant..."; }
         try {
           if (window.MecanoGoogleAuth && window.MecanoGoogleAuth.getSheetId()) {
@@ -787,7 +803,7 @@
           if (stEl) { stEl.style.color = "#dc2626"; stEl.textContent = "⚠️ Error en desar"; }
         }
       }
-      tbody.querySelectorAll(".stu-diff-sel, .stu-minb-sel").forEach(sel => {
+      tbody.querySelectorAll(".stu-diff-sel, .stu-minb-sel, .stu-comp-sel").forEach(sel => {
         sel.onchange = () => savePerStudentCfg(sel.dataset.stu);
       });
     }
