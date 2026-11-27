@@ -4019,21 +4019,21 @@
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // El Pedraforca majestuós al fons (adaptat a l'alçada ampliada de 340px!)
-        drawPedraforcaSilhouette(ctx, 110, 292, 660, 225, true);
+        // El Pedraforca majestuós al fons (adaptat a l'alçada de 290px!)
+        drawPedraforcaSilhouette(ctx, 110, 244, 660, 195, true);
 
         // Prat verd als peus del Pedraforca
         ctx.fillStyle = "#16a34a";
-        ctx.fillRect(0, 282, canvas.width, 58);
+        ctx.fillRect(0, 232, canvas.width, 58);
 
-        // 4 Contenidors oficials de reciclatge a sota
+        // 4 Contenidors oficials de reciclatge a sota (binY=224 + binH=60 = 284 <= 290)
         const BINS = [
           { label: "PLÀSTIC", code: "ffj", bg: "#eab308", border: "#a16207", text: "#422006", icon: "🟡" },
           { label: "PAPER", code: "jjf", bg: "#2563eb", border: "#1e3a8a", text: "#ffffff", icon: "🔵" },
           { label: "ORGÀNICA", code: "fjf", bg: "#92400e", border: "#451a03", text: "#ffffff", icon: "🟤" },
           { label: "REBUIG", code: "jfj", bg: "#64748b", border: "#334155", text: "#ffffff", icon: "🔘" }
         ];
-        const binW = 160, binH = 62, binY = 272;
+        const binW = 160, binH = 60, binY = 224;
         state.binFlashTimers = state.binFlashTimers || [0, 0, 0, 0];
         BINS.forEach((b, i) => {
           const bx = 76 + i * 190;
@@ -4082,11 +4082,11 @@
         }
         state.recycledFlying = remFlying;
 
-        // Residu actiu caient lentament amb molt d'espai (de y=36 fins a y=224!)
+        // Residu actiu caient lentament fins a tocar les tapes dels contenidors (y=174 + 44 = 218)
         if (state.arcadeRunning) {
           for (const it of state.arcadeEntities) {
             it.y += it.speed;
-            if (it.y >= 224) {
+            if (it.y >= 174) {
               state.recycleWrongTimer = 55;
               penalizeMistakeOrTimeout(100, true);
               it.y = 36;
