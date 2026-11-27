@@ -2850,16 +2850,16 @@
             { id: "L02.D5", phaseType: "drill", label: "Missió 9", icon: "9", x: 69, y: 74 },
             { id: "L02.G5", phaseType: "arcade", label: "Missió 10", icon: "10", x: 76.5, y: 34 },
             { id: "L02.D6", phaseType: "drill", label: "Missió 11", icon: "11", x: 83.5, y: 68 },
-            { id: "L02.G6", phaseType: "arcade", label: "Missió 12", icon: "12", x: 89.5, y: 32 },
+            { id: "L02.G6", phaseType: "arcade", label: "Missió 12", icon: "12", x: 88.5, y: 24 },
             { id: "L02.PROVERB", phaseType: "proverb", label: "🔑", icon: "🔑", x: 95.5, y: 52, isKey: true },
-            { id: "L02.EXTRA", phaseType: "arcade", label: "🌸 Extra", icon: "🧩", x: 91, y: 84, isExtra: true }
+            { id: "L02.EXTRA", phaseType: "arcade", label: "🌸 Extra", icon: "🎸", x: 92, y: 84, isExtra: true }
           ];
           // Construeix el camí SVG exactament passant pel centre de cada node (1->2->...->12->🔑) i la branca a l'Extra!
           const mainPts = mapNodes.filter(n => !n.isExtra).map(n => ({ x: Math.round(n.x * 9), y: Math.round(n.y * 4.1) }));
           const l02PathD = mainPts.map((pt, i) => (i === 0 ? `M${pt.x},${pt.y}` : `L${pt.x},${pt.y}`)).join(" ");
-          const node12 = mainPts[11];
+          const keyPt = mainPts[12];
           const extraNode = mapNodes.find(n => n.isExtra);
-          const extraPathD = `M${node12.x},${node12.y} L${Math.round(extraNode.x * 9)},${Math.round(extraNode.y * 4.1)}`;
+          const extraPathD = `M${keyPt.x},${keyPt.y} L${Math.round(extraNode.x * 9)},${Math.round(extraNode.y * 4.1)}`;
           const l02SvgPaths = board.querySelectorAll("svg path");
           if (l02SvgPaths.length >= 2) {
             l02SvgPaths[l02SvgPaths.length - 2].setAttribute("d", l02PathD);
