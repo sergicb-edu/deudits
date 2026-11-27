@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Política de Privacitat — DeuDits</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      line-height: 1.65;
+      padding: 2rem 1rem;
+    }
+    .card {
+      max-width: 780px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 1.1rem;
+      padding: 2rem 2.2rem;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+    h1 { margin-top: 0; color: #1e3a8a; font-size: 1.7rem; }
+    h2 { color: #1d4ed8; font-size: 1.15rem; margin-top: 1.6rem; }
+    .badge {
+      display: inline-block;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 1.8rem;
+      color: #1d4ed8;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+    ul { padding-left: 1.3rem; }
+    .en-note {
+      margin-top: 2rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="badge">🔒 100% Navegador · Zero servidors externs</div>
+    <h1>Política de Privacitat — DeuDits</h1>
+    <p><strong>Darrera actualització:</strong> Novembre de 2026</p>
+
+    <p><strong>DeuDits</strong> és una aplicació educativa gratuïta d'ordinografia (mecanografia) gamificada en català adreçada a centres educatius de Primària. Respectem estrictament la privacitat dels docents i de l'alumnat.</p>
+
+    <h2>1. Arquitectura sense servidors (Zero emmagatzematge extern)</h2>
+    <p>DeuDits s'executa íntegrament al navegador de l'usuari (HTML/JavaScript estàtic allotjat a GitHub Pages). <strong>No disposem de cap servidor propi ni base de dades externa.</strong> Cap dada personal, resultat d'activitat ni credencial de Google surt mai fora del navegador de l'usuari i del Google Drive del centre educatiu.</p>
+
+    <h2>2. Dades de Google utilitzades i finalitat</h2>
+    <p>L'inici de sessió amb Google (OAuth 2.0) és opcional per jugar localment i s'utilitza exclusivament per sincronitzar el seguiment escolar:</p>
+    <ul>
+      <li><strong>Perfil bàsic (<code>userinfo.profile</code>, <code>userinfo.email</code>):</strong> mostrar el nom del docent o alumne dins l'app i identificar l'alumne al full de seguiment del seu mestre.</li>
+      <li><strong>Google Drive (<code>drive.file</code> — només docents):</strong> crear automàticament una carpeta <em>DeuDits</em> i un únic full de càlcul (<em>DeuDits — Seguiment d'Alumnes</em>) al Google Drive del docent. DeuDits no accedeix a cap altre fitxer del Drive.</li>
+      <li><strong>Google Sheets (<code>spreadsheets</code> — alumnes):</strong> desar únicament les puntuacions, velocitat (PPM), precisió i estadístiques de tecles de l'alumne al full de càlcul compartit pel seu docent, així com llegir la configuració pedagògica (p. ex. dificultat o sessió curta NESE) assignada pel docent.</li>
+    </ul>
+
+    <h2>3. Propietat, retenció i eliminació de dades</h2>
+    <ul>
+      <li>Totes les dades escolars romanen exclusivament al <strong>Google Drive del docent / centre educatiu</strong>, que n'és l'únic propietari i responsable.</li>
+      <li>El docent pot esborrar en qualsevol moment el full de càlcul o qualsevol fila directament des del seu Google Drive.</li>
+      <li>Les dades locals emmagatzemades al navegador (<code>localStorage</code>) es poden esborrar en qualsevol moment netejant les dades del navegador.</li>
+      <li>DeuDits <strong>no utilitza galetes de publicitat</strong>, <strong>no ven ni comparteix dades amb tercers</strong> i compleix amb la política d'ús limitat de les API de Google (<em>Google API Services User Data Policy — Limited Use</em>).</li>
+    </ul>
+
+    <h2>4. Contacte</h2>
+    <p>Per a qualsevol dubte sobre privacitat o protecció de dades, pots contactar amb el projecte a través del repositori oficial a <a href="https://github.com/sergicb-edu/deudits" target="_blank" rel="noopener">github.com/sergicb-edu/deudits</a>.</p>
+
+    <div class="en-note">
+      <strong>English Summary (Google API Services User Data Policy):</strong>
+      DeuDits is a client-side educational touch-typing web app hosted on GitHub Pages with no external backend servers. Google OAuth 2.0 tokens are kept strictly in browser memory during the active session. User profile info, <code>drive.file</code> (teachers only, to create their own tracking spreadsheet), and <code>spreadsheets</code> (students, to append their own typing session results to their teacher's sheet) are used solely to provide classroom progress tracking. DeuDits does not collect, store, sell, or share user data with any third party, and adheres to the Google API Services User Data Policy, including the Limited Use requirements.
+    </div>
+
+    <a class="back-link" href="./index.html">⬅️ Tornar a DeuDits</a>
+  </main>
+</body>
+</html>

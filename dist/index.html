@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DeuDits — Mecanografia Inclusiva en Català</title>
   <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./logo-120.png" />
   <meta name="theme-color" content="#1d4ed8" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="./app-config.js"></script>
@@ -114,7 +115,9 @@
 </head>
 <body>
   <main class="welcome-card">
-    <div class="logo-badge">🤖⌨️</div>
+    <div class="logo-badge" style="background:transparent;padding:0;width:84px;height:84px;">
+      <img src="./logo-120.png" alt="Logo DeuDits" width="84" height="84" style="border-radius:1.1rem;display:block;" />
+    </div>
     <h1 id="app-title">Benvingut a DeuDits</h1>
     <p class="lead">
       <strong>DeuDits</strong> és una aplicació gratuïta d'<strong>ordinografia</strong> (mecanografia) gamificada en català que guarda automàticament tot el seguiment al teu Google Drive.
@@ -130,6 +133,11 @@
     </button>
 
     <div id="login-status" class="status-msg"></div>
+
+    <div class="sub-actions">
+      <a href="./privacitat.html">🔒 Política de Privacitat</a>
+      <a href="./condicions.html">📄 Condicions del Servei</a>
+    </div>
   </main>
 
   <script>
